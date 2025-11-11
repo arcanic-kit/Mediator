@@ -1,0 +1,6 @@
+@ArchKit.Mediator.Samples.WebApi_HostAddress = http://localhost:5124
+
+GET {{ArchKit.Mediator.Samples.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
