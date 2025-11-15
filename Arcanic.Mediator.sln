@@ -43,6 +43,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcanic.Mediator", "src\Arc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebApi", "WebApi", "{1D81969C-7F54-4C2C-B436-3704DBA7AA6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcanic.Mediator.Sample.WebApi.Application", "samples\WebApi\Arcanic.Mediator.Sample.WebApi.Application\Arcanic.Mediator.Sample.WebApi.Application.csproj", "{32651E31-9E0A-4431-8106-F3A1554E5612}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcanic.Mediator.Sample.WebApi.Domain", "samples\WebApi\Arcanic.Mediator.Sample.WebApi.Domain\Arcanic.Mediator.Sample.WebApi.Domain.csproj", "{43995D5C-4ACB-4218-A4DE-A0EC6484C63A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcanic.Mediator.Sample.WebApi.Infrastructure", "samples\WebApi\Arcanic.Mediator.Sample.WebApi.Infrastructure\Arcanic.Mediator.Sample.WebApi.Infrastructure.csproj", "{7A3C224F-3440-403E-BFB5-1A94F7586832}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -93,6 +99,18 @@ Global
 		{01BAF28A-AD7E-45A7-975B-CAAC0D15E950}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01BAF28A-AD7E-45A7-975B-CAAC0D15E950}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01BAF28A-AD7E-45A7-975B-CAAC0D15E950}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32651E31-9E0A-4431-8106-F3A1554E5612}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32651E31-9E0A-4431-8106-F3A1554E5612}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32651E31-9E0A-4431-8106-F3A1554E5612}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32651E31-9E0A-4431-8106-F3A1554E5612}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43995D5C-4ACB-4218-A4DE-A0EC6484C63A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43995D5C-4ACB-4218-A4DE-A0EC6484C63A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43995D5C-4ACB-4218-A4DE-A0EC6484C63A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43995D5C-4ACB-4218-A4DE-A0EC6484C63A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A3C224F-3440-403E-BFB5-1A94F7586832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A3C224F-3440-403E-BFB5-1A94F7586832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A3C224F-3440-403E-BFB5-1A94F7586832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A3C224F-3440-403E-BFB5-1A94F7586832}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,6 +133,9 @@ Global
 		{BA5A2BF5-1CCE-4984-913E-4D9BF3AC089F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{01BAF28A-AD7E-45A7-975B-CAAC0D15E950} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{1D81969C-7F54-4C2C-B436-3704DBA7AA6F} = {1277EFD5-C57E-4BEF-92E1-983FB18031A6}
+		{32651E31-9E0A-4431-8106-F3A1554E5612} = {1D81969C-7F54-4C2C-B436-3704DBA7AA6F}
+		{43995D5C-4ACB-4218-A4DE-A0EC6484C63A} = {1D81969C-7F54-4C2C-B436-3704DBA7AA6F}
+		{7A3C224F-3440-403E-BFB5-1A94F7586832} = {1D81969C-7F54-4C2C-B436-3704DBA7AA6F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {787F014E-2270-4948-92A3-53E9172F2365}

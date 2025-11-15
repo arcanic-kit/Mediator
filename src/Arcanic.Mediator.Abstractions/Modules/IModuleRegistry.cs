@@ -1,4 +1,5 @@
-﻿namespace Arcanic.Mediator.Abstractions.Modules;
+﻿
+namespace Arcanic.Mediator.Abstractions.Modules;
 
 /// <summary>
 /// Defines a registry for managing and organizing modules within the mediator framework.
