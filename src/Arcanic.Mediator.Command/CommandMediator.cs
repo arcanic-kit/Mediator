@@ -5,15 +5,35 @@ using Arcanic.Mediator.Messaging.Mediator.Strategies;
 
 namespace Arcanic.Mediator.Command;
 
+/// <summary>
+/// Provides a mediator implementation for command handling, routing commands to their appropriate handlers
+/// through the underlying message mediator framework using single main handler strategy.
+/// </summary>
 public class CommandMediator : ICommandMediator
 {
+    /// <summary>
+    /// The underlying message mediator that handles the actual message routing and processing.
+    /// </summary>
     private readonly IMessageMediator _messageMediator;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CommandMediator"/> class.
+    /// </summary>
+    /// <param name="messageMediator">The message mediator instance to use for command processing.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> is null.</exception>
     public CommandMediator(IMessageMediator messageMediator)
     {
         _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
     }
 
+    /// <summary>
+    /// Sends a command asynchronously for processing without expecting a result.
+    /// The command is routed to its designated handler using a single main handler strategy.
+    /// </summary>
+    /// <param name="command">The command to send for processing.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
+    /// <returns>A task that represents the asynchronous command processing operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
     public async Task SendAsync(ICommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -28,6 +48,15 @@ public class CommandMediator : ICommandMediator
         await _messageMediator.Mediate(command, options);
     }
 
+    /// <summary>
+    /// Sends a command asynchronously for processing and returns a result of the specified type.
+    /// The command is routed to its designated handler using a single main handler strategy.
+    /// </summary>
+    /// <typeparam name="TCommandResult">The type of result expected from the command processing.</typeparam>
+    /// <param name="command">The command to send for processing that returns a result.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
+    /// <returns>A task that represents the asynchronous command processing operation, containing the command result.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
     public async Task<TCommandResult> SendAsync<TCommandResult>(ICommand<TCommandResult> command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
