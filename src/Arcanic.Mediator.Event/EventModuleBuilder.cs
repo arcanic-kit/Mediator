@@ -45,48 +45,21 @@ public class EventModuleBuilder
     /// </remarks>
     public EventModuleBuilder RegisterFromAssembly(Assembly assembly)
     {
-        var eventTypes = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface && t.IsClass)
-            .Where(t => t.GetInterfaces().Any(IsEventInterface))
-            .ToList();
-
         var handlerTypes = assembly.GetTypes()
             .Where(t => !t.IsAbstract && !t.IsInterface && t.IsClass)
             .Where(t => t.GetInterfaces().Any(IsEventHandlerInterface))
             .ToList();
 
-        foreach (var eventType in eventTypes)
+        foreach (var handlerType in handlerTypes)
         {
-            var matchingHandlers = handlerTypes.Where(handlerType =>
-                handlerType.GetInterfaces().Any(i =>
-                    i.IsGenericType &&
-                    (i.GetGenericTypeDefinition() == typeof(IEventHandler<>)) &&
-                    i.GetGenericArguments()[0] == eventType))
-                .ToList();
+            var eventHandlerInterface = handlerType.GetInterfaces().FirstOrDefault(i => i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
+            var eventType = eventHandlerInterface!.GetGenericArguments().FirstOrDefault();
 
-            // Register each matching handler
-            foreach (var handlerType in matchingHandlers)
-            {
-                _messageRegistry.Register(eventType, handlerType);
-                _services.AddScoped(handlerType);
-            }
+            _messageRegistry.Register(eventType!, handlerType);
+            _services.AddScoped(handlerType);
         }
 
         return this;
-    }
-
-    /// <summary>
-    /// Determines whether the specified type represents an event interface.
-    /// This method checks if the type is exactly <see cref="IEvent"/> and not a generic type.
-    /// </summary>
-    /// <param name="type">The type to examine for event interface compatibility.</param>
-    /// <returns>True if the type is the <see cref="IEvent"/> interface; otherwise, false.</returns>
-    private static bool IsEventInterface(Type type)
-    {
-        if (type.IsGenericType)
-            return false;
-
-        return type == typeof(IEvent);
     }
 
     /// <summary>
