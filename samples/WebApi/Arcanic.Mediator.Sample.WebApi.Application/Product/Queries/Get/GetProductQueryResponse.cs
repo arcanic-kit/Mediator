@@ -2,7 +2,5 @@
 
 public class GetProductQueryResponse
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
+    public Sample.WebApi.Domain.Entities.Product? Product { get; set; }
 }

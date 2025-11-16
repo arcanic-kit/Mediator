@@ -6,11 +6,11 @@ public class GetProductQueryHandler : IQueryHandler<GetProductQuery, GetProductQ
 {
     public async Task<GetProductQueryResponse> HandleAsync(GetProductQuery request, CancellationToken cancellationToken = default)
     {
-        return await Task.FromResult(new GetProductQueryResponse
-        {
-            Id = request.Id,
-            Name = "Sample Product",
-            Price = 19.99m
-        });
+        return await Task.FromResult(
+            new GetProductQueryResponse()
+            {
+                Product = new(request.Id, "Sample Product", 19.99m)
+            }
+        );
     }
 }
