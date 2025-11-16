@@ -21,11 +21,6 @@ public static class ModuleRegistryExtensions
     /// <returns>The module registry instance to enable method chaining for additional module registrations.</returns>
     /// <exception cref="ArgumentNullException">Thrown when either <paramref name="moduleRegistry"/>
     /// or <paramref name="eventModuleBuilder"/> is null.</exception>
-    /// <remarks>
-    /// This method automatically ensures that the <see cref="MessageModule"/> is registered first
-    /// with default configuration if it hasn't been registered already, as it is a required dependency
-    /// for the event module to function properly.
-    /// </remarks>
     public static IModuleRegistry AddEventModule(this IModuleRegistry moduleRegistry, Action<EventModuleBuilder> eventModuleBuilder)
     {
         ArgumentNullException.ThrowIfNull(moduleRegistry);

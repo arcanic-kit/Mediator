@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
+    <ProjectReference Include="..\..\..\src\Arcanic.Mediator.Event\Arcanic.Mediator.Event.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Arcanic.Mediator.Event\Arcanic.Mediator.Event.csproj" />
+    <Folder Include="ValueObjects\" />
   </ItemGroup>
 
 </Project>

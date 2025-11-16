@@ -18,11 +18,6 @@ public static class ModuleRegistryExtensions
     /// <param name="commandModuleBuilder">An action that configures the command module by registering command types and their handlers.</param>
     /// <returns>The module registry instance to support fluent chaining of module registrations.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="moduleRegistry"/> or <paramref name="commandModuleBuilder"/> is null.</exception>
-    /// <remarks>
-    /// This method automatically registers a default MessageModule if one is not already registered,
-    /// ensuring that the command module has the necessary messaging infrastructure available.
-    /// The MessageModule is registered with an empty configuration action as a default setup.
-    /// </remarks>
     public static IModuleRegistry AddCommandModule(this IModuleRegistry moduleRegistry, Action<CommandModuleBuilder> commandModuleBuilder)
     {
         ArgumentNullException.ThrowIfNull(moduleRegistry);
