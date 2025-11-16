@@ -37,41 +37,45 @@ public class CommandModuleBuilder
     /// Scans the specified assembly for command types and their corresponding handlers, then registers them
     /// in the dependency injection container and message registry.
     /// </summary>
-    /// <param name="assembly">The assembly to scan for command types and handlers.</param>
+    /// <param name="assembly">The assembly to scan for command types and handlers. All concrete classes
+    /// implementing the appropriate interfaces will be registered automatically.</param>
     /// <returns>The current <see cref="CommandModuleBuilder"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
-    /// <remarks>
-    /// This method automatically discovers:
-    /// - Classes implementing <see cref="ICommand"/> or <see cref="ICommand{TResult}"/>
-    /// - Classes implementing <see cref="ICommandHandler{TCommand}"/> or <see cref="ICommandHandler{TCommand, TResult}"/>
-    /// It then registers matching command-handler pairs in both the DI container and message registry.
-    /// </remarks>
+    /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
     public CommandModuleBuilder RegisterFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
-        var commandTypes = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface && t.IsClass)
-            .Where(t => t.GetInterfaces().Any(IsCommandInterface))
-            .ToList();
+        var concreteTypes = assembly.GetTypes()
+            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true });
 
-        var handlerTypes = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface && t.IsClass)
-            .Where(t => t.GetInterfaces().Any(IsCommandHandlerInterface))
-            .ToList();
-
-        foreach (var commandType in commandTypes)
+        foreach (var handlerType in concreteTypes)
         {
-            var matchingHandlers = handlerTypes.Where(handlerType => 
-                handlerType.GetInterfaces().Any(i => 
-                    i.IsGenericType && 
-                    (i.GetGenericTypeDefinition() == typeof(ICommandHandler<>) || i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)) &&
-                    i.GetGenericArguments()[0] == commandType))
+            var commandHandlerInterfaces = handlerType.GetInterfaces()
+                .Where(IsCommandHandlerInterface)
                 .ToList();
 
-            // Register each matching handler
-            foreach (var handlerType in matchingHandlers)
+            if (commandHandlerInterfaces.Count == 0)
+                continue;
+
+            foreach (var commandHandlerInterface in commandHandlerInterfaces)
             {
+                var commandType = commandHandlerInterface.GetGenericArguments().FirstOrDefault();
+                
+                if (commandType == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to determine command type for handler '{handlerType.FullName}'. " +
+                        $"The handler interface '{commandHandlerInterface.FullName}' does not have generic arguments.");
+                }
+
+                // Ensure the command type implements ICommand or ICommand<T>
+                if (!commandType.GetInterfaces().Any(IsCommandInterface) && commandType != typeof(ICommand))
+                {
+                    throw new InvalidOperationException(
+                        $"Command type '{commandType.FullName}' handled by '{handlerType.FullName}' must implement ICommand or ICommand<T> interface.");
+                }
+
                 _messageRegistry.Register(commandType, handlerType);
                 _services.AddScoped(handlerType);
             }

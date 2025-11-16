@@ -2,7 +2,7 @@
 
 namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Queries.Get;
 
-public class GetProductQueryHandler : IQueryHandler<GetProductQuery, GetProductQueryResponse>
+public class GetProductQueryHandler: IQueryHandler<GetProductQuery, GetProductQueryResponse>
 {
     public async Task<GetProductQueryResponse> HandleAsync(GetProductQuery request, CancellationToken cancellationToken = default)
     {

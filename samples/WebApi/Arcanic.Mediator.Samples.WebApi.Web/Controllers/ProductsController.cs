@@ -38,5 +38,17 @@ namespace Arcanic.Mediator.Samples.WebApi.Controllers
                 Price = response.Product.Price,
             };
         }
+
+        [HttpPost()]
+        public async Task<int?> Add()
+        {
+            var response = await _commandMediator.SendAsync(new Application.Product.Commands.Add.AddProductCommand
+            {
+                Name = "Sample Product",
+                Price = 9.99m
+            });
+
+            return null;
+        }
     }
 }

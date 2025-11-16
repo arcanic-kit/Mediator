@@ -39,24 +39,45 @@ public class EventModuleBuilder
     /// <param name="assembly">The assembly to scan for event types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
     /// <returns>The current <see cref="EventModuleBuilder"/> instance to enable method chaining.</returns>
-    /// <remarks>
-    /// This method registers each discovered handler as scoped in the dependency injection container
-    /// and maps them to their corresponding event types in the message registry for proper routing.
-    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
     public EventModuleBuilder RegisterFromAssembly(Assembly assembly)
     {
-        var handlerTypes = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface && t.IsClass)
-            .Where(t => t.GetInterfaces().Any(IsEventHandlerInterface))
-            .ToList();
+        ArgumentNullException.ThrowIfNull(assembly);
 
-        foreach (var handlerType in handlerTypes)
+        var concreteTypes = assembly.GetTypes()
+            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true });
+
+        foreach (var handlerType in concreteTypes)
         {
-            var eventHandlerInterface = handlerType.GetInterfaces().FirstOrDefault(i => i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
-            var eventType = eventHandlerInterface!.GetGenericArguments().FirstOrDefault();
+            var eventHandlerInterfaces = handlerType.GetInterfaces()
+                .Where(IsEventHandlerInterface)
+                .ToList();
 
-            _messageRegistry.Register(eventType!, handlerType);
-            _services.AddScoped(handlerType);
+            if (eventHandlerInterfaces.Count == 0)
+                continue;
+
+            foreach (var eventHandlerInterface in eventHandlerInterfaces)
+            {
+                var eventType = eventHandlerInterface.GetGenericArguments().FirstOrDefault();
+                
+                if (eventType == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to determine event type for handler '{handlerType.FullName}'. " +
+                        $"The handler interface '{eventHandlerInterface.FullName}' does not have generic arguments.");
+                }
+
+                // Ensure the event type implements IEvent
+                if (!eventType.GetInterfaces().Contains(typeof(IEvent)))
+                {
+                    throw new InvalidOperationException(
+                        $"Event type '{eventType.FullName}' handled by '{handlerType.FullName}' must implement IEvent interface.");
+                }
+
+                _messageRegistry.Register(eventType, handlerType);
+                _services.AddScoped(handlerType);
+            }
         }
 
         return this;

@@ -34,32 +34,45 @@ public class QueryModuleBuilder
     /// This method performs automatic registration by scanning for types that implement <see cref="IQuery{T}"/>
     /// and their associated handlers that implement <see cref="IQueryHandler{TQuery, TResult}"/>.
     /// </summary>
-    /// <param name="assembly">The assembly to scan for query types and handlers.</param>
+    /// <param name="assembly">The assembly to scan for query types and handlers. All concrete classes
+    /// implementing the appropriate interfaces will be registered automatically.</param>
     /// <returns>The current <see cref="QueryModuleBuilder"/> instance to enable method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
     public QueryModuleBuilder RegisterFromAssembly(Assembly assembly)
     {
-        var queryTypes = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface && t.IsClass)
-            .Where(t => t.GetInterfaces().Any(IsQueryInterface))
-            .ToList();
+        ArgumentNullException.ThrowIfNull(assembly);
 
-        var handlerTypes = assembly.GetTypes()
-            .Where(t => !t.IsAbstract && !t.IsInterface && t.IsClass)
-            .Where(t => t.GetInterfaces().Any(IsQueryHandlerInterface))
-            .ToList();
+        var concreteTypes = assembly.GetTypes()
+            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true });
 
-        foreach (var queryType in queryTypes)
+        foreach (var handlerType in concreteTypes)
         {
-            var matchingHandlers = handlerTypes.Where(handlerType =>
-                handlerType.GetInterfaces().Any(i =>
-                    i.IsGenericType &&
-                    (i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)) &&
-                    i.GetGenericArguments()[0] == queryType))
+            var queryHandlerInterfaces = handlerType.GetInterfaces()
+                .Where(IsQueryHandlerInterface)
                 .ToList();
 
-            // Register each matching handler
-            foreach (var handlerType in matchingHandlers)
+            if (queryHandlerInterfaces.Count == 0)
+                continue;
+
+            foreach (var queryHandlerInterface in queryHandlerInterfaces)
             {
+                var queryType = queryHandlerInterface.GetGenericArguments().FirstOrDefault();
+                
+                if (queryType == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to determine query type for handler '{handlerType.FullName}'. " +
+                        $"The handler interface '{queryHandlerInterface.FullName}' does not have generic arguments.");
+                }
+
+                // Ensure the query type implements IQuery<T>
+                if (!queryType.GetInterfaces().Any(IsQueryInterface))
+                {
+                    throw new InvalidOperationException(
+                        $"Query type '{queryType.FullName}' handled by '{handlerType.FullName}' must implement IQuery<T> interface.");
+                }
+
                 _messageRegistry.Register(queryType, handlerType);
                 _services.AddScoped(handlerType);
             }
