@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
 
-namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Events.Created;
+namespace Arcanic.Mediator.Sample.WebApi.Domain.Events;
 
 public class ProductCreatedEvent: IEvent
 {

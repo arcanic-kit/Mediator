@@ -1,5 +1,5 @@
 ﻿namespace Arcanic.Mediator.Sample.WebApi.Domain.Entities;
 
-internal class Product
+public class Product
 {
 }

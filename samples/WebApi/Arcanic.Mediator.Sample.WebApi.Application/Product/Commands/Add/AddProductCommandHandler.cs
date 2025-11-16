@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Event.Abstractions;
-using Arcanic.Mediator.Samples.WebApi.Application.Product.Events.Created;
+using Arcanic.Mediator.Sample.WebApi.Domain.Events;
 
 namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Commands.Add;
 

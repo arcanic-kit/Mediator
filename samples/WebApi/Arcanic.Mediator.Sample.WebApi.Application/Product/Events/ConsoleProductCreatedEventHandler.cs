@@ -1,9 +1,9 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
-using Arcanic.Mediator.Samples.WebApi.Application.Product.Events.Created;
+using Arcanic.Mediator.Sample.WebApi.Domain.Events;
 
-namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Events.ProductCreated;
+namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Events;
 
-public class ProductCreatedEventHandler : IEventHandler<ProductCreatedEvent>
+public class ConsoleProductCreatedEventHandler : IEventHandler<ProductCreatedEvent>
 {
     public async Task HandleAsync(ProductCreatedEvent request, CancellationToken cancellationToken = default)
     {
