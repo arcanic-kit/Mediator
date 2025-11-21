@@ -4,6 +4,12 @@
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+
+		<!-- Package Information -->
+		<PackageId>Arcanic.Mediator.Abstractions</PackageId>
+		<Description>Core abstractions for Arcanic.Mediator providing interfaces for modular mediator pattern implementation with CQRS support.</Description>
+		<PackageTags>mediator;cqrs;abstractions;interfaces;dependency-injection;dotnet</PackageTags>
+		<PackageReleaseNotes>Initial release of Arcanic.Mediator core abstractions.</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

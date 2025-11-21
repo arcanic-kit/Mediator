@@ -9,47 +9,8 @@
 		<PackageId>Arcanic.Mediator</PackageId>
 		<Description>Dependency injection extensions for Arcanic.Mediator, providing seamless integration with Microsoft.Extensions.DependencyInjection for command, query and event handling patterns.</Description>
 		<PackageTags>mediator;cqrs;dependency-injection;commands;queries;events;dotnet</PackageTags>
-		<PackageProjectUrl>https://github.com/arcanic-dotnet/mediator</PackageProjectUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<!--<PackageIcon>icon.png</PackageIcon>-->
-
-		<!-- Author and Company -->
-		<Authors>Intello Solutions</Authors>
-		<Company>Intello Solutions</Company>
-		<Copyright>Copyright © Intello Solutions 2025</Copyright>
-
-		<!-- Repository Information -->
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/arcanic-dotnet/mediator</RepositoryUrl>
-		<RepositoryBranch>main</RepositoryBranch>
-
-		<!-- Release Notes -->
 		<PackageReleaseNotes>Initial release of Arcanic.Mediator dependency injection extensions.</PackageReleaseNotes>
-
-		<!-- Version Information -->
-		<AssemblyVersion>0.1.0.0</AssemblyVersion>
-		<FileVersion>0.1.0.0</FileVersion>
-		<Version>0.1.0</Version>
-
-		<!-- Build Configuration -->
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-
-		<!-- Language and Framework -->
-		<LangVersion>latest</LangVersion>
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<WarningsNotAsErrors>NU1701</WarningsNotAsErrors>
 	</PropertyGroup>
-
-	<!-- Package Files -->
-	<ItemGroup>
-		<None Include="..\..\README.md" Pack="true" PackagePath="\" Condition="Exists('..\..\README.md')" />
-		<!--<None Include="..\..\icon.png" Pack="true" PackagePath="\" Condition="Exists('..\..\icon.png')" />-->
-	</ItemGroup>
 	
 	<ItemGroup>
 	  <ProjectReference Include="..\Arcanic.Mediator.Abstractions\Arcanic.Mediator.Abstractions.csproj" />

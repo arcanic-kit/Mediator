@@ -43,7 +43,7 @@ public sealed class MessageMediatorSingleMainHandlerStrategy<TMessage, TMessageR
 
             return await messageResult;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             // TODO: Consider implementing proper exception handling strategy
             throw new Exception();

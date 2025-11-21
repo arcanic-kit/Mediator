@@ -4,6 +4,12 @@
 	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- Package Information -->
+    <PackageId>Arcanic.Mediator.Command.Abstractions</PackageId>
+    <Description>Command abstractions for Arcanic.Mediator providing interfaces for command handling patterns in CQRS architecture.</Description>
+    <PackageTags>mediator;cqrs;command;abstractions;interfaces;dotnet</PackageTags>
+    <PackageReleaseNotes>Initial release of Arcanic.Mediator command abstractions.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

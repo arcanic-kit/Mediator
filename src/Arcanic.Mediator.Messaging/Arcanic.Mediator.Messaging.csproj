@@ -4,6 +4,12 @@
 	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- Package Information -->
+    <PackageId>Arcanic.Mediator.Messaging</PackageId>
+    <Description>Core messaging implementation for Arcanic.Mediator providing message handling infrastructure and patterns.</Description>
+    <PackageTags>mediator;messaging;implementation;dotnet</PackageTags>
+    <PackageReleaseNotes>Initial release of Arcanic.Mediator messaging implementation.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

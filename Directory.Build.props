@@ -1,0 +1,40 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Common Package Information -->
+    <Authors>Intello Solutions</Authors>
+    <Company>Intello Solutions</Company>
+    <Copyright>Copyright © Intello Solutions 2025</Copyright>
+    
+    <!-- Repository Information -->
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/arcanic-dotnet/mediator</RepositoryUrl>
+    <RepositoryBranch>main</RepositoryBranch>
+    <PackageProjectUrl>https://github.com/arcanic-dotnet/mediator</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- Version Information -->
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Version>0.1.0</Version>
+    
+    <!-- Build Configuration -->
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    
+    <!-- Language and Framework -->
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>NU1701;CS0168;CS1574</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <!-- Include README.md in all packages -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)README.md')">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

@@ -40,7 +40,7 @@ public class MessageMediatorMultipleMainHandlerStrategy<TMessage> : IMessageMedi
 
             await Task.WhenAll(messageResults);
         }
-        catch (Exception e)
+        catch (Exception)
         {
             // TODO: Consider implementing proper exception handling strategy
             // Current implementation silently catches exceptions which may not be desired

@@ -42,7 +42,7 @@ public sealed class MessageMediatorSingleMainHandlerStrategy<TMessage> : IMessag
 
             await messageResult;
         }
-        catch (Exception e) 
+        catch (Exception) 
         {
             // TODO: Consider implementing proper exception handling strategy
         }
