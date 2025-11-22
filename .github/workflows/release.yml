@@ -147,11 +147,25 @@ jobs:
         done
 
     - name: Publish to GitHub Packages
+      run: |
+        echo "Pushing main packages..."
+        for pkg in ./packages/*.nupkg; do
+          if [ -f "$pkg" ]; then
+            echo "Pushing: $(basename $pkg)"
+            dotnet nuget push "$pkg" \
+              --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json \
+              --api-key ${{ secrets.GITHUB_TOKEN }} \
+              --skip-duplicate \
+              --timeout 300
+          fi
+        done
+
+    - name: Create GitHub Release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref_name }}
+        tag_name: v${{ steps.version.outputs.VERSION }}
         release_name: Release ${{ steps.version.outputs.VERSION }}
         body: |
           ## Changes in ${{ steps.version.outputs.VERSION }}
