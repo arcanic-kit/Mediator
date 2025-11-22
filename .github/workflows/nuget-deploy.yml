@@ -67,29 +67,88 @@ jobs:
           --collect:"XPlat Code Coverage" \
           --results-directory ./coverage
 
-    - name: Create packages
+    - name: Clean packages directory
       run: |
-        dotnet pack Arcanic.Mediator.sln \
-          --configuration Release \
-          --no-build \
-          --output ./packages \
-          -p:Version=${{ steps.version.outputs.VERSION }} \
-          -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
-          -p:FileVersion=${{ steps.version.outputs.VERSION }}.0
+        rm -rf ./packages
+        mkdir -p ./packages
 
-    - name: List packages
+    - name: Create packages (src projects only)
+      run: |
+        # Pack only the src projects, excluding samples
+        for project in src/*/*.csproj; do
+          if [ -f "$project" ]; then
+            echo "Packing: $project"
+            dotnet pack "$project" \
+              --configuration Release \
+              --no-build \
+              --output ./packages \
+              --include-symbols \
+              --include-source \
+              -p:Version=${{ steps.version.outputs.VERSION }} \
+              -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
+              -p:FileVersion=${{ steps.version.outputs.VERSION }}.0 \
+              -p:SymbolPackageFormat=snupkg
+          fi
+        done
+
+    - name: List and verify packages
       run: |
         echo "Generated packages:"
-        ls -la ./packages/*.nupkg
-        echo "Generated symbol packages:"
-        ls -la ./packages/*.snupkg || echo "No symbol packages found"
+        ls -la ./packages/
+        echo ""
+        echo "Package details:"
+        for pkg in ./packages/*.nupkg; do
+          if [ -f "$pkg" ]; then
+            echo "Package: $(basename $pkg)"
+            unzip -l "$pkg" | grep -E '\.(dll|pdb)$' || echo "No DLL/PDB files found"
+            echo "---"
+          fi
+        done
 
-    - name: Push packages to NuGet
+    - name: Verify package content
       run: |
-        dotnet nuget push "./packages/*.nupkg" \
-          --source https://api.nuget.org/v3/index.json \
-          --api-key ${{ secrets.NUGET_API_KEY }} \
-          --skip-duplicate
+        echo "Checking for symbol package issues..."
+        for snupkg in ./packages/*.snupkg; do
+          if [ -f "$snupkg" ]; then
+            pkg_name=$(basename "$snupkg" .snupkg).nupkg
+            if [ -f "./packages/$pkg_name" ]; then
+              echo "Checking symbol package: $(basename $snupkg)"
+              # List contents of symbol package
+              unzip -l "$snupkg" | grep '\.pdb$' || echo "No PDB files in symbol package"
+              # List DLLs in main package
+              unzip -l "./packages/$pkg_name" | grep '\.dll$' || echo "No DLL files in main package"
+              echo "---"
+            fi
+          fi
+        done
+
+    - name: Push packages to NuGet (main packages first)
+      run: |
+        echo "Pushing main packages..."
+        for pkg in ./packages/*.nupkg; do
+          if [ -f "$pkg" ]; then
+            echo "Pushing: $(basename $pkg)"
+            dotnet nuget push "$pkg" \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key ${{ secrets.NUGET_API_KEY }} \
+              --skip-duplicate \
+              --timeout 300
+          fi
+        done
+
+    - name: Push symbol packages to NuGet
+      run: |
+        echo "Pushing symbol packages..."
+        for snupkg in ./packages/*.snupkg; do
+          if [ -f "$snupkg" ]; then
+            echo "Pushing symbols: $(basename $snupkg)"
+            dotnet nuget push "$snupkg" \
+              --source https://api.nuget.org/v3/index.json \
+              --api-key ${{ secrets.NUGET_API_KEY }} \
+              --skip-duplicate \
+              --timeout 300 || echo "Failed to push symbol package: $(basename $snupkg)"
+          fi
+        done
 
     - name: Create GitHub Release
       uses: actions/create-release@v1
