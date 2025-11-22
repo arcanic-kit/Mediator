@@ -81,19 +81,12 @@ jobs:
       run: |
         echo "Generated packages:"
         ls -la ./packages/*.nupkg
-        ls -la ./packages/*.snupkg
+        echo "Generated symbol packages:"
+        ls -la ./packages/*.snupkg || echo "No symbol packages found"
 
-    - name: Push to NuGet
+    - name: Push packages to NuGet
       run: |
         dotnet nuget push "./packages/*.nupkg" \
-          --source https://api.nuget.org/v3/index.json \
-          --api-key ${{ secrets.NUGET_API_KEY }} \
-          --skip-duplicate \
-          --no-symbols
-
-    - name: Push symbols to NuGet
-      run: |
-        dotnet nuget push "./packages/*.snupkg" \
           --source https://api.nuget.org/v3/index.json \
           --api-key ${{ secrets.NUGET_API_KEY }} \
           --skip-duplicate
