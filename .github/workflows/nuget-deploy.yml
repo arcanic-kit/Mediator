@@ -72,22 +72,27 @@ jobs:
         rm -rf ./packages
         mkdir -p ./packages
 
-    - name: Create packages (src projects only)
+    - name: Create packages (src projects only, exclude samples)
       run: |
-        # Pack only the src projects, excluding samples
+        # Pack only the src projects, excluding samples and test projects
         for project in src/*/*.csproj; do
           if [ -f "$project" ]; then
-            echo "Packing: $project"
-            dotnet pack "$project" \
-              --configuration Release \
-              --no-build \
-              --output ./packages \
-              --include-symbols \
-              --include-source \
-              -p:Version=${{ steps.version.outputs.VERSION }} \
-              -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
-              -p:FileVersion=${{ steps.version.outputs.VERSION }}.0 \
-              -p:SymbolPackageFormat=snupkg
+            # Skip if project path contains "sample" or "test" (case insensitive)
+            if [[ ! "$project" =~ [Ss]ample ]] && [[ ! "$project" =~ [Tt]est ]]; then
+              echo "Packing: $project"
+              dotnet pack "$project" \
+                --configuration Release \
+                --no-build \
+                --output ./packages \
+                --include-symbols \
+                --include-source \
+                -p:Version=${{ steps.version.outputs.VERSION }} \
+                -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
+                -p:FileVersion=${{ steps.version.outputs.VERSION }}.0 \
+                -p:SymbolPackageFormat=snupkg
+            else
+              echo "Skipping sample/test project: $project"
+            fi
           fi
         done
 
@@ -122,9 +127,9 @@ jobs:
           fi
         done
 
-    - name: Push packages to NuGet (main packages first)
+    - name: Push packages to NuGet (main packages only)
       run: |
-        echo "Pushing main packages..."
+        echo "Pushing packages..."
         for pkg in ./packages/*.nupkg; do
           if [ -f "$pkg" ]; then
             echo "Pushing: $(basename $pkg)"
@@ -135,9 +140,7 @@ jobs:
               --timeout 300
           fi
         done
-
-    - name: Push symbol packages to NuGet
-      run: |
+        
         echo "Pushing symbol packages..."
         for snupkg in ./packages/*.snupkg; do
           if [ -f "$snupkg" ]; then
@@ -146,7 +149,7 @@ jobs:
               --source https://api.nuget.org/v3/index.json \
               --api-key ${{ secrets.NUGET_API_KEY }} \
               --skip-duplicate \
-              --timeout 300 || echo "Failed to push symbol package: $(basename $snupkg)"
+              --timeout 300 || echo "Failed to push symbol package: $(basename $snupkg) - continuing with other packages"
           fi
         done
 
