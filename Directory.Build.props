@@ -8,9 +8,9 @@
     
     <!-- Repository Information -->
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/arcanic-dotnet/mediator</RepositoryUrl>
+    <RepositoryUrl>https://github.com/arcanic-kit/mediator</RepositoryUrl>
     <RepositoryBranch>main</RepositoryBranch>
-    <PackageProjectUrl>https://github.com/arcanic-dotnet/mediator</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/arcanic-kit/mediator</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>logo.png</PackageIcon>
