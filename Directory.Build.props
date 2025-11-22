@@ -35,6 +35,7 @@
 
   <!-- Include logo in all packages -->
   <ItemGroup>
+	  <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)assets\images\logo.png" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)assets\images\logo.png')" />
   </ItemGroup>
 
