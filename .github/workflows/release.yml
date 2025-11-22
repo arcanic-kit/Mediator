@@ -148,7 +148,6 @@ jobs:
 
     - name: Publish to GitHub Packages
       uses: actions/create-release@v1
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
