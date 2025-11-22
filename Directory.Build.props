@@ -4,7 +4,7 @@
     <!-- Common Package Information -->
     <Authors>Intello Solutions</Authors>
     <Company>Intello Solutions</Company>
-    <Copyright>Copyright © Intello Solutions 2025</Copyright>
+    <Copyright>Intello Solutions 2025</Copyright>
     
     <!-- Repository Information -->
     <RepositoryType>git</RepositoryType>
@@ -14,11 +14,6 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>logo.png</PackageIcon>
-    
-    <!-- Version Information -->
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <FileVersion>0.1.0.0</FileVersion>
-    <Version>0.1.0</Version>
     
     <!-- Build Configuration -->
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
