@@ -1,0 +1,135 @@
+name: Deploy to NuGet
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger on version tags like v1.0.0
+  workflow_dispatch:  # Allow manual triggering
+    inputs:
+      version:
+        description: 'Version to deploy (e.g., 1.0.0)'
+        required: true
+        type: string
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for GitVersion
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          9.0.x
+          10.0.x
+
+    - name: Determine version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          # Extract version from tag (remove 'v' prefix)
+          VERSION="${GITHUB_REF#refs/tags/v}"
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Package version: $VERSION"
+
+    - name: Restore dependencies
+      run: dotnet restore Arcanic.Mediator.sln
+
+    - name: Build solution
+      run: |
+        dotnet build Arcanic.Mediator.sln \
+          --configuration Release \
+          --no-restore \
+          -p:Version=${{ steps.version.outputs.VERSION }} \
+          -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
+          -p:FileVersion=${{ steps.version.outputs.VERSION }}.0
+
+    - name: Run tests
+      run: |
+        dotnet test Arcanic.Mediator.sln \
+          --configuration Release \
+          --no-build \
+          --verbosity normal \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./coverage
+
+    - name: Create packages
+      run: |
+        dotnet pack Arcanic.Mediator.sln \
+          --configuration Release \
+          --no-build \
+          --output ./packages \
+          -p:Version=${{ steps.version.outputs.VERSION }} \
+          -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
+          -p:FileVersion=${{ steps.version.outputs.VERSION }}.0
+
+    - name: List packages
+      run: |
+        echo "Generated packages:"
+        ls -la ./packages/*.nupkg
+        ls -la ./packages/*.snupkg
+
+    - name: Push to NuGet
+      run: |
+        dotnet nuget push "./packages/*.nupkg" \
+          --source https://api.nuget.org/v3/index.json \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --skip-duplicate \
+          --no-symbols
+
+    - name: Push symbols to NuGet
+      run: |
+        dotnet nuget push "./packages/*.snupkg" \
+          --source https://api.nuget.org/v3/index.json \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --skip-duplicate
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ steps.version.outputs.VERSION }}
+        body: |
+          ## Changes in ${{ steps.version.outputs.VERSION }}
+          
+          ### NuGet Packages Published:
+          - Arcanic.Mediator v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Abstractions v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Command v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Command.Abstractions v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Event v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Event.Abstractions v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Query v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Query.Abstractions v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Messaging v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Messaging.Abstractions v${{ steps.version.outputs.VERSION }}
+          
+          See the [packages on NuGet.org](https://www.nuget.org/packages?q=Arcanic.Mediator)
+        draft: false
+        prerelease: false
+
+    - name: Upload packages as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages-${{ steps.version.outputs.VERSION }}
+        path: |
+          ./packages/*.nupkg
+          ./packages/*.snupkg
+        retention-days: 90

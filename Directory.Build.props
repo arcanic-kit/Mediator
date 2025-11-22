@@ -4,7 +4,7 @@
     <!-- Common Package Information -->
     <Authors>Intello Solutions</Authors>
     <Company>Intello Solutions</Company>
-    <Copyright>Copyright © Intello Solutions 2025</Copyright>
+    <Copyright>Copyright Â© Intello Solutions 2025</Copyright>
     
     <!-- Repository Information -->
     <RepositoryType>git</RepositoryType>
@@ -13,6 +13,7 @@
     <PackageProjectUrl>https://github.com/arcanic-dotnet/mediator</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>logo.png</PackageIcon>
     
     <!-- Version Information -->
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
@@ -32,9 +33,9 @@
     <WarningsNotAsErrors>NU1701;CS0168;CS1574</WarningsNotAsErrors>
   </PropertyGroup>
 
-  <!-- Include README.md in all packages -->
-  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)README.md')">
-    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+  <!-- Include logo in all packages -->
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)assets\images\logo.png" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)assets\images\logo.png')" />
   </ItemGroup>
 
 </Project>
