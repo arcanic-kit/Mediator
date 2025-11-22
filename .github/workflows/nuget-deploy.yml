@@ -56,7 +56,9 @@ jobs:
           --no-restore \
           -p:Version=${{ steps.version.outputs.VERSION }} \
           -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
-          -p:FileVersion=${{ steps.version.outputs.VERSION }}.0
+          -p:FileVersion=${{ steps.version.outputs.VERSION }}.0 \
+          -p:DebugType=portable \
+          -p:DebugSymbols=true
 
     - name: Run tests
       run: |
@@ -84,12 +86,13 @@ jobs:
                 --configuration Release \
                 --no-build \
                 --output ./packages \
-                --include-symbols \
-                --include-source \
                 -p:Version=${{ steps.version.outputs.VERSION }} \
                 -p:AssemblyVersion=${{ steps.version.outputs.VERSION }}.0 \
                 -p:FileVersion=${{ steps.version.outputs.VERSION }}.0 \
-                -p:SymbolPackageFormat=snupkg
+                -p:IncludeSymbols=true \
+                -p:SymbolPackageFormat=snupkg \
+                -p:DebugType=portable \
+                -p:DebugSymbols=true
             else
               echo "Skipping sample/test project: $project"
             fi
@@ -119,17 +122,19 @@ jobs:
             if [ -f "./packages/$pkg_name" ]; then
               echo "Checking symbol package: $(basename $snupkg)"
               # List contents of symbol package
+              echo "PDB files in symbol package:"
               unzip -l "$snupkg" | grep '\.pdb$' || echo "No PDB files in symbol package"
               # List DLLs in main package
+              echo "DLL files in main package:"
               unzip -l "./packages/$pkg_name" | grep '\.dll$' || echo "No DLL files in main package"
               echo "---"
             fi
           fi
         done
 
-    - name: Push packages to NuGet (main packages only)
+    - name: Push packages to NuGet
       run: |
-        echo "Pushing packages..."
+        echo "Pushing main packages..."
         for pkg in ./packages/*.nupkg; do
           if [ -f "$pkg" ]; then
             echo "Pushing: $(basename $pkg)"
@@ -138,18 +143,6 @@ jobs:
               --api-key ${{ secrets.NUGET_API_KEY }} \
               --skip-duplicate \
               --timeout 300
-          fi
-        done
-        
-        echo "Pushing symbol packages..."
-        for snupkg in ./packages/*.snupkg; do
-          if [ -f "$snupkg" ]; then
-            echo "Pushing symbols: $(basename $snupkg)"
-            dotnet nuget push "$snupkg" \
-              --source https://api.nuget.org/v3/index.json \
-              --api-key ${{ secrets.NUGET_API_KEY }} \
-              --skip-duplicate \
-              --timeout 300 || echo "Failed to push symbol package: $(basename $snupkg) - continuing with other packages"
           fi
         done
 
