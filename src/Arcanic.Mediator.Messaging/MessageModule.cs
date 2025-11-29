@@ -43,6 +43,6 @@ public class MessageModule : IModule
         _builder(moduleBuilder);
 
         services.TryAddSingleton(messageRegistry);
-        services.TryAddTransient<IMessageMediator, MessageMediator>();
+        services.TryAddScoped<IMessageMediator, MessageMediator>();
     }
 }
