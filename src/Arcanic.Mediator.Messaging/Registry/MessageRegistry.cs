@@ -1,4 +1,6 @@
 ﻿using Arcanic.Mediator.Messaging.Abstractions.Handler.Main;
+using Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
+using Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
 using Arcanic.Mediator.Messaging.Abstractions.Registry;
 using Arcanic.Mediator.Messaging.Abstractions.Registry.Descriptors;
 using Arcanic.Mediator.Messaging.Registry.Descriptors;
@@ -8,7 +10,8 @@ namespace Arcanic.Mediator.Messaging.Registry;
 
 /// <summary>
 /// Provides the concrete implementation of the message registry that manages message types and their associated handlers.
-/// This registry maintains thread-safe storage of message descriptors and supports registration of message-handler mappings.
+/// This registry maintains thread-safe storage of message descriptors and supports registration of message-handler mappings
+/// including main, pre, and post handlers.
 /// </summary>
 public class MessageRegistry : IMessageRegistry
 {
@@ -32,7 +35,7 @@ public class MessageRegistry : IMessageRegistry
     /// <summary>
     /// Registers a message type with its corresponding handler type in the registry.
     /// This method creates or updates the message descriptor to include the specified handler,
-    /// handling both generic and non-generic message types appropriately.
+    /// handling both generic and non-generic message types appropriately and supporting main, pre, and post handlers.
     /// </summary>
     /// <param name="messageType">The type of message to register. Cannot be null.</param>
     /// <param name="messageHandler">The type of handler that processes the specified message type.</param>
@@ -40,7 +43,7 @@ public class MessageRegistry : IMessageRegistry
     /// <remarks>
     /// This method is thread-safe and supports registration of generic type definitions.
     /// If the message type is generic, it will be normalized to its generic type definition.
-    /// Only handlers that implement <see cref="IMessageMainHandler"/> will be registered as main handlers.
+    /// Handlers are classified as main, pre, or post handlers based on their implemented interfaces.
     /// </remarks>
     public void Register(Type messageType, Type messageHandler)
     {
@@ -57,6 +60,7 @@ public class MessageRegistry : IMessageRegistry
             if (messageDescriptor is null)
             {
                 messageDescriptor = new MessageDescriptor(messageType);
+                _messageDescriptors.Add(messageDescriptor);
             }
 
             if (messageHandler.IsAssignableTo(typeof(IMessageMainHandler)))
@@ -70,7 +74,27 @@ public class MessageRegistry : IMessageRegistry
                 messageDescriptor.AddMainHandler(mainHandler);
             }
 
-            _messageDescriptors.Add(messageDescriptor);
+            if (messageHandler.IsAssignableTo(typeof(IMessagePreHandler)))
+            {
+                var preHandler = new PreHandlerDescriptor() 
+                { 
+                    MessageType = messageType,
+                    HandlerType = messageHandler
+                };
+
+                messageDescriptor.AddPreHandler(preHandler);
+            }
+
+            if (messageHandler.IsAssignableTo(typeof(IMessagePostHandler)))
+            {
+                var postHandler = new PostHandlerDescriptor() 
+                { 
+                    MessageType = messageType,
+                    HandlerType = messageHandler
+                };
+
+                messageDescriptor.AddPostHandler(postHandler);
+            }
         }
     }
 }

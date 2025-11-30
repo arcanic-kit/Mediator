@@ -3,7 +3,7 @@
 /// <summary>
 /// Defines a contract for publishing events within the mediator framework.
 /// </summary>
-public interface IEventMediator
+public interface IEventPublisher
 {
     /// <summary>
     /// Asynchronously publishes an event to all registered handlers.

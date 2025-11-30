@@ -1,4 +1,6 @@
 ﻿using Arcanic.Mediator.Messaging.Abstractions.Handler.Main;
+using Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
+using Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
 using Arcanic.Mediator.Messaging.Abstractions.Mediator;
 using Arcanic.Mediator.Messaging.Abstractions.Registry.Descriptors;
 using Arcanic.Mediator.Messaging.Abstractions.Registry.Descriptors.Handlers;
@@ -8,8 +10,8 @@ namespace Arcanic.Mediator.Messaging.Mediator;
 
 /// <summary>
 /// Provides handler resolution services for message mediation by managing the lifecycle and instantiation
-/// of message handlers. This provider resolves handlers from the dependency injection container and handles
-/// generic type construction for generic message handlers.
+/// of message handlers. This provider resolves main, pre, and post handlers from the dependency injection container 
+/// and handles generic type construction for generic message handlers.
 /// </summary>
 internal sealed class MessageMediatorHandlerProvider : IMessageMediatorHandlerProvider
 {
@@ -39,6 +41,34 @@ internal sealed class MessageMediatorHandlerProvider : IMessageMediatorHandlerPr
             return ResolveHandlers(
                 _messageDescriptor.MainHandlers,
                 handlerType => (IMessageMainHandler) _serviceProvider.GetRequiredService(handlerType)
+            );
+        } 
+    }
+
+    /// <summary>
+    /// Gets a read-only collection of pre-handlers available for message pre-processing.
+    /// These handlers are resolved from the dependency injection container and execute before the main handler.
+    /// </summary>
+    /// <value>A read-only collection containing all resolved pre-handlers for message pre-processing.</value>
+    public IReadOnlyCollection<IMessagePreHandler> PreHandlers { 
+        get {
+            return ResolveHandlers(
+                _messageDescriptor.PreHandlers,
+                handlerType => (IMessagePreHandler) _serviceProvider.GetRequiredService(handlerType)
+            );
+        } 
+    }
+
+    /// <summary>
+    /// Gets a read-only collection of post-handlers available for message post-processing.
+    /// These handlers are resolved from the dependency injection container and execute after the main handler.
+    /// </summary>
+    /// <value>A read-only collection containing all resolved post-handlers for message post-processing.</value>
+    public IReadOnlyCollection<IMessagePostHandler> PostHandlers { 
+        get {
+            return ResolveHandlers(
+                _messageDescriptor.PostHandlers,
+                handlerType => (IMessagePostHandler) _serviceProvider.GetRequiredService(handlerType)
             );
         } 
     }

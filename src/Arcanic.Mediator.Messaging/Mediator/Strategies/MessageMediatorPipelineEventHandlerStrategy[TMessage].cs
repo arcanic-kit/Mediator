@@ -10,7 +10,7 @@ namespace Arcanic.Mediator.Messaging.Mediator.Strategies;
 /// independent operations need to be performed for a single message.
 /// </summary>
 /// <typeparam name="TMessage">The type of message that this strategy can mediate. Must be a non-null reference type.</typeparam>
-public class MessageMediatorMultipleMainHandlerStrategy<TMessage> : IMessageMediatorStrategy<TMessage, Task> where TMessage : notnull
+public class MessageMediatorPipelineEventHandlerStrategy<TMessage> : IMessageMediatorStrategy<TMessage, Task> where TMessage : notnull
 {
     /// <summary>
     /// Mediates the processing of a message by executing all available main handlers concurrently.
@@ -33,12 +33,28 @@ public class MessageMediatorMultipleMainHandlerStrategy<TMessage> : IMessageMedi
 
         try
         {
+            if (handlerProvider.PreHandlers.Count > 0)
+            {
+                var preHandlerTasks = handlerProvider.PreHandlers
+                    .Select(preHandler => (Task)preHandler.Handle(message));
+
+                await Task.WhenAll(preHandlerTasks);
+            }
+
             foreach (var handler in handlerProvider.MainHandlers)
             {
                 messageResults.Add((Task)handler.Handle(message));
             }
 
             await Task.WhenAll(messageResults);
+
+            if (handlerProvider.PostHandlers.Count > 0)
+            {
+                var postHandlerTasks = handlerProvider.PostHandlers
+                    .Select(postHandler => (Task)postHandler.Handle(message));
+
+                await Task.WhenAll(postHandlerTasks);
+            }
         }
         catch (Exception)
         {

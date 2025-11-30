@@ -10,17 +10,17 @@ namespace Arcanic.Mediator.Event;
 /// through the underlying message mediator framework. This class serves as a specialized facade
 /// for event-driven communication patterns within the application.
 /// </summary>
-public class EventMediator : IEventMediator
+public class EventPublisher : IEventPublisher
 {
     private readonly IMessageMediator _messageMediator;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventMediator"/> class with the specified message mediator.
+    /// Initializes a new instance of the <see cref="EventPublisher"/> class with the specified message mediator.
     /// </summary>
     /// <param name="messageMediator">The message mediator instance used for coordinating event processing.
     /// This parameter cannot be null.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> is null.</exception>
-    public EventMediator(IMessageMediator messageMediator)
+    public EventPublisher(IMessageMediator messageMediator)
     {
         _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
     }
@@ -40,7 +40,7 @@ public class EventMediator : IEventMediator
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var strategy = new MessageMediatorMultipleMainHandlerStrategy<IEvent>();
+        var strategy = new MessageMediatorPipelineEventHandlerStrategy<IEvent>();
         var options = new MessageMediatorOptions<IEvent, Task>()
         {
             Strategy = strategy,

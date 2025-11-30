@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Command;
 
 /// <summary>
 /// Provides a builder for configuring command processing services by automatically discovering and registering
-/// command types and their corresponding handlers from assemblies.
+/// command types and their corresponding handlers from assemblies. Supports main, pre, and post command handlers.
 /// </summary>
 public class CommandModuleBuilder
 {
@@ -34,8 +34,8 @@ public class CommandModuleBuilder
     }
 
     /// <summary>
-    /// Scans the specified assembly for command types and their corresponding handlers, then registers them
-    /// in the dependency injection container and message registry.
+    /// Scans the specified assembly for command types and their corresponding handlers (main, pre, and post), 
+    /// then registers them in the dependency injection container and message registry.
     /// </summary>
     /// <param name="assembly">The assembly to scan for command types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
@@ -101,10 +101,10 @@ public class CommandModuleBuilder
     }
 
     /// <summary>
-    /// Determines whether the specified type is a command handler interface.
+    /// Determines whether the specified type is a command handler interface (main, pre, or post).
     /// </summary>
     /// <param name="type">The type to check.</param>
-    /// <returns>True if the type is <see cref="ICommandHandler{TCommand}"/> or <see cref="ICommandHandler{TCommand, TResult}"/>; otherwise, false.</returns>
+    /// <returns>True if the type is a command handler interface; otherwise, false.</returns>
     private static bool IsCommandHandlerInterface(Type type)
     {
         if (!type.IsGenericType)
@@ -113,6 +113,8 @@ public class CommandModuleBuilder
         var genericTypeDefinition = type.GetGenericTypeDefinition();
        
         return genericTypeDefinition == typeof(ICommandHandler<>) ||
-               genericTypeDefinition == typeof(ICommandHandler<,>);
+               genericTypeDefinition == typeof(ICommandHandler<,>) ||
+               genericTypeDefinition == typeof(ICommandPreHandler<>) ||
+               genericTypeDefinition == typeof(ICommandPostHandler<>);
     }
 }
