@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
 /// This interface extends the base message handler to support asynchronous operations with cancellation support.
 /// </summary>
 /// <typeparam name="TMessage">The type of message that this post-handler can process. Must be a non-null reference type.</typeparam>
-public interface IAsyncMessagePostHandler<TMessage> : IMessageHandler<TMessage, Task> where TMessage : notnull
+public interface IAsyncMessagePostHandler<TMessage> : IMessageHandler<TMessage> where TMessage : notnull
 {
     /// <summary>
     /// Provides the synchronous interface implementation by delegating to the asynchronous post-handler method.
@@ -15,7 +15,7 @@ public interface IAsyncMessagePostHandler<TMessage> : IMessageHandler<TMessage, 
     /// </summary>
     /// <param name="message">The message to be processed by the post-handler.</param>
     /// <returns>A task representing the asynchronous message post-processing operation.</returns>
-    Task IMessageHandler<TMessage, Task>.Handle(TMessage message)
+    object IMessageHandler<TMessage>.Handle(TMessage message)
     {
         return HandleAsync(message, MessageMediatorContextAccessor.Current.CancellationToken);
     }

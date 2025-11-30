@@ -5,10 +5,7 @@ namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
 /// This interface extends the base post-handler interface while providing type safety for post-message processing.
 /// </summary>
 /// <typeparam name="TMessage">The type of message that this post-handler can process. Must be a non-null reference type.</typeparam>
-/// <typeparam name="TMessageResult">The type of result that this post-handler produces. Must be a non-null reference type.</typeparam>
-public interface IMessageHandler<in TMessage, out TMessageResult> : IMessagePostHandler
-    where TMessage : notnull
-    where TMessageResult : notnull
+public interface IMessageHandler<in TMessage> : IMessagePostHandler where TMessage : notnull
 {
     /// <summary>
     /// Provides the non-generic implementation of post-message handling by casting the input message
@@ -27,5 +24,5 @@ public interface IMessageHandler<in TMessage, out TMessageResult> : IMessagePost
     /// </summary>
     /// <param name="message">The strongly-typed message to be post-processed by the handler.</param>
     /// <returns>The strongly-typed result of post-processing the message.</returns>
-    TMessageResult Handle(TMessage message);
+    object Handle(TMessage message);
 }

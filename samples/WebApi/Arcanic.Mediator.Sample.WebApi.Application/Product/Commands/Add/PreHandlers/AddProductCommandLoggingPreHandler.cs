@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.Add.PreHan
 /// Pre-handler for logging AddProductCommand before the main handler executes.
 /// This demonstrates cross-cutting concerns like auditing/logging that should run before the main business logic.
 /// </summary>
-public class AddProductCommandLoggingPreHandler : ICommandPreHandler<AddProductCommand, int>
+public class AddProductCommandLoggingPreHandler : ICommandPreHandler<AddProductCommand>
 {
     public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
     {

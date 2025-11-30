@@ -5,10 +5,7 @@ namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
 /// This interface extends the base pre-handler interface while providing type safety for pre-message processing.
 /// </summary>
 /// <typeparam name="TMessage">The type of message that this pre-handler can process. Must be a non-null reference type.</typeparam>
-/// <typeparam name="TMessageResult">The type of result that this pre-handler produces. Must be a non-null reference type.</typeparam>
-public interface IMessageHandler<in TMessage, out TMessageResult> : IMessagePreHandler
-    where TMessage : notnull
-    where TMessageResult : notnull
+public interface IMessageHandler<in TMessage> : IMessagePreHandler where TMessage : notnull
 {
     /// <summary>
     /// Provides the non-generic implementation of pre-message handling by casting the input message
@@ -27,5 +24,5 @@ public interface IMessageHandler<in TMessage, out TMessageResult> : IMessagePreH
     /// </summary>
     /// <param name="message">The strongly-typed message to be pre-processed by the handler.</param>
     /// <returns>The strongly-typed result of pre-processing the message.</returns>
-    TMessageResult Handle(TMessage message);
+    object Handle(TMessage message);
 }

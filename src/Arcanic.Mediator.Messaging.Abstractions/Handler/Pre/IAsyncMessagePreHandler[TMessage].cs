@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
 /// This interface extends the base message handler to support asynchronous operations with cancellation support.
 /// </summary>
 /// <typeparam name="TMessage">The type of message that this pre-handler can process. Must be a non-null reference type.</typeparam>
-public interface IAsyncMessagePreHandler<TMessage> : IMessageHandler<TMessage, Task> where TMessage : notnull
+public interface IAsyncMessagePreHandler<TMessage> : IMessageHandler<TMessage> where TMessage : notnull
 {
     /// <summary>
     /// Provides the synchronous interface implementation by delegating to the asynchronous pre-handler method.
@@ -15,7 +15,7 @@ public interface IAsyncMessagePreHandler<TMessage> : IMessageHandler<TMessage, T
     /// </summary>
     /// <param name="message">The message to be processed by the pre-handler.</param>
     /// <returns>A task representing the asynchronous message pre-processing operation.</returns>
-    Task IMessageHandler<TMessage, Task>.Handle(TMessage message)
+    object IMessageHandler<TMessage>.Handle(TMessage message)
     {
         return HandleAsync(message, MessageMediatorContextAccessor.Current.CancellationToken);
     }

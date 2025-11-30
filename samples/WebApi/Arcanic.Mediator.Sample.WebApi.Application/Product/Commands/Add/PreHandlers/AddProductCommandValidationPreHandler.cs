@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.Add.PreHan
 /// Pre-handler for validating AddProductCommand before the main handler executes.
 /// This demonstrates cross-cutting concerns like validation that should run before the main business logic.
 /// </summary>
-public class AddProductCommandValidationPreHandler : ICommandPreHandler<AddProductCommand, int>
+public class AddProductCommandValidationPreHandler : ICommandPreHandler<AddProductCommand>
 {
     public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
     {

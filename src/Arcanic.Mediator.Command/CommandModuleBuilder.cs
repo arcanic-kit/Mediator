@@ -115,8 +115,6 @@ public class CommandModuleBuilder
         return genericTypeDefinition == typeof(ICommandHandler<>) ||
                genericTypeDefinition == typeof(ICommandHandler<,>) ||
                genericTypeDefinition == typeof(ICommandPreHandler<>) ||
-               genericTypeDefinition == typeof(ICommandPreHandler<,>) ||
-               genericTypeDefinition == typeof(ICommandPostHandler<>) ||
-               genericTypeDefinition == typeof(ICommandPostHandler<,>);
+               genericTypeDefinition == typeof(ICommandPostHandler<>);
     }
 }

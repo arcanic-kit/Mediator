@@ -57,28 +57,12 @@ public sealed class MessageMediatorPipelineHandlerStrategy<TMessage, TMessageRes
             var mainResult = (Task<TMessageResult>)mainHandler.Handle(message);
             var result = await mainResult;
 
-            // Execute post-handlers in parallel with access to the result
+            // Execute post-handlers in parallel
             if (handlerProvider.PostHandlers.Count > 0)
             {
-                var postHandlerTasks = new List<Task>();
-                foreach (var postHandler in handlerProvider.PostHandlers)
-                {
-                    // For typed post-handlers that expect the result, we need to invoke them properly
-                    var postHandlerType = postHandler.GetType();
-                    var handleAsyncMethod = postHandlerType.GetMethod("HandleAsync");
-                    
-                    if (handleAsyncMethod != null)
-                    {
-                        var task = (Task)handleAsyncMethod.Invoke(postHandler, new object[] { message, result!, context.CancellationToken })!;
-                        postHandlerTasks.Add(task);
-                    }
-                    else
-                    {
-                        // Fallback to the base interface
-                        postHandlerTasks.Add((Task)postHandler.Handle(message));
-                    }
-                }
-                
+                var postHandlerTasks = handlerProvider.PostHandlers
+                    .Select(postHandler => (Task)postHandler.Handle(message));
+
                 await Task.WhenAll(postHandlerTasks);
             }
 
