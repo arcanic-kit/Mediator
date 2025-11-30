@@ -356,9 +356,7 @@ Pre and post handlers are perfect for implementing cross-cutting concerns:
 Check out the [samples directory](./samples) for complete working examples including:
 
 - Web API integration with pre/post handlers
-- .NET Aspire support
 - Advanced pipeline scenarios
-- Custom strategy implementations
 
 ## Contributing
 
