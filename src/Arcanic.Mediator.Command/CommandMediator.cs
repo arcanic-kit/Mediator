@@ -7,7 +7,8 @@ namespace Arcanic.Mediator.Command;
 
 /// <summary>
 /// Provides a mediator implementation for command handling, routing commands to their appropriate handlers
-/// through the underlying message mediator framework using single main handler strategy.
+/// through the underlying message mediator framework using a pipeline strategy that includes pre-handlers,
+/// main handlers, and post-handlers.
 /// </summary>
 public class CommandMediator : ICommandMediator
 {
@@ -28,7 +29,7 @@ public class CommandMediator : ICommandMediator
 
     /// <summary>
     /// Sends a command asynchronously for processing without expecting a result.
-    /// The command is routed to its designated handler using a single main handler strategy.
+    /// The command is routed through a complete pipeline including pre-handlers, the main handler, and post-handlers.
     /// </summary>
     /// <param name="command">The command to send for processing.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
@@ -38,7 +39,7 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorSingleMainHandlerStrategy<ICommand>();
+        var strategy = new MessageMediatorPipelineHandlerStrategy<ICommand>();
         var options = new MessageMediatorOptions<ICommand, Task>()
         {
             Strategy = strategy,
@@ -50,7 +51,7 @@ public class CommandMediator : ICommandMediator
 
     /// <summary>
     /// Sends a command asynchronously for processing and returns a result of the specified type.
-    /// The command is routed to its designated handler using a single main handler strategy.
+    /// The command is routed through a complete pipeline including pre-handlers, the main handler, and post-handlers.
     /// </summary>
     /// <typeparam name="TCommandResult">The type of result expected from the command processing.</typeparam>
     /// <param name="command">The command to send for processing that returns a result.</param>
@@ -61,7 +62,7 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorSingleMainHandlerStrategy<ICommand<TCommandResult>, TCommandResult>();
+        var strategy = new MessageMediatorPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>();
         var options = new MessageMediatorOptions<ICommand<TCommandResult>, Task<TCommandResult>>()
         {
             Strategy = strategy,
