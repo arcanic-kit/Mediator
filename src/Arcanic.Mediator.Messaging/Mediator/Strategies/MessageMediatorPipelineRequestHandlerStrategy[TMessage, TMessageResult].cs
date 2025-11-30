@@ -10,7 +10,7 @@ namespace Arcanic.Mediator.Messaging.Mediator.Strategies;
 /// </summary>
 /// <typeparam name="TMessage">The type of message that this strategy can mediate. Must be a non-null reference type.</typeparam>
 /// <typeparam name="TMessageResult">The type of result that this strategy produces from message mediation.</typeparam>
-public sealed class MessageMediatorPipelineHandlerStrategy<TMessage, TMessageResult> : IMessageMediatorStrategy<TMessage, Task<TMessageResult>> where TMessage : notnull
+public sealed class MessageMediatorPipelineRequestHandlerStrategy<TMessage, TMessageResult> : IMessageMediatorStrategy<TMessage, Task<TMessageResult>> where TMessage : notnull
 {
     /// <summary>
     /// Mediates the processing of a message through the complete pipeline: pre-handlers, main handler, and post-handlers.

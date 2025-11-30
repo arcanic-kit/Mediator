@@ -39,7 +39,7 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorPipelineHandlerStrategy<ICommand>();
+        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<ICommand>();
         var options = new MessageMediatorOptions<ICommand, Task>()
         {
             Strategy = strategy,
@@ -62,7 +62,7 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>();
+        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<ICommand<TCommandResult>, TCommandResult>();
         var options = new MessageMediatorOptions<ICommand<TCommandResult>, Task<TCommandResult>>()
         {
             Strategy = strategy,
