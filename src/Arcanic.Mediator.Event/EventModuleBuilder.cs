@@ -34,7 +34,8 @@ public class EventModuleBuilder
     /// <summary>
     /// Discovers and registers all event types and their corresponding handlers from the specified assembly.
     /// This method performs automatic registration by scanning for types that implement <see cref="IEvent"/>
-    /// and their associated handlers that implement <see cref="IEventHandler{T}"/>.
+    /// and their associated handlers that implement <see cref="IEventHandler{T}"/>, 
+    /// <see cref="IEventPreHandler{TEvent}"/>, or <see cref="IEventPostHandler{TEvent}"/>.
     /// </summary>
     /// <param name="assembly">The assembly to scan for event types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
@@ -84,11 +85,12 @@ public class EventModuleBuilder
     }
 
     /// <summary>
-    /// Determines whether the specified type represents an event handler interface.
-    /// This method checks if the type is a generic interface with the type definition <see cref="IEventHandler{T}"/>.
+    /// Determines whether the specified type represents an event handler interface (main, pre, or post).
+    /// This method checks if the type is a generic interface with the type definition <see cref="IEventHandler{T}"/>, 
+    /// <see cref="IEventPreHandler{TEvent}"/>, or <see cref="IEventPostHandler{TEvent}"/>.
     /// </summary>
     /// <param name="type">The type to examine for event handler interface compatibility.</param>
-    /// <returns>True if the type is a generic <see cref="IEventHandler{T}"/> interface; otherwise, false.</returns>
+    /// <returns>True if the type is an event handler interface; otherwise, false.</returns>
     private static bool IsEventHandlerInterface(Type type)
     {
         if (!type.IsGenericType)
@@ -96,6 +98,8 @@ public class EventModuleBuilder
 
         var genericTypeDefinition = type.GetGenericTypeDefinition();
 
-        return genericTypeDefinition == typeof(IEventHandler<>);
+        return genericTypeDefinition == typeof(IEventHandler<>) ||
+               genericTypeDefinition == typeof(IEventPreHandler<>) ||
+               genericTypeDefinition == typeof(IEventPostHandler<>);
     }
 }

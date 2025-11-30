@@ -13,6 +13,8 @@ A powerful, modular mediator pattern implementation for .NET that provides clean
 - 🎯 **Type Safe** - Strongly typed messages and handlers
 - 📋 **Multiple Event Handlers** - Support for multiple handlers per event
 - 🧩 **Extensible** - Easy to extend with custom strategies and behaviors
+- 🔀 **Pipeline Processing** - Pre/post handler support for cross-cutting concerns
+- 🎯 **Execution Strategies** - Configurable execution pipelines for different scenarios
 
 ## Installation
 
@@ -114,6 +116,7 @@ public class ProductCreatedEvent : IEvent
 #### Command Handlers
 
 ```csharp
+// Main command handler
 public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand>
 {
     public async Task HandleAsync(CreateProductCommand command, CancellationToken cancellationToken = default)
@@ -123,6 +126,7 @@ public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand>
     }
 }
 
+// Command handler with return value
 public class AddProductCommandHandler : ICommandHandler<AddProductCommand, AddProductCommandResponse>
 {
     public async Task<AddProductCommandResponse> HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
@@ -136,11 +140,37 @@ public class AddProductCommandHandler : ICommandHandler<AddProductCommand, AddPr
         };
     }
 }
+
+// Pre-handler for validation
+public class AddProductCommandValidationPreHandler : ICommandPreHandler<AddProductCommand>
+{
+    public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(command.Name))
+            throw new ArgumentException("Product name cannot be empty");
+        
+        if (command.Price <= 0)
+            throw new ArgumentException("Product price must be greater than zero");
+            
+        await Task.CompletedTask;
+    }
+}
+
+// Post-handler for notifications
+public class AddProductCommandNotificationPostHandler : ICommandPostHandler<AddProductCommand>
+{
+    public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
+    {
+        // Send notifications after product creation
+        await SendNotificationAsync($"Product '{command.Name}' has been created");
+    }
+}
 ```
 
 #### Query Handlers
 
 ```csharp
+// Main query handler
 public class GetProductQueryHandler : IQueryHandler<GetProductQuery, GetProductQueryResponse>
 {
     public async Task<GetProductQueryResponse> HandleAsync(GetProductQuery query, CancellationToken cancellationToken = default)
@@ -155,11 +185,34 @@ public class GetProductQueryHandler : IQueryHandler<GetProductQuery, GetProductQ
         };
     }
 }
+
+// Pre-handler for validation
+public class GetProductQueryValidationPreHandler : IQueryPreHandler<GetProductQuery>
+{
+    public async Task HandleAsync(GetProductQuery query, CancellationToken cancellationToken = default)
+    {
+        if (query.Id <= 0)
+            throw new ArgumentException("Product ID must be greater than 0");
+            
+        await Task.CompletedTask;
+    }
+}
+
+// Post-handler for caching
+public class GetProductQueryCachingPostHandler : IQueryPostHandler<GetProductQuery>
+{
+    public async Task HandleAsync(GetProductQuery query, CancellationToken cancellationToken = default)
+    {
+        // Update cache after query execution
+        await UpdateCacheAsync(query.Id);
+    }
+}
 ```
 
 #### Event Handlers
 
 ```csharp
+// Main event handlers (multiple allowed)
 public class ProductCreatedEmailHandler : IEventHandler<ProductCreatedEvent>
 {
     public async Task HandleAsync(ProductCreatedEvent @event, CancellationToken cancellationToken = default)
@@ -177,6 +230,28 @@ public class ProductCreatedLoggingHandler : IEventHandler<ProductCreatedEvent>
         await LogEventAsync(@event);
     }
 }
+
+// Pre-handler for validation
+public class ProductCreatedEventValidationPreHandler : IEventPreHandler<ProductCreatedEvent>
+{
+    public async Task HandleAsync(ProductCreatedEvent @event, CancellationToken cancellationToken = default)
+    {
+        if (@event.ProductId <= 0)
+            throw new ArgumentException("Invalid Product ID");
+            
+        await Task.CompletedTask;
+    }
+}
+
+// Post-handler for metrics
+public class ProductCreatedEventMetricsPostHandler : IEventPostHandler<ProductCreatedEvent>
+{
+    public async Task HandleAsync(ProductCreatedEvent @event, CancellationToken cancellationToken = default)
+    {
+        // Record metrics after event processing
+        await RecordMetricsAsync(@event);
+    }
+}
 ```
 
 ### 4. Use in Controllers
@@ -188,16 +263,16 @@ public class ProductController : ControllerBase
 {
     private readonly ICommandMediator _commandMediator;
     private readonly IQueryMediator _queryMediator;
-    private readonly IEventMediator _eventMediator;
+    private readonly IEventPublisher _eventPublisher;
 
     public ProductController(
         ICommandMediator commandMediator, 
         IQueryMediator queryMediator,
-        IEventMediator eventMediator)
+        IEventPublisher eventPublisher)
     {
         _commandMediator = commandMediator;
         _queryMediator = queryMediator;
-        _eventMediator = eventMediator;
+        _eventPublisher = eventPublisher;
     }
 
     [HttpGet("{id}")]
@@ -212,7 +287,7 @@ public class ProductController : ControllerBase
         var response = await _commandMediator.SendAsync(command);
     
         // Publish event
-        await _eventMediator.PublishAsync(new ProductCreatedEvent
+        await _eventPublisher.PublishAsync(new ProductCreatedEvent
         {
             ProductId = response.Id,
             ProductName = response.Name,
@@ -224,23 +299,64 @@ public class ProductController : ControllerBase
 }
 ```
 
+## Pipeline Execution
+
+The Arcanic Mediator implements a sophisticated pipeline execution model that automatically coordinates pre-handlers, main handlers, and post-handlers:
+
+### Execution Order
+
+1. **Pre-handlers** - Execute before the main handler(s) for cross-cutting concerns like validation, authentication, logging
+2. **Main handlers** - Execute the core business logic
+3. **Post-handlers** - Execute after the main handler(s) for follow-up operations like caching, notifications, cleanup
+
+### Handler Types
+
+#### Commands
+- **Main Handler**: Single handler that processes the command
+- **Pre-handlers**: Multiple handlers for validation, authentication, etc.
+- **Post-handlers**: Multiple handlers for notifications, cleanup, etc.
+
+#### Queries  
+- **Main Handler**: Single handler that returns the query result
+- **Pre-handlers**: Multiple handlers for validation, authentication, etc.
+- **Post-handlers**: Multiple handlers for caching, metrics, etc.
+
+#### Events
+- **Main Handlers**: Multiple handlers that process the event independently
+- **Pre-handlers**: Multiple handlers for validation, filtering, etc.
+- **Post-handlers**: Multiple handlers for cleanup, metrics, etc.
+
 ## Architecture
 
 The library follows a modular architecture with clear separation of concerns:
 
 - **Commands** - Represent actions that change state (write operations)
-- **Queries** - Represent requests for data (read operations)
+- **Queries** - Represent requests for data (read operations)  
 - **Events** - Represent something that has happened (notifications)
+- **Pipelines** - Coordinate pre/main/post handler execution
+- **Strategies** - Define custom execution patterns
 
 Each module can be used independently, allowing you to adopt only what you need.
+
+## Advanced Features
+
+### Cross-Cutting Concerns
+
+Pre and post handlers are perfect for implementing cross-cutting concerns:
+
+- **Validation** - Input validation in pre-handlers
+- **Authentication/Authorization** - Security checks in pre-handlers
+- **Logging** - Request/response logging in pre/post handlers
+- **Caching** - Cache updates in post-handlers
+- **Metrics** - Performance metrics collection in post-handlers
+- **Notifications** - Event notifications in post-handlers
 
 ## Samples
 
 Check out the [samples directory](./samples) for complete working examples including:
 
-- Web API integration
-- .NET Aspire support
-- Advanced scenarios
+- Web API integration with pre/post handlers
+- Advanced pipeline scenarios
 
 ## Contributing
 
