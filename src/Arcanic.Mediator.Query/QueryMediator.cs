@@ -35,7 +35,7 @@ public class QueryMediator : IQueryMediator
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var strategy = new MessageMediatorSingleMainHandlerStrategy<IQuery<TQueryResult>, TQueryResult>();
+        var strategy = new MessageMediatorPipelineHandlerStrategy<IQuery<TQueryResult>, TQueryResult>();
         var options = new MessageMediatorOptions<IQuery<TQueryResult>, Task<TQueryResult>>()
         {
             Strategy = strategy,

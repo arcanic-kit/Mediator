@@ -32,7 +32,8 @@ public class QueryModuleBuilder
     /// <summary>
     /// Discovers and registers all query types and their corresponding handlers from the specified assembly.
     /// This method performs automatic registration by scanning for types that implement <see cref="IQuery{T}"/>
-    /// and their associated handlers that implement <see cref="IQueryHandler{TQuery, TResult}"/>.
+    /// and their associated handlers that implement <see cref="IQueryHandler{TQuery, TResult}"/>,
+    /// <see cref="IQueryPreHandler{TQuery}"/>, or <see cref="IQueryPostHandler{TQuery}"/>.
     /// </summary>
     /// <param name="assembly">The assembly to scan for query types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
@@ -97,11 +98,12 @@ public class QueryModuleBuilder
     }
 
     /// <summary>
-    /// Determines whether the specified type represents a query handler interface.
-    /// This method checks if the type is a generic interface with the type definition <see cref="IQueryHandler{TQuery, TResult}"/>.
+    /// Determines whether the specified type represents a query handler interface (main, pre, or post).
+    /// This method checks if the type is a generic interface with the type definition <see cref="IQueryHandler{TQuery, TResult}"/>,
+    /// <see cref="IQueryPreHandler{TQuery}"/>, or <see cref="IQueryPostHandler{TQuery}"/>.
     /// </summary>
     /// <param name="type">The type to examine for query handler interface compatibility.</param>
-    /// <returns>True if the type is a generic <see cref="IQueryHandler{TQuery, TResult}"/> interface; otherwise, false.</returns>
+    /// <returns>True if the type is a query handler interface; otherwise, false.</returns>
     private static bool IsQueryHandlerInterface(Type type)
     {
         if (!type.IsGenericType)
@@ -109,6 +111,8 @@ public class QueryModuleBuilder
 
         var genericTypeDefinition = type.GetGenericTypeDefinition();
 
-        return genericTypeDefinition == typeof(IQueryHandler<,>);
+        return genericTypeDefinition == typeof(IQueryHandler<,>) ||
+               genericTypeDefinition == typeof(IQueryPreHandler<>) ||
+               genericTypeDefinition == typeof(IQueryPostHandler<>);
     }
 }
