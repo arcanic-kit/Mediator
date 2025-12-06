@@ -17,14 +17,17 @@ public class CommandMediator : ICommandMediator
     /// </summary>
     private readonly IMessageMediator _messageMediator;
 
+    private readonly IServiceProvider _serviceProvider;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandMediator"/> class.
     /// </summary>
     /// <param name="messageMediator">The message mediator instance to use for command processing.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> is null.</exception>
-    public CommandMediator(IMessageMediator messageMediator)
+    public CommandMediator(IMessageMediator messageMediator, IServiceProvider serviceProvider)
     {
         _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
     /// <summary>
@@ -39,7 +42,7 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<ICommand>();
+        var strategy = new MessageMediatorRequestPipelineHandlerStrategy<ICommand>(_serviceProvider);
         var options = new MessageMediatorOptions<ICommand, Task>()
         {
             Strategy = strategy,
@@ -62,7 +65,7 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<ICommand<TCommandResult>, TCommandResult>();
+        var strategy = new MessageMediatorRequestPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>(_serviceProvider);
         var options = new MessageMediatorOptions<ICommand<TCommandResult>, Task<TCommandResult>>()
         {
             Strategy = strategy,

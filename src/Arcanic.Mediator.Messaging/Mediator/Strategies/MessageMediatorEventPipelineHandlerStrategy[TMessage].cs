@@ -10,7 +10,7 @@ namespace Arcanic.Mediator.Messaging.Mediator.Strategies;
 /// independent operations need to be performed for a single message.
 /// </summary>
 /// <typeparam name="TMessage">The type of message that this strategy can mediate. Must be a non-null reference type.</typeparam>
-public class MessageMediatorPipelineEventHandlerStrategy<TMessage> : IMessageMediatorStrategy<TMessage, Task> where TMessage : notnull
+public class MessageMediatorEventPipelineHandlerStrategy<TMessage> : IMessageMediatorStrategy<TMessage, Task> where TMessage : notnull
 {
     /// <summary>
     /// Mediates the processing of a message by executing all available main handlers concurrently.

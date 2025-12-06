@@ -13,14 +13,17 @@ public class QueryMediator : IQueryMediator
 {
     private readonly IMessageMediator _messageMediator;
 
+    private readonly IServiceProvider _serviceProvider;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="QueryMediator"/> class with the specified message mediator.
     /// </summary>
     /// <param name="messageMediator">The message mediator instance used for coordinating query processing.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> is null.</exception>
-    public QueryMediator(IMessageMediator messageMediator)
+    public QueryMediator(IMessageMediator messageMediator, IServiceProvider serviceProvider)
     {
         _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
     /// <summary>
@@ -35,7 +38,7 @@ public class QueryMediator : IQueryMediator
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<IQuery<TQueryResult>, TQueryResult>();
+        var strategy = new MessageMediatorRequestPipelineHandlerStrategy<IQuery<TQueryResult>, TQueryResult>(_serviceProvider);
         var options = new MessageMediatorOptions<IQuery<TQueryResult>, Task<TQueryResult>>()
         {
             Strategy = strategy,

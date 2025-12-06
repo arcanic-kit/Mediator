@@ -40,7 +40,7 @@ public class EventPublisher : IEventPublisher
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var strategy = new MessageMediatorPipelineEventHandlerStrategy<IEvent>();
+        var strategy = new MessageMediatorEventPipelineHandlerStrategy<IEvent>();
         var options = new MessageMediatorOptions<IEvent, Task>()
         {
             Strategy = strategy,

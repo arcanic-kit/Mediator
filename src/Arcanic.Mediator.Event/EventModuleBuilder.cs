@@ -12,7 +12,14 @@ namespace Arcanic.Mediator.Event;
 /// </summary>
 public class EventModuleBuilder
 {
+    /// <summary>
+    /// The service collection used for dependency injection registration.
+    /// </summary>
     private readonly IServiceCollection _services;
+
+    /// <summary>
+    /// The message registry used for mapping command types to their handlers.
+    /// </summary>
     private readonly IMessageRegistry _messageRegistry;
 
     /// <summary>

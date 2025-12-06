@@ -1,5 +1,6 @@
 using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.UpdatePrice;
 using Arcanic.Mediator.Samples.WebApi.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -50,5 +51,19 @@ namespace Arcanic.Mediator.Samples.WebApi.Controllers
 
             return null;
         }
+
+        [HttpPut("{id}/price")]
+        public async Task<int?> UpdatePrice(int id, [FromBody] UpdateProductPriceCommand command)
+        {
+            await _commandMediator.SendAsync(new UpdateProductPriceCommand
+            {
+                Id = id,
+                Price = command.Price
+            });
+
+            return null;
+        }
+
+        
     }
 }

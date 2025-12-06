@@ -1,6 +1,9 @@
 ﻿using Arcanic.Mediator.Command;
-using Arcanic.Mediator.Query;
 using Arcanic.Mediator.Event;
+using Arcanic.Mediator.Messaging.Abstractions.Pipeline;
+using Arcanic.Mediator.Query;
+using Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
 
@@ -28,6 +31,8 @@ public static class ApplicationExtensions
                 eventModuleBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
             });
         });
+
+        builder.Services.AddScoped(typeof(IRequestPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 
         return builder;
     }
