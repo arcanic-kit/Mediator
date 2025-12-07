@@ -21,5 +21,5 @@ public interface IMessageRegistry
     /// </summary>
     /// <param name="messageType">The type of message to register.</param>
     /// <param name="messageHandler">The type of handler that processes the specified message type.</param>
-    void Register(Type messageType, Type messageHandler);
+    void Register(Type messageType, Type messageHandler, bool onlyOneMainHandler = true);
 }

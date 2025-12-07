@@ -83,7 +83,7 @@ public class EventModuleBuilder
                         $"Event type '{eventType.FullName}' handled by '{handlerType.FullName}' must implement IEvent interface.");
                 }
 
-                _messageRegistry.Register(eventType, handlerType);
+                _messageRegistry.Register(eventType, handlerType, false);
                 _services.AddTransient(handlerType);
             }
         }

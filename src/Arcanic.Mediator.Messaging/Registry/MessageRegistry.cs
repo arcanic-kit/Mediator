@@ -45,7 +45,7 @@ public class MessageRegistry : IMessageRegistry
     /// If the message type is generic, it will be normalized to its generic type definition.
     /// Handlers are classified as main, pre, or post handlers based on their implemented interfaces.
     /// </remarks>
-    public void Register(Type messageType, Type messageHandler)
+    public void Register(Type messageType, Type messageHandler, bool onlyOneMainHandler = true)
     {
         ArgumentNullException.ThrowIfNull(messageType);
 
@@ -65,6 +65,11 @@ public class MessageRegistry : IMessageRegistry
 
             if (messageHandler.IsAssignableTo(typeof(IMessageMainHandler)))
             {
+                if (onlyOneMainHandler && messageDescriptor.MainHandlers.Count > 0)
+                {
+                    return;
+                }
+
                 var mainHandler = new MainHandlerDescriptor() 
                 { 
                     MessageType = messageType,
