@@ -77,7 +77,7 @@ public class CommandModuleBuilder
                 }
 
                 _messageRegistry.Register(commandType, handlerType);
-                _services.AddScoped(handlerType);
+                _services.AddTransient(handlerType);
             }
         }
 

@@ -12,6 +12,9 @@ namespace Arcanic.Mediator.Event;
 /// </summary>
 public class EventPublisher : IEventPublisher
 {
+    /// <summary>
+    /// The underlying message mediator responsible for coordinating event processing and handler invocation.
+    /// </summary>
     private readonly IMessageMediator _messageMediator;
 
     /// <summary>

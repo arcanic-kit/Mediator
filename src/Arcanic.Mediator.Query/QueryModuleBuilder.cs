@@ -82,7 +82,7 @@ public class QueryModuleBuilder
                 }
 
                 _messageRegistry.Register(queryType, handlerType);
-                _services.AddScoped(handlerType);
+                _services.AddTransient(handlerType);
             }
         }
 

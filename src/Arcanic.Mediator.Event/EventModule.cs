@@ -36,6 +36,6 @@ public class EventModule: IModule
 
         _builder(new EventModuleBuilder(services, messageRegistry));
 
-        services.TryAddScoped<IEventPublisher, EventPublisher>();
+        services.TryAddTransient<IEventPublisher, EventPublisher>();
     }
 }

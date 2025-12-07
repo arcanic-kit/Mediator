@@ -29,7 +29,7 @@ public static class ModuleRegistryExtensions
         //Ensure MessageModule is registered first with default configuration
         if (!moduleRegistry.IsModuleRegistered<MessageModule>())
         {
-            moduleRegistry.Register(new MessageModule(_ => { }));
+            moduleRegistry.Register(new MessageModule());
         }
 
         moduleRegistry.Register(new EventModule(eventModuleBuilder));

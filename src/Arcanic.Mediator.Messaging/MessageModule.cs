@@ -15,19 +15,9 @@ namespace Arcanic.Mediator.Messaging;
 public class MessageModule : IModule
 {
     /// <summary>
-    /// The configuration action that defines how message types and handlers are registered.
-    /// </summary>
-    private readonly Action<MessageModuleBuilder> _builder;
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="MessageModule"/> class.
     /// </summary>
-    /// <param name="builder">An action that configures the message module by registering message types and their handlers.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null.</exception>
-    public MessageModule(Action<MessageModuleBuilder> builder)
-    {
-        _builder = builder ?? throw new ArgumentNullException(nameof(builder));
-    }
+    public MessageModule() {}
 
     /// <summary>
     /// Configures the dependency injection container with message mediation services.
@@ -39,10 +29,7 @@ public class MessageModule : IModule
     {
         var messageRegistry = (MessageRegistryAccessor.Instance);
 
-        var moduleBuilder = new MessageModuleBuilder(messageRegistry);
-        _builder(moduleBuilder);
-
         services.TryAddSingleton(messageRegistry);
-        services.TryAddScoped<IMessageMediator, MessageMediator>();
+        services.TryAddTransient<IMessageMediator, MessageMediator>();
     }
 }

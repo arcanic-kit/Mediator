@@ -13,10 +13,13 @@ namespace Arcanic.Mediator.Command;
 public class CommandMediator : ICommandMediator
 {
     /// <summary>
-    /// The underlying message mediator that handles the actual message routing and processing.
+    /// The underlying message mediator responsible for coordinating command processing and handler invocation.
     /// </summary>
     private readonly IMessageMediator _messageMediator;
 
+    /// <summary>
+    /// The service provider used for dependency injection and handler resolution.
+    /// </summary>
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>

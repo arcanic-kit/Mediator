@@ -11,8 +11,14 @@ namespace Arcanic.Mediator.Query;
 /// </summary>
 public class QueryMediator : IQueryMediator
 {
+    /// <summary>
+    /// The underlying message mediator responsible for coordinating query processing and handler invocation.
+    /// </summary>
     private readonly IMessageMediator _messageMediator;
 
+    /// <summary>
+    /// The service provider used for dependency injection and handler resolution.
+    /// </summary>
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>

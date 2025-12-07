@@ -35,6 +35,6 @@ public class QueryModule : IModule
 
         _builder(new QueryModuleBuilder(services, messageRegistry));
 
-        services.TryAddScoped<IQueryMediator, QueryMediator>();
+        services.TryAddTransient<IQueryMediator, QueryMediator>();
     }
 }

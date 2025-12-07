@@ -84,7 +84,7 @@ public class EventModuleBuilder
                 }
 
                 _messageRegistry.Register(eventType, handlerType);
-                _services.AddScoped(handlerType);
+                _services.AddTransient(handlerType);
             }
         }
 

@@ -42,6 +42,6 @@ public class CommandModule: IModule
 
         _builder(new CommandModuleBuilder(services, messageRegistry));
 
-        services.TryAddScoped<ICommandMediator, CommandMediator>();
+        services.TryAddTransient<ICommandMediator, CommandMediator>();
     }
 }
