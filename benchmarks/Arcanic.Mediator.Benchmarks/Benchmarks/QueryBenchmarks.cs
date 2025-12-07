@@ -110,7 +110,8 @@ public class QueryBenchmarks
         for (int i = 1; i <= queryCount; i++)
         {
             var query = new GetUserArcanicQuery { Id = i };
-            tasks.Add(_arcanicQueryMediator.SendAsync(query));
+            // Convert ValueTask to Task using AsTask()
+            tasks.Add(_arcanicQueryMediator.SendAsync(query).AsTask());
         }
         await Task.WhenAll(tasks);
     }

@@ -1,4 +1,5 @@
 ﻿using Arcanic.Mediator.Messaging.Abstractions.Registry.Descriptors;
+using System.Collections.Concurrent;
 
 namespace Arcanic.Mediator.Messaging.Abstractions.Registry;
 
@@ -13,7 +14,7 @@ public interface IMessageRegistry
     /// Each descriptor contains information about a message type and its associated handlers.
     /// </summary>
     /// <value>A read-only list containing all message descriptors registered in the registry.</value>
-    IReadOnlyList<IMessageDescriptor> MessageDescriptors { get; }
+    ConcurrentDictionary<Type, IMessageDescriptor> MessageDescriptors { get; }
 
     /// <summary>
     /// Registers a message type with its corresponding handler type in the registry.

@@ -66,7 +66,7 @@ public sealed class MessageMediator : IMessageMediator
             messageType = messageType.GetGenericTypeDefinition();
         }
 
-        var messageDescriptor = _messageRegistry.MessageDescriptors.FirstOrDefault(descriptor => descriptor.MessageType == messageType);
+        _messageRegistry.MessageDescriptors.TryGetValue(messageType, out var messageDescriptor);
         if (messageDescriptor == null)
             throw new InvalidOperationException($"No message descriptor registered for message type {messageType}");
 

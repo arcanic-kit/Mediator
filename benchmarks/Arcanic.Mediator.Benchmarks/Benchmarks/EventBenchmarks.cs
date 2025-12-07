@@ -145,7 +145,7 @@ public class EventBenchmarks
                 Email = $"user{i}@example.com",
                 CreatedAt = DateTime.UtcNow
             };
-            tasks.Add(_arcanicEventPublisher.PublishAsync(eventObj));
+            tasks.Add(_arcanicEventPublisher.PublishAsync(eventObj).AsTask());
         }
         await Task.WhenAll(tasks);
     }

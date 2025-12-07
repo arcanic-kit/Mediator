@@ -138,7 +138,7 @@ public class CommandBenchmarks
                 Name = $"User {i}",
                 Email = $"user{i}@example.com"
             };
-            tasks.Add(_arcanicCommandMediator.SendAsync(command));
+            tasks.Add(_arcanicCommandMediator.SendAsync(command).AsTask());
         }
         await Task.WhenAll(tasks);
     }

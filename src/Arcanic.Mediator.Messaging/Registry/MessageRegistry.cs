@@ -5,6 +5,7 @@ using Arcanic.Mediator.Messaging.Abstractions.Registry;
 using Arcanic.Mediator.Messaging.Abstractions.Registry.Descriptors;
 using Arcanic.Mediator.Messaging.Registry.Descriptors;
 using Arcanic.Mediator.Messaging.Registry.Descriptors.Handlers;
+using System.Collections.Concurrent;
 
 namespace Arcanic.Mediator.Messaging.Registry;
 
@@ -23,14 +24,7 @@ public class MessageRegistry : IMessageRegistry
     /// <summary>
     /// The internal collection of message descriptors that stores all registered message types and their handlers.
     /// </summary>
-    private readonly List<IMessageDescriptor> _messageDescriptors = new();
-
-    /// <summary>
-    /// Gets a read-only collection of all registered message descriptors.
-    /// Each descriptor contains information about a message type and its associated handlers.
-    /// </summary>
-    /// <value>A read-only list containing all message descriptors registered in the registry.</value>
-    public IReadOnlyList<IMessageDescriptor> MessageDescriptors => _messageDescriptors.AsReadOnly();
+    public ConcurrentDictionary<Type, IMessageDescriptor> MessageDescriptors { get; private set; } = new();
 
     /// <summary>
     /// Registers a message type with its corresponding handler type in the registry.
@@ -39,6 +33,7 @@ public class MessageRegistry : IMessageRegistry
     /// </summary>
     /// <param name="messageType">The type of message to register. Cannot be null.</param>
     /// <param name="messageHandler">The type of handler that processes the specified message type.</param>
+    /// <param name="onlyOneMainHandler"></param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageType"/> is null.</exception>
     /// <remarks>
     /// This method is thread-safe and supports registration of generic type definitions.
@@ -56,11 +51,11 @@ public class MessageRegistry : IMessageRegistry
                 messageType = messageType.GetGenericTypeDefinition();
             }
 
-            var messageDescriptor = _messageDescriptors.FirstOrDefault(x => x.MessageType == messageType);
+            MessageDescriptors.TryGetValue(messageType, out var messageDescriptor);
             if (messageDescriptor is null)
             {
                 messageDescriptor = new MessageDescriptor(messageType);
-                _messageDescriptors.Add(messageDescriptor);
+                MessageDescriptors.TryAdd(messageType, messageDescriptor);
             }
 
             if (messageHandler.IsAssignableTo(typeof(IMessageMainHandler)))

@@ -2,6 +2,7 @@
 using Arcanic.Mediator.Messaging.Mediator;
 using Arcanic.Mediator.Messaging.Mediator.Strategies;
 using Arcanic.Mediator.Query.Abstractions;
+using System.Runtime.CompilerServices;
 
 namespace Arcanic.Mediator.Query;
 
@@ -40,7 +41,7 @@ public class QueryMediator : IQueryMediator
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous query execution with the result.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
-    public async Task<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> query, CancellationToken cancellationToken = default)
+    public ValueTask<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -51,6 +52,6 @@ public class QueryMediator : IQueryMediator
             CancellationToken = cancellationToken,
         };
 
-        return await _messageMediator.Mediate(query, options);
+        return new ValueTask<TQueryResult>(_messageMediator.Mediate(query, options));
     }
 }
