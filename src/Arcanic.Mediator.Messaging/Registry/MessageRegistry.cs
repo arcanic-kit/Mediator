@@ -12,19 +12,15 @@ namespace Arcanic.Mediator.Messaging.Registry;
 /// <summary>
 /// Provides the concrete implementation of the message registry that manages message types and their associated handlers.
 /// This registry maintains thread-safe storage of message descriptors and supports registration of message-handler mappings
-/// including main, pre, and post handlers.
+/// including main, pre, and post handlers. Optimized for performance with minimal locking.
 /// </summary>
-public class MessageRegistry : IMessageRegistry
+public sealed class MessageRegistry : IMessageRegistry
 {
     /// <summary>
-    /// The synchronization object used to ensure thread-safe access to the registry.
-    /// </summary>
-    private readonly object _lock = new object();
-    
-    /// <summary>
     /// The internal collection of message descriptors that stores all registered message types and their handlers.
+    /// Uses ConcurrentDictionary for thread-safe access without additional locking.
     /// </summary>
-    public ConcurrentDictionary<Type, IMessageDescriptor> MessageDescriptors { get; private set; } = new();
+    public ConcurrentDictionary<Type, IMessageDescriptor> MessageDescriptors { get; } = new();
 
     /// <summary>
     /// Registers a message type with its corresponding handler type in the registry.
@@ -33,68 +29,77 @@ public class MessageRegistry : IMessageRegistry
     /// </summary>
     /// <param name="messageType">The type of message to register. Cannot be null.</param>
     /// <param name="messageHandler">The type of handler that processes the specified message type.</param>
-    /// <param name="onlyOneMainHandler"></param>
+    /// <param name="onlyOneMainHandler">Whether to enforce only one main handler per message type.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageType"/> is null.</exception>
     /// <remarks>
-    /// This method is thread-safe and supports registration of generic type definitions.
+    /// This method is thread-safe using ConcurrentDictionary's atomic operations.
     /// If the message type is generic, it will be normalized to its generic type definition.
     /// Handlers are classified as main, pre, or post handlers based on their implemented interfaces.
     /// </remarks>
     public void Register(Type messageType, Type messageHandler, bool onlyOneMainHandler = true)
     {
         ArgumentNullException.ThrowIfNull(messageType);
+        ArgumentNullException.ThrowIfNull(messageHandler);
 
-        lock (_lock)
+        // Normalize generic types to their generic type definition
+        if (messageType.IsGenericType)
         {
-            if (messageType.IsGenericType)
+            messageType = messageType.GetGenericTypeDefinition();
+        }
+
+        // Use GetOrAdd for atomic get-or-create operation
+        var messageDescriptor = MessageDescriptors.GetOrAdd(messageType, 
+            static key => new MessageDescriptor(key));
+
+        // Register handler types based on interfaces they implement
+        RegisterHandlerByType(messageDescriptor, messageType, messageHandler, onlyOneMainHandler);
+    }
+
+    /// <summary>
+    /// Registers a handler based on the interfaces it implements.
+    /// This method assumes the message descriptor's Add methods are thread-safe.
+    /// </summary>
+    private static void RegisterHandlerByType(IMessageDescriptor messageDescriptor, Type messageType, Type messageHandler, bool onlyOneMainHandler)
+    {
+        // Check for main handler interface
+        if (messageHandler.IsAssignableTo(typeof(IMessageMainHandler)))
+        {
+            if (onlyOneMainHandler && messageDescriptor.MainHandlers.Count > 0)
             {
-                messageType = messageType.GetGenericTypeDefinition();
+                return;
             }
 
-            MessageDescriptors.TryGetValue(messageType, out var messageDescriptor);
-            if (messageDescriptor is null)
-            {
-                messageDescriptor = new MessageDescriptor(messageType);
-                MessageDescriptors.TryAdd(messageType, messageDescriptor);
-            }
+            var mainHandler = new MainHandlerDescriptor() 
+            { 
+                MessageType = messageType,
+                HandlerType = messageHandler
+            };
 
-            if (messageHandler.IsAssignableTo(typeof(IMessageMainHandler)))
-            {
-                if (onlyOneMainHandler && messageDescriptor.MainHandlers.Count > 0)
-                {
-                    return;
-                }
+            messageDescriptor.AddMainHandler(mainHandler);
+        }
 
-                var mainHandler = new MainHandlerDescriptor() 
-                { 
-                    MessageType = messageType,
-                    HandlerType = messageHandler
-                };
+        // Check for pre-handler interface
+        if (messageHandler.IsAssignableTo(typeof(IMessagePreHandler)))
+        {
+            var preHandler = new PreHandlerDescriptor() 
+            { 
+                MessageType = messageType,
+                HandlerType = messageHandler
+            };
 
-                messageDescriptor.AddMainHandler(mainHandler);
-            }
+            messageDescriptor.AddPreHandler(preHandler);
+        }
 
-            if (messageHandler.IsAssignableTo(typeof(IMessagePreHandler)))
-            {
-                var preHandler = new PreHandlerDescriptor() 
-                { 
-                    MessageType = messageType,
-                    HandlerType = messageHandler
-                };
+        // Check for post-handler interface
+        if (messageHandler.IsAssignableTo(typeof(IMessagePostHandler)))
+        {
+            var postHandler = new PostHandlerDescriptor() 
+            { 
+                MessageType = messageType,
+                HandlerType = messageHandler
+            };
 
-                messageDescriptor.AddPreHandler(preHandler);
-            }
-
-            if (messageHandler.IsAssignableTo(typeof(IMessagePostHandler)))
-            {
-                var postHandler = new PostHandlerDescriptor() 
-                { 
-                    MessageType = messageType,
-                    HandlerType = messageHandler
-                };
-
-                messageDescriptor.AddPostHandler(postHandler);
-            }
+            messageDescriptor.AddPostHandler(postHandler);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Arcanic.Mediator.Messaging.Abstractions.Mediator;
 using Arcanic.Mediator.Messaging.Abstractions.Mediator.Context;
 using Arcanic.Mediator.Messaging.Abstractions.Registry;
+using System.Collections.Concurrent;
 
 namespace Arcanic.Mediator.Messaging.Mediator;
 
@@ -8,6 +9,7 @@ namespace Arcanic.Mediator.Messaging.Mediator;
 /// Provides the core implementation of the message mediator that coordinates the processing of messages
 /// through registered handlers. This mediator serves as the central hub for message routing, using
 /// configurable strategies to determine how messages are processed and handled within the application.
+/// High-performance version with optimized hot paths.
 /// </summary>
 public sealed class MessageMediator : IMessageMediator
 {
@@ -20,6 +22,11 @@ public sealed class MessageMediator : IMessageMediator
     /// The service provider used to resolve handler instances from the dependency injection container.
     /// </summary>
     private readonly IServiceProvider _serviceProvider;
+    
+    /// <summary>
+    /// Cache for message descriptors to avoid repeated lookups.
+    /// </summary>
+    private readonly ConcurrentDictionary<Type, object?> _descriptorCache = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageMediator"/> class.
@@ -39,6 +46,7 @@ public sealed class MessageMediator : IMessageMediator
     /// The mediator coordinates between the message, its handlers, and the execution strategy
     /// to produce the desired result. This method handles both generic and non-generic message types
     /// and manages the execution context throughout the mediation process.
+    /// High-performance version with caching optimizations.
     /// </summary>
     /// <typeparam name="TMessage">The type of message to mediate. Must be a non-null reference type.</typeparam>
     /// <typeparam name="TMessageResult">The type of result expected from processing the message.</typeparam>
@@ -61,16 +69,20 @@ public sealed class MessageMediator : IMessageMediator
 
         // Get the actual type of the message
         var messageType = message.GetType();
-        if (messageType.IsGenericType)
-        {
-            messageType = messageType.GetGenericTypeDefinition();
-        }
+        var lookupType = messageType.IsGenericType ? messageType.GetGenericTypeDefinition() : messageType;
 
-        _messageRegistry.MessageDescriptors.TryGetValue(messageType, out var messageDescriptor);
+        // Use cached descriptor lookup
+        var messageDescriptor = (Messaging.Abstractions.Registry.Descriptors.IMessageDescriptor?)
+            _descriptorCache.GetOrAdd(lookupType, type =>
+            {
+                _messageRegistry.MessageDescriptors.TryGetValue(type, out var descriptor);
+                return descriptor;
+            });
+
         if (messageDescriptor == null)
-            throw new InvalidOperationException($"No message descriptor registered for message type {messageType}");
+            throw new InvalidOperationException($"No message descriptor registered for message type {lookupType}");
 
-        var messageMediatorHandlerProvider = new MessageMediatorHandlerProvider(message.GetType(), messageDescriptor, _serviceProvider);
+        var messageMediatorHandlerProvider = new MessageMediatorHandlerProvider(messageType, messageDescriptor, _serviceProvider);
 
         return options.Strategy.Mediate(message, messageMediatorHandlerProvider, MessageMediatorContextAccessor.Current);
     }

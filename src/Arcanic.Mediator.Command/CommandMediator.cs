@@ -2,6 +2,7 @@
 using Arcanic.Mediator.Messaging.Abstractions.Mediator;
 using Arcanic.Mediator.Messaging.Mediator;
 using Arcanic.Mediator.Messaging.Mediator.Strategies;
+using System.Collections.Concurrent;
 
 namespace Arcanic.Mediator.Command;
 
@@ -9,6 +10,7 @@ namespace Arcanic.Mediator.Command;
 /// Provides a mediator implementation for command handling, routing commands to their appropriate handlers
 /// through the underlying message mediator framework using a pipeline strategy that includes pre-handlers,
 /// main handlers, and post-handlers.
+/// Optimized version that caches strategy instances to avoid repeated allocations.
 /// </summary>
 public class CommandMediator : ICommandMediator
 {
@@ -21,12 +23,23 @@ public class CommandMediator : ICommandMediator
     /// The service provider used for dependency injection and handler resolution.
     /// </summary>
     private readonly IServiceProvider _serviceProvider;
+    
+    /// <summary>
+    /// Cache for void command strategies to avoid repeated allocations.
+    /// </summary>
+    private readonly ConcurrentDictionary<Type, MessageMediatorRequestPipelineHandlerStrategy<ICommand>> _voidStrategyCache = new();
+    
+    /// <summary>
+    /// Cache for result command strategies to avoid repeated allocations.
+    /// </summary>
+    private readonly ConcurrentDictionary<Type, object> _resultStrategyCache = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandMediator"/> class.
     /// </summary>
     /// <param name="messageMediator">The message mediator instance to use for command processing.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> is null.</exception>
+    /// <param name="serviceProvider">The service provider used for dependency injection and handler resolution.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> or <paramref name="serviceProvider"/> is null.</exception>
     public CommandMediator(IMessageMediator messageMediator, IServiceProvider serviceProvider)
     {
         _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
@@ -36,6 +49,7 @@ public class CommandMediator : ICommandMediator
     /// <summary>
     /// Sends a command asynchronously for processing without expecting a result.
     /// The command is routed through a complete pipeline including pre-handlers, the main handler, and post-handlers.
+    /// Uses cached strategy instances to improve performance.
     /// </summary>
     /// <param name="command">The command to send for processing.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
@@ -45,7 +59,10 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorRequestPipelineHandlerStrategy<ICommand>(_serviceProvider);
+        var commandType = command.GetType();
+        var strategy = _voidStrategyCache.GetOrAdd(commandType, 
+            _ => new MessageMediatorRequestPipelineHandlerStrategy<ICommand>(_serviceProvider));
+
         var options = new MessageMediatorOptions<ICommand, Task>()
         {
             Strategy = strategy,
@@ -58,6 +75,7 @@ public class CommandMediator : ICommandMediator
     /// <summary>
     /// Sends a command asynchronously for processing and returns a result of the specified type.
     /// The command is routed through a complete pipeline including pre-handlers, the main handler, and post-handlers.
+    /// Uses cached strategy instances to improve performance.
     /// </summary>
     /// <typeparam name="TCommandResult">The type of result expected from the command processing.</typeparam>
     /// <param name="command">The command to send for processing that returns a result.</param>
@@ -68,7 +86,11 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorRequestPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>(_serviceProvider);
+        var commandType = command.GetType();
+        var strategy = (MessageMediatorRequestPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>)
+            _resultStrategyCache.GetOrAdd(commandType, 
+                _ => new MessageMediatorRequestPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>(_serviceProvider));
+
         var options = new MessageMediatorOptions<ICommand<TCommandResult>, Task<TCommandResult>>()
         {
             Strategy = strategy,

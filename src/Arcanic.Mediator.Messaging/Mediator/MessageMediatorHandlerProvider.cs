@@ -12,66 +12,42 @@ namespace Arcanic.Mediator.Messaging.Mediator;
 /// Provides handler resolution services for message mediation by managing the lifecycle and instantiation
 /// of message handlers. This provider resolves main, pre, and post handlers from the dependency injection container 
 /// and handles generic type construction for generic message handlers.
+/// Optimized version that caches resolved handlers to avoid repeated DI resolution.
 /// </summary>
 internal sealed class MessageMediatorHandlerProvider : IMessageMediatorHandlerProvider
 {
     /// <summary>
-    /// The message type for which handlers are being resolved.
+    /// Cached main handlers to avoid repeated resolution from DI container.
     /// </summary>
-    private readonly Type _messageType;
+    private readonly Lazy<IReadOnlyCollection<IMessageMainHandler>> _mainHandlers;
     
     /// <summary>
-    /// The service provider used to resolve handler instances from the dependency injection container.
+    /// Cached pre-handlers to avoid repeated resolution from DI container.
     /// </summary>
-    private readonly IServiceProvider _serviceProvider;
+    private readonly Lazy<IReadOnlyCollection<IMessagePreHandler>> _preHandlers;
     
     /// <summary>
-    /// The message descriptor containing metadata about the message type and its registered handlers.
+    /// Cached post-handlers to avoid repeated resolution from DI container.
     /// </summary>
-    private readonly IMessageDescriptor _messageDescriptor;
+    private readonly Lazy<IReadOnlyCollection<IMessagePostHandler>> _postHandlers;
 
     /// <summary>
     /// Gets a read-only collection of main handlers available for message processing.
-    /// These handlers are resolved from the dependency injection container based on the registered
-    /// handler descriptors for the current message type.
+    /// These handlers are resolved once and cached for subsequent access.
     /// </summary>
-    /// <value>A read-only collection containing all resolved main handlers for message processing.</value>
-    public IReadOnlyCollection<IMessageMainHandler> MainHandlers { 
-        get {
-            return ResolveHandlers(
-                _messageDescriptor.MainHandlers,
-                handlerType => (IMessageMainHandler) _serviceProvider.GetRequiredService(handlerType)
-            );
-        } 
-    }
+    public IReadOnlyCollection<IMessageMainHandler> MainHandlers => _mainHandlers.Value;
 
     /// <summary>
     /// Gets a read-only collection of pre-handlers available for message pre-processing.
-    /// These handlers are resolved from the dependency injection container and execute before the main handler.
+    /// These handlers are resolved once and cached for subsequent access.
     /// </summary>
-    /// <value>A read-only collection containing all resolved pre-handlers for message pre-processing.</value>
-    public IReadOnlyCollection<IMessagePreHandler> PreHandlers { 
-        get {
-            return ResolveHandlers(
-                _messageDescriptor.PreHandlers,
-                handlerType => (IMessagePreHandler) _serviceProvider.GetRequiredService(handlerType)
-            );
-        } 
-    }
+    public IReadOnlyCollection<IMessagePreHandler> PreHandlers => _preHandlers.Value;
 
     /// <summary>
     /// Gets a read-only collection of post-handlers available for message post-processing.
-    /// These handlers are resolved from the dependency injection container and execute after the main handler.
+    /// These handlers are resolved once and cached for subsequent access.
     /// </summary>
-    /// <value>A read-only collection containing all resolved post-handlers for message post-processing.</value>
-    public IReadOnlyCollection<IMessagePostHandler> PostHandlers { 
-        get {
-            return ResolveHandlers(
-                _messageDescriptor.PostHandlers,
-                handlerType => (IMessagePostHandler) _serviceProvider.GetRequiredService(handlerType)
-            );
-        } 
-    }
+    public IReadOnlyCollection<IMessagePostHandler> PostHandlers => _postHandlers.Value;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageMediatorHandlerProvider"/> class.
@@ -82,9 +58,28 @@ internal sealed class MessageMediatorHandlerProvider : IMessageMediatorHandlerPr
     /// <exception cref="ArgumentNullException">Thrown when any of the parameters is null.</exception>
     public MessageMediatorHandlerProvider(Type messageType, IMessageDescriptor messageDescriptor, IServiceProvider serviceProvider)
     {
-        _messageType = messageType ?? throw new ArgumentNullException(nameof(messageType));
-        _messageDescriptor = messageDescriptor ?? throw new ArgumentNullException(nameof(messageDescriptor));
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        ArgumentNullException.ThrowIfNull(messageType);
+        ArgumentNullException.ThrowIfNull(messageDescriptor);
+        ArgumentNullException.ThrowIfNull(serviceProvider);
+
+        // Initialize lazy handlers to avoid immediate resolution and cache results
+        _mainHandlers = new Lazy<IReadOnlyCollection<IMessageMainHandler>>(() =>
+            ResolveHandlers(
+                messageDescriptor.MainHandlers,
+                handlerType => (IMessageMainHandler)serviceProvider.GetRequiredService(handlerType),
+                messageType));
+
+        _preHandlers = new Lazy<IReadOnlyCollection<IMessagePreHandler>>(() =>
+            ResolveHandlers(
+                messageDescriptor.PreHandlers,
+                handlerType => (IMessagePreHandler)serviceProvider.GetRequiredService(handlerType),
+                messageType));
+
+        _postHandlers = new Lazy<IReadOnlyCollection<IMessagePostHandler>>(() =>
+            ResolveHandlers(
+                messageDescriptor.PostHandlers,
+                handlerType => (IMessagePostHandler)serviceProvider.GetRequiredService(handlerType),
+                messageType));
     }
 
     /// <summary>
@@ -96,16 +91,26 @@ internal sealed class MessageMediatorHandlerProvider : IMessageMediatorHandlerPr
     /// <typeparam name="THandlerDescriptor">The type of handler descriptor being processed.</typeparam>
     /// <param name="handlerDescriptors">The collection of handler descriptors to resolve.</param>
     /// <param name="resolveFunc">The function used to resolve handler instances from their types.</param>
+    /// <param name="messageType">The message type for generic type construction.</param>
     /// <returns>A read-only collection of resolved handler instances.</returns>
-    private IReadOnlyCollection<THandler> ResolveHandlers<THandler, THandlerDescriptor>(
+    private static IReadOnlyCollection<THandler> ResolveHandlers<THandler, THandlerDescriptor>(
         IEnumerable<THandlerDescriptor> handlerDescriptors,
-        Func<Type, THandler> resolveFunc
+        Func<Type, THandler> resolveFunc,
+        Type messageType
     ) where THandlerDescriptor : IHandlerDescriptor
     {
-        return handlerDescriptors
-            .Select(descriptor => resolveFunc(GetHandlerType(descriptor.HandlerType)))
-            .ToList()
-            .AsReadOnly();
+        // Pre-size the list if possible to avoid reallocations
+        var descriptorList = handlerDescriptors as IList<THandlerDescriptor> ?? handlerDescriptors.ToArray();
+        var handlers = new List<THandler>(descriptorList.Count);
+        
+        foreach (var descriptor in descriptorList)
+        {
+            var handlerType = GetHandlerType(descriptor.HandlerType, messageType);
+            var handler = resolveFunc(handlerType);
+            handlers.Add(handler);
+        }
+        
+        return handlers.AsReadOnly();
     }
 
     /// <summary>
@@ -113,17 +118,17 @@ internal sealed class MessageMediatorHandlerProvider : IMessageMediatorHandlerPr
     /// when necessary. For generic handler types, this method constructs the closed generic type using
     /// the generic arguments from the message type.
     /// </summary>
-    /// <param name="descriptor">The handler type from the descriptor, which may be an open generic type.</param>
+    /// <param name="descriptorType">The handler type from the descriptor, which may be an open generic type.</param>
+    /// <param name="messageType">The message type for generic argument construction.</param>
     /// <returns>The concrete handler type that can be instantiated, with generic arguments applied if necessary.</returns>
-    private Type GetHandlerType(Type descriptor)
+    private static Type GetHandlerType(Type descriptorType, Type messageType)
     {
-        var handlerType = descriptor;
-
-        if (descriptor.IsGenericType)
+        if (!descriptorType.IsGenericType)
         {
-            handlerType = handlerType.MakeGenericType(_messageType.GetGenericArguments());
+            return descriptorType;
         }
 
-        return handlerType;
+        var genericArguments = messageType.GetGenericArguments();
+        return descriptorType.MakeGenericType(genericArguments);
     }
 }
