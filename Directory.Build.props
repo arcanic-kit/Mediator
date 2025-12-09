@@ -1,6 +1,10 @@
 <Project>
 
   <PropertyGroup>
+	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	  
     <!-- Common Package Information -->
     <Authors>Intello Solutions</Authors>
     <Company>Intello Solutions</Company>
@@ -16,7 +20,7 @@
     <PackageIcon>logo.png</PackageIcon>
     
     <!-- Build Configuration -->
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>

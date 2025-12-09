@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
     <!-- Package Information -->
     <PackageId>Arcanic.Mediator.Messaging.Abstractions</PackageId>
     <Description>Messaging abstractions for Arcanic.Mediator providing core interfaces for message handling patterns.</Description>

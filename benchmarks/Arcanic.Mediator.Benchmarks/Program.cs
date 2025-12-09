@@ -1,19 +1,18 @@
-using Arcanic.Mediator.Benchmarks.Benchmarks;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
+using Arcanic.Mediator.Benchmarks.Commands;
+using Arcanic.Mediator.Benchmarks.Events;
+using Arcanic.Mediator.Benchmarks.Queries;
 
 namespace Arcanic.Mediator.Benchmarks;
 
-/// <summary>
-/// Main program for running the Arcanic Mediator vs MediatR benchmarks
-/// </summary>
 public class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine("=== Arcanic Mediator vs MediatR Performance Benchmarks ===");
+        Console.WriteLine("=== Arcanic Mediator Performance Benchmarks ===");
         Console.WriteLine();
 
         // Create a custom configuration
@@ -28,9 +27,8 @@ public class Program
             Console.WriteLine("2. Command Benchmarks");
             Console.WriteLine("3. Event Benchmarks");
             Console.WriteLine("4. All Benchmarks");
-            Console.WriteLine("5. Quick Comparison (single run of each type)");
             Console.WriteLine();
-            Console.Write("Enter your choice (1-5): ");
+            Console.Write("Enter your choice (1-4): ");
             
             var choice = Console.ReadLine();
             
@@ -47,9 +45,6 @@ public class Program
                     break;
                 case "4":
                     RunAllBenchmarks(config);
-                    break;
-                case "5":
-                    RunQuickComparison(config);
                     break;
                 default:
                     Console.WriteLine("Invalid choice. Running all benchmarks...");
@@ -75,9 +70,6 @@ public class Program
                     break;
                 case "all":
                     RunAllBenchmarks(config);
-                    break;
-                case "quick":
-                    RunQuickComparison(config);
                     break;
                 default:
                     Console.WriteLine($"Unknown benchmark type: {benchmarkType}");
@@ -106,27 +98,5 @@ public class Program
         Console.WriteLine();
         Console.WriteLine("=== Event Benchmarks ===");
         BenchmarkRunner.Run<EventBenchmarks>(config);
-    }
-
-    private static void RunQuickComparison(IConfig config)
-    {
-        Console.WriteLine("Running quick comparison (single iteration)...");
-        Console.WriteLine();
-
-        // Create a quick config with minimal iterations
-        var quickConfig = ManualConfig.Create(DefaultConfig.Instance)
-            .AddJob(Job.Dry.WithToolchain(InProcessEmitToolchain.Instance))
-            .WithOptions(ConfigOptions.DisableOptimizationsValidator);
-
-        Console.WriteLine("=== Quick Query Comparison ===");
-        BenchmarkRunner.Run<QueryBenchmarks>(quickConfig);
-        
-        Console.WriteLine();
-        Console.WriteLine("=== Quick Command Comparison ===");
-        BenchmarkRunner.Run<CommandBenchmarks>(quickConfig);
-        
-        Console.WriteLine();
-        Console.WriteLine("=== Quick Event Comparison ===");
-        BenchmarkRunner.Run<EventBenchmarks>(quickConfig);
     }
 }

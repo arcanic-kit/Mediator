@@ -4,12 +4,12 @@ using Arcanic.Mediator.Query;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace Arcanic.Mediator.Benchmarks.Configuration;
+namespace Arcanic.Mediator.Benchmarks;
 
 /// <summary>
 /// Configuration class for Arcanic Mediator services
 /// </summary>
-public static class ArcanicMediatorConfiguration
+public static class MediatorConfiguration
 {
     /// <summary>
     /// Registers Arcanic Mediator services with dependency injection

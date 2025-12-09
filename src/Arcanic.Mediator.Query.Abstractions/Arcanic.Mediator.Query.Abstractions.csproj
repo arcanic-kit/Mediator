@@ -1,11 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
-    <!-- Package Information -->
+	<!-- Package Information -->
     <PackageId>Arcanic.Mediator.Query.Abstractions</PackageId>
     <Description>Query abstractions for Arcanic.Mediator providing interfaces for query handling patterns in CQRS architecture.</Description>
     <PackageTags>mediator;cqrs;query;abstractions;interfaces;dotnet</PackageTags>
