@@ -7,6 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Benchmarks.Commands;
 
+/// <summary>
+/// Provides performance benchmarks for command processing through the Arcanic Mediator.
+/// Measures execution time and memory allocation for various command scenarios.
+/// </summary>
 [MemoryDiagnoser]
 [SimpleJob]
 [RPlotExporter]
@@ -15,6 +19,10 @@ public class CommandBenchmarks
     private IServiceProvider _serviceProvider = default!;
     private ICommandMediator _commandMediator = default!;
 
+    /// <summary>
+    /// Initializes the dependency injection container and command mediator for benchmarking.
+    /// Configures Arcanic Mediator services and builds the service provider.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -24,6 +32,9 @@ public class CommandBenchmarks
         _commandMediator = _serviceProvider.GetRequiredService<ICommandMediator>();
     }
 
+    /// <summary>
+    /// Disposes of the service provider and releases allocated resources after benchmarking.
+    /// </summary>
     [GlobalCleanup]
     public void Cleanup()
     {
@@ -31,6 +42,11 @@ public class CommandBenchmarks
             arcanicDisposable.Dispose();
     }
 
+    /// <summary>
+    /// Benchmarks the execution of a create user command that returns a response.
+    /// Measures performance for commands with return values.
+    /// </summary>
+    /// <returns>The response from the create user command containing the created user information.</returns>
     [Benchmark]
     [BenchmarkCategory("CommandWithResult")]
     public async Task<CreateUserCommandResponse> CreateUser()
@@ -43,6 +59,10 @@ public class CommandBenchmarks
         return await _commandMediator.SendAsync(command);
     }
 
+    /// <summary>
+    /// Benchmarks the execution of an update user command with no return value.
+    /// Measures performance for void commands that perform operations without returning data.
+    /// </summary>
     [Benchmark]
     [BenchmarkCategory("VoidCommand")]
     public async Task UpdateUser()
@@ -56,6 +76,10 @@ public class CommandBenchmarks
         await _commandMediator.SendAsync(command);
     }
 
+    /// <summary>
+    /// Benchmarks the execution of a delete user command with additional metadata.
+    /// Represents a complex command scenario with multiple properties and business logic.
+    /// </summary>
     [Benchmark]
     [BenchmarkCategory("ComplexCommand")]
     public async Task DeleteUser()
@@ -68,6 +92,11 @@ public class CommandBenchmarks
         await _commandMediator.SendAsync(command);
     }
 
+    /// <summary>
+    /// Benchmarks high-throughput command processing by executing multiple commands concurrently.
+    /// Measures performance under load with parallel command execution.
+    /// </summary>
+    /// <param name="commandCount">The number of concurrent commands to execute.</param>
     [Benchmark]
     [BenchmarkCategory("HighThroughput")]
     [Arguments(100)]
@@ -82,7 +111,7 @@ public class CommandBenchmarks
                 Name = $"User {i}",
                 Email = $"user{i}@example.com"
             };
-            tasks.Add(_commandMediator.SendAsync(command).AsTask());
+            tasks.Add(_commandMediator.SendAsync(command));
         }
         await Task.WhenAll(tasks);
     }

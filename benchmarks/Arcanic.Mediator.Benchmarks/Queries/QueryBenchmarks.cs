@@ -6,6 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Benchmarks.Queries;
 
+/// <summary>
+/// Provides performance benchmarks for query processing through the Arcanic Mediator.
+/// Measures execution time and memory allocation for various query scenarios.
+/// </summary>
 [MemoryDiagnoser]
 [SimpleJob]
 [RPlotExporter]
@@ -14,6 +18,10 @@ public class QueryBenchmarks
     private IServiceProvider _serviceProvider = default!;
     private IQueryMediator _queryMediator = default!;
 
+    /// <summary>
+    /// Initializes the dependency injection container and query mediator for benchmarking.
+    /// Configures Arcanic Mediator services and builds the service provider.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -23,6 +31,9 @@ public class QueryBenchmarks
         _queryMediator = _serviceProvider.GetRequiredService<IQueryMediator>();
     }
 
+    /// <summary>
+    /// Disposes of the service provider and releases allocated resources after benchmarking.
+    /// </summary>
     [GlobalCleanup]
     public void Cleanup()
     {
@@ -30,6 +41,11 @@ public class QueryBenchmarks
             arcanicDisposable.Dispose();
     }
 
+    /// <summary>
+    /// Benchmarks the execution of a simple user lookup query by ID.
+    /// Measures performance for basic single-entity retrieval operations.
+    /// </summary>
+    /// <returns>The response containing the requested user information.</returns>
     [Benchmark]
     [BenchmarkCategory("SimpleQuery")]
     public async Task<GetUserQueryResponse> GetUser()
@@ -38,6 +54,11 @@ public class QueryBenchmarks
         return await _queryMediator.SendAsync(query);
     }
 
+    /// <summary>
+    /// Benchmarks the execution of a complex search query with multiple criteria and pagination.
+    /// Measures performance for advanced query operations involving filtering and result pagination.
+    /// </summary>
+    /// <returns>The response containing the search results and pagination information.</returns>
     [Benchmark]
     [BenchmarkCategory("ComplexQuery")]
     public async Task<SearchUsersQueryResponse> SearchUsers()
@@ -52,6 +73,11 @@ public class QueryBenchmarks
         return await _queryMediator.SendAsync(query);
     }
 
+    /// <summary>
+    /// Benchmarks high-throughput query processing by executing multiple queries concurrently.
+    /// Measures performance under load with parallel query execution scenarios.
+    /// </summary>
+    /// <param name="queryCount">The number of concurrent queries to execute.</param>
     [Benchmark]
     [BenchmarkCategory("HighThroughput")]
     [Arguments(100)]
@@ -62,7 +88,7 @@ public class QueryBenchmarks
         {
             var query = new GetUserQuery { Id = i };
             // Convert ValueTask to Task using AsTask()
-            tasks.Add(_queryMediator.SendAsync(query).AsTask());
+            tasks.Add(_queryMediator.SendAsync(query));
         }
         await Task.WhenAll(tasks);
     }

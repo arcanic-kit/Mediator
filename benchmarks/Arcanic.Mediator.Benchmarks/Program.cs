@@ -8,8 +8,17 @@ using Arcanic.Mediator.Benchmarks.Queries;
 
 namespace Arcanic.Mediator.Benchmarks;
 
+/// <summary>
+/// Entry point for the Arcanic Mediator performance benchmarking application.
+/// Provides interactive and command-line interfaces for running performance tests on query, command, and event processing.
+/// </summary>
 public class Program
 {
+    /// <summary>
+    /// Main entry point for the benchmarking application.
+    /// Supports both interactive mode and command-line arguments for running specific benchmark categories.
+    /// </summary>
+    /// <param name="args">Command line arguments specifying which benchmarks to run. Valid options: query, command, event, all</param>
     public static void Main(string[] args)
     {
         Console.WriteLine("=== Arcanic Mediator Performance Benchmarks ===");
@@ -83,6 +92,11 @@ public class Program
         Console.ReadKey();
     }
 
+    /// <summary>
+    /// Executes all available benchmark categories in sequence.
+    /// Runs query, command, and event benchmarks with the specified configuration.
+    /// </summary>
+    /// <param name="config">The benchmark configuration to use for all benchmark runs.</param>
     private static void RunAllBenchmarks(IConfig config)
     {
         Console.WriteLine("Running all benchmarks...");

@@ -14,5 +14,5 @@ public interface IQueryMediator
     /// <param name="command">The query to execute.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous query execution with the result.</returns>
-    ValueTask<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> command, CancellationToken cancellationToken = default);
+    Task<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> command, CancellationToken cancellationToken = default);
 }

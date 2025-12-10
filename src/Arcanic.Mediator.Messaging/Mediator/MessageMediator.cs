@@ -1,7 +1,6 @@
 ﻿using Arcanic.Mediator.Messaging.Abstractions.Mediator;
 using Arcanic.Mediator.Messaging.Abstractions.Mediator.Context;
 using Arcanic.Mediator.Messaging.Abstractions.Registry;
-using System.Collections.Concurrent;
 
 namespace Arcanic.Mediator.Messaging.Mediator;
 
@@ -22,11 +21,6 @@ public sealed class MessageMediator : IMessageMediator
     /// The service provider used to resolve handler instances from the dependency injection container.
     /// </summary>
     private readonly IServiceProvider _serviceProvider;
-    
-    /// <summary>
-    /// Cache for message descriptors to avoid repeated lookups.
-    /// </summary>
-    private readonly ConcurrentDictionary<Type, object?> _descriptorCache = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MessageMediator"/> class.
@@ -71,13 +65,7 @@ public sealed class MessageMediator : IMessageMediator
         var messageType = message.GetType();
         var lookupType = messageType.IsGenericType ? messageType.GetGenericTypeDefinition() : messageType;
 
-        // Use cached descriptor lookup
-        var messageDescriptor = (Messaging.Abstractions.Registry.Descriptors.IMessageDescriptor?)
-            _descriptorCache.GetOrAdd(lookupType, type =>
-            {
-                _messageRegistry.MessageDescriptors.TryGetValue(type, out var descriptor);
-                return descriptor;
-            });
+        _messageRegistry.MessageDescriptors.TryGetValue(lookupType, out var messageDescriptor);
 
         if (messageDescriptor == null)
             throw new InvalidOperationException($"No message descriptor registered for message type {lookupType}");

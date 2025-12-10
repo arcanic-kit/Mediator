@@ -55,7 +55,7 @@ public class CommandMediator : ICommandMediator
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
     /// <returns>A task that represents the asynchronous command processing operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    public ValueTask SendAsync(ICommand command, CancellationToken cancellationToken = default)
+    public async Task SendAsync(ICommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -69,7 +69,7 @@ public class CommandMediator : ICommandMediator
             CancellationToken = cancellationToken,
         };
 
-        return new ValueTask(_messageMediator.Mediate(command, options));
+        await _messageMediator.Mediate(command, options);
     }
 
     /// <summary>
@@ -82,7 +82,7 @@ public class CommandMediator : ICommandMediator
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
     /// <returns>A task that represents the asynchronous command processing operation, containing the command result.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    public ValueTask<TCommandResult> SendAsync<TCommandResult>(ICommand<TCommandResult> command, CancellationToken cancellationToken = default)
+    public async Task<TCommandResult> SendAsync<TCommandResult>(ICommand<TCommandResult> command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
@@ -97,6 +97,6 @@ public class CommandMediator : ICommandMediator
             CancellationToken = cancellationToken,
         };
 
-        return new ValueTask<TCommandResult>(_messageMediator.Mediate(command, options));
+        return await _messageMediator.Mediate(command, options);
     }
 }

@@ -39,7 +39,7 @@ public class EventPublisher : IEventPublisher
     /// <returns>A task that represents the asynchronous publishing operation. The task completes when
     /// all registered event handlers have finished processing the event.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is null.</exception>
-    public ValueTask PublishAsync(IEvent request, CancellationToken cancellationToken = default)
+    public async Task PublishAsync(IEvent request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -50,6 +50,6 @@ public class EventPublisher : IEventPublisher
             CancellationToken = cancellationToken,
         };
 
-        return new ValueTask(_messageMediator.Mediate(request, options));
+        await _messageMediator.Mediate(request, options);
     }
 }

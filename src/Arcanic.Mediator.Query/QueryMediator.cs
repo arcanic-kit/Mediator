@@ -55,7 +55,7 @@ public class QueryMediator : IQueryMediator
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous query execution with the result.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
-    public ValueTask<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> query, CancellationToken cancellationToken = default)
+    public async Task<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
 
@@ -78,7 +78,7 @@ public class QueryMediator : IQueryMediator
                 CancellationToken = cancellationToken,
             };
 
-            return new ValueTask<TQueryResult>(_messageMediator.Mediate(query, directOptions));
+            return await _messageMediator.Mediate(query, directOptions);
         }
         
         // Standard path: use pipeline strategy
@@ -92,6 +92,6 @@ public class QueryMediator : IQueryMediator
             CancellationToken = cancellationToken,
         };
 
-        return new ValueTask<TQueryResult>(_messageMediator.Mediate(query, options));
+        return await _messageMediator.Mediate(query, options);
     }
 }

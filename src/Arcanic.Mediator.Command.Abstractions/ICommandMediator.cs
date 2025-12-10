@@ -15,7 +15,7 @@ public interface ICommandMediator
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
     /// <returns>A task that represents the asynchronous command processing operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    ValueTask SendAsync(ICommand command, CancellationToken cancellationToken = default);
+    Task SendAsync(ICommand command, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sends a command asynchronously for processing and returns a result of the specified type.
@@ -26,5 +26,5 @@ public interface ICommandMediator
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
     /// <returns>A task that represents the asynchronous command processing operation, containing the command result.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    ValueTask<TCommandResult> SendAsync<TCommandResult>(ICommand<TCommandResult> command, CancellationToken cancellationToken = default);
+    Task<TCommandResult> SendAsync<TCommandResult>(ICommand<TCommandResult> command, CancellationToken cancellationToken = default);
 }

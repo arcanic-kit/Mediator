@@ -11,5 +11,5 @@ public interface IEventPublisher
     /// <param name="request">The event to publish.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous publishing operation.</returns>
-    ValueTask PublishAsync(IEvent request, CancellationToken cancellationToken = default);
+    Task PublishAsync(IEvent request, CancellationToken cancellationToken = default);
 }
