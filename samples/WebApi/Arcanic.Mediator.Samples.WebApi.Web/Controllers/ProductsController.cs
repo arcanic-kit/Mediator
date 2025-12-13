@@ -1,10 +1,12 @@
 using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.Add;
 using Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.UpdatePrice;
+using Arcanic.Mediator.Sample.WebApi.Application.Product.Queries.Get;
 using Arcanic.Mediator.Samples.WebApi.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Arcanic.Mediator.Samples.WebApi.Controllers
+namespace Arcanic.Mediator.Samples.WebApi.Web.Controllers
 {
     [ApiController]
     [Route("[controller]")]
@@ -22,7 +24,7 @@ namespace Arcanic.Mediator.Samples.WebApi.Controllers
         [HttpGet("{Id}")]
         public async Task<ProductDetails?> Get(int Id)
         {
-            var response = await _queryMediator.SendAsync(new Application.Product.Queries.Get.GetProductQuery
+            var response = await _queryMediator.SendAsync(new GetProductQuery
             {
                 Id = Id
             });
@@ -43,7 +45,7 @@ namespace Arcanic.Mediator.Samples.WebApi.Controllers
         [HttpPost()]
         public async Task<int?> Add()
         {
-            var response = await _commandMediator.SendAsync(new Application.Product.Commands.Add.AddProductCommand
+            var response = await _commandMediator.SendAsync(new AddProductCommand
             {
                 Name = "Sample Product",
                 Price = 9.99m

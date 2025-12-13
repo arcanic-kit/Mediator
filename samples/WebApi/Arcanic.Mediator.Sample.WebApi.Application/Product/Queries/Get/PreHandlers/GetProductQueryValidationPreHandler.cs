@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Query.Abstractions;
 
-namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Queries.Get.PreHandlers;
+namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Queries.Get.PreHandlers;
 
 /// <summary>
 /// Pre-handler for validation GetProductQuery before the main handler executes.

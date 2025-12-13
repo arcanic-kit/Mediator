@@ -2,6 +2,8 @@
 using Arcanic.Mediator.Query.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Arcanic.Mediator.Messaging.Abstractions.Pipeline;
+using Arcanic.Mediator.Query.Pipeline;
 
 namespace Arcanic.Mediator.Query;
 
@@ -82,9 +84,12 @@ public class QueryModuleBuilder
                 }
 
                 _messageRegistry.Register(queryType, handlerType);
-                _services.AddTransient(handlerType);
+                _services.AddTransient(queryHandlerInterface, handlerType);
             }
         }
+        
+        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
 
         return this;
     }

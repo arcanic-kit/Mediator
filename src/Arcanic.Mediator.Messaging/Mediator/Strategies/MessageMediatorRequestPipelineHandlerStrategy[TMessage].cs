@@ -75,7 +75,7 @@ public sealed class MessageMediatorRequestPipelineHandlerStrategy<TMessage> : IM
         var behaviors = _cachedBehaviors.Value;
 
         // Create the core handler execution delegate
-        RequestPipelineDelegate<Task> handlerExecution = async () =>
+        RequestPipelineDelegate<Task> handlerExecution = async (CancellationToken cancellationToken) =>
         {
             await ExecuteHandlerPipelineAsync(message, handlerProvider, context);
             return Task.CompletedTask;
@@ -87,7 +87,7 @@ public sealed class MessageMediatorRequestPipelineHandlerStrategy<TMessage> : IM
             var currentBehavior = behaviors[i];
             var nextDelegate = handlerExecution;
 
-            handlerExecution = async () =>
+            handlerExecution = async (CancellationToken cancellationToken) =>
             {
                 return await currentBehavior.HandleAsync(message, nextDelegate, context.CancellationToken);
             };

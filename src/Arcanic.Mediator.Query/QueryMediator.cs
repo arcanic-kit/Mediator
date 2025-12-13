@@ -1,9 +1,6 @@
-﻿using Arcanic.Mediator.Messaging.Abstractions.Mediator;
-using Arcanic.Mediator.Messaging.Mediator;
-using Arcanic.Mediator.Messaging.Mediator.Strategies;
-using Arcanic.Mediator.Query.Abstractions;
+﻿using Arcanic.Mediator.Query.Abstractions;
 using System.Collections.Concurrent;
-using Microsoft.Extensions.DependencyInjection;
+using Arcanic.Mediator.Query.Handler;
 
 namespace Arcanic.Mediator.Query;
 
@@ -15,34 +12,23 @@ namespace Arcanic.Mediator.Query;
 public class QueryMediator : IQueryMediator
 {
     /// <summary>
-    /// The underlying message mediator responsible for coordinating query processing and handler invocation.
-    /// </summary>
-    private readonly IMessageMediator _messageMediator;
-
-    /// <summary>
     /// The service provider used for dependency injection and handler resolution.
     /// </summary>
     private readonly IServiceProvider _serviceProvider;
-    
+
     /// <summary>
-    /// Cache for direct query strategies to avoid repeated allocations.
+    /// A thread-safe cache of query handler wrappers, keyed by query type.
+    /// Used to avoid repeated reflection and instantiation costs.
     /// </summary>
-    private readonly ConcurrentDictionary<Type, object> _directStrategyCache = new();
-    
-    /// <summary>
-    /// Cache for pipeline query strategies to avoid repeated allocations.
-    /// </summary>
-    private readonly ConcurrentDictionary<Type, object> _pipelineStrategyCache = new();
+    private static readonly ConcurrentDictionary<Type, QueryHandlerWrapperBase> QueryHandlers = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QueryMediator"/> class with the specified message mediator.
     /// </summary>
-    /// <param name="messageMediator">The message mediator instance used for coordinating query processing.</param>
     /// <param name="serviceProvider">The service provider used for dependency injection and handler resolution.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> or <paramref name="serviceProvider"/> is null.</exception>
-    public QueryMediator(IMessageMediator messageMediator, IServiceProvider serviceProvider)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceProvider"/> is null.</exception>
+    public QueryMediator(IServiceProvider serviceProvider)
     {
-        _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
@@ -50,48 +36,29 @@ public class QueryMediator : IQueryMediator
     /// Asynchronously executes a query and returns the result using a single handler strategy.
     /// Uses fast path optimization when no pipeline behaviors are registered.
     /// </summary>
-    /// <typeparam name="TQueryResult">The type of result returned by the query.</typeparam>
+    /// <typeparam name="TQueryResponse">The type of result returned by the query.</typeparam>
     /// <param name="query">The query to execute.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>A task representing the asynchronous query execution with the result.</returns>
+    /// <returns>
+    /// A task representing the asynchronous query execution with the result of type <typeparamref name="TQueryResponse"/>.
+    /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
-    public async Task<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> query, CancellationToken cancellationToken = default)
+    /// <exception cref="InvalidOperationException">Thrown when the handler wrapper cannot be created for the query type.</exception>
+    public Task<TQueryResponse> SendAsync<TQueryResponse>(IQuery<TQueryResponse> query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
 
         var queryType = query.GetType();
-        
-        // Check if we can use the fast path (no pipeline behaviors)
-        var behaviorType = typeof(Messaging.Abstractions.Pipeline.IRequestPipelineBehavior<,>).MakeGenericType(typeof(IQuery<TQueryResult>), typeof(TQueryResult));
-        var hasBehaviors = _serviceProvider.GetServices(behaviorType).Any();
-        
-        if (!hasBehaviors)
+
+        // Retrieve or create a handler wrapper for the query type.
+        var handler = (QueryHandlerWrapper<TQueryResponse>)QueryHandlers.GetOrAdd(queryType, static requestType =>
         {
-            // Fast path: use direct handler strategy
-            var directStrategy = (MessageMediatorDirectHandlerStrategy<IQuery<TQueryResult>, TQueryResult>)
-                _directStrategyCache.GetOrAdd(queryType, 
-                    _ => new MessageMediatorDirectHandlerStrategy<IQuery<TQueryResult>, TQueryResult>());
+            var wrapperType = typeof(QueryHandlerWrapperImpl<,>).MakeGenericType(requestType, typeof(TQueryResponse));
+            var wrapper = Activator.CreateInstance(wrapperType) ?? throw new InvalidOperationException($"Could not create wrapper type for {requestType}");
+            return (QueryHandlerWrapperBase)wrapper;
+        });
 
-            var directOptions = new MessageMediatorOptions<IQuery<TQueryResult>, Task<TQueryResult>>()
-            {
-                Strategy = directStrategy,
-                CancellationToken = cancellationToken,
-            };
-
-            return await _messageMediator.Mediate(query, directOptions);
-        }
-        
-        // Standard path: use pipeline strategy
-        var strategy = (MessageMediatorRequestPipelineHandlerStrategy<IQuery<TQueryResult>, TQueryResult>)
-            _pipelineStrategyCache.GetOrAdd(queryType, 
-                _ => new MessageMediatorRequestPipelineHandlerStrategy<IQuery<TQueryResult>, TQueryResult>(_serviceProvider));
-
-        var options = new MessageMediatorOptions<IQuery<TQueryResult>, Task<TQueryResult>>()
-        {
-            Strategy = strategy,
-            CancellationToken = cancellationToken,
-        };
-
-        return await _messageMediator.Mediate(query, options);
+        // Delegate the handling of the query to the resolved handler.
+        return handler.Handle(query, _serviceProvider, cancellationToken);
     }
 }
