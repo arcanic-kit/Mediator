@@ -1,6 +1,4 @@
-﻿using Arcanic.Mediator.Messaging.Abstractions.Mediator.Context;
-
-namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Main;
+﻿namespace Arcanic.Mediator.Abstractions.Handler.Main;
 
 /// <summary>
 /// Defines an asynchronous main message handler that processes messages without returning a specific result.
@@ -17,7 +15,7 @@ public interface IAsyncMessageMainHandler<TMessage> : IMessageHandler<TMessage, 
     /// <returns>A task representing the asynchronous message processing operation.</returns>
     Task IMessageHandler<TMessage, Task>.Handle(TMessage message)
     {
-        return HandleAsync(message, MessageMediatorContextAccessor.Current.CancellationToken);
+        return HandleAsync(message, default);
     }
 
     /// <summary>

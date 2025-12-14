@@ -1,4 +1,4 @@
-namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
+namespace Arcanic.Mediator.Abstractions.Handler.Pre;
 
 /// <summary>
 /// Defines a strongly-typed pre-message handler that processes specific message types and returns specific result types.

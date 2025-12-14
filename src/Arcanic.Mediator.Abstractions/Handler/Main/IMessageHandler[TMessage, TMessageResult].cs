@@ -1,4 +1,4 @@
-﻿namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Main;
+﻿namespace Arcanic.Mediator.Abstractions.Handler.Main;
 
 /// <summary>
 /// Defines a strongly-typed main message handler that processes specific message types and returns specific result types.

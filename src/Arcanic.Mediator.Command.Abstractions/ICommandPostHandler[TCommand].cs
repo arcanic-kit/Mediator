@@ -1,4 +1,4 @@
-using Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
+using Arcanic.Mediator.Abstractions.Handler.Post;
 
 namespace Arcanic.Mediator.Command.Abstractions;
 

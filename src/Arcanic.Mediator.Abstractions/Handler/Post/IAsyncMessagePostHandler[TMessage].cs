@@ -1,6 +1,4 @@
-using Arcanic.Mediator.Messaging.Abstractions.Mediator.Context;
-
-namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
+namespace Arcanic.Mediator.Abstractions.Handler.Post;
 
 /// <summary>
 /// Defines an asynchronous post-message handler that processes messages after the main handler without returning a specific result.
@@ -17,7 +15,7 @@ public interface IAsyncMessagePostHandler<TMessage> : IMessageHandler<TMessage> 
     /// <returns>A task representing the asynchronous message post-processing operation.</returns>
     object IMessageHandler<TMessage>.Handle(TMessage message)
     {
-        return HandleAsync(message, MessageMediatorContextAccessor.Current.CancellationToken);
+        return HandleAsync(message, default);
     }
 
     /// <summary>

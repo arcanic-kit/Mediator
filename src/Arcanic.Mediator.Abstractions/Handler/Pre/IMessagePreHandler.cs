@@ -1,4 +1,4 @@
-namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
+namespace Arcanic.Mediator.Abstractions.Handler.Pre;
 
 /// <summary>
 /// Defines a base interface for pre-message handlers that can process messages of any type before the main handler.

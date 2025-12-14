@@ -1,4 +1,4 @@
-using Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
+using Arcanic.Mediator.Abstractions.Handler.Pre;
 
 namespace Arcanic.Mediator.Query.Abstractions;
 

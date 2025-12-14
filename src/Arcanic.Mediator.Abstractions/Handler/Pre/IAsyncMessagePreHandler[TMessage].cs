@@ -1,6 +1,4 @@
-using Arcanic.Mediator.Messaging.Abstractions.Mediator.Context;
-
-namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
+namespace Arcanic.Mediator.Abstractions.Handler.Pre;
 
 /// <summary>
 /// Defines an asynchronous pre-message handler that processes messages before the main handler without returning a specific result.
@@ -17,7 +15,7 @@ public interface IAsyncMessagePreHandler<TMessage> : IMessageHandler<TMessage> w
     /// <returns>A task representing the asynchronous message pre-processing operation.</returns>
     object IMessageHandler<TMessage>.Handle(TMessage message)
     {
-        return HandleAsync(message, MessageMediatorContextAccessor.Current.CancellationToken);
+        return HandleAsync(message, default);
     }
 
     /// <summary>

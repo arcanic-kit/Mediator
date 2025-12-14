@@ -1,6 +1,6 @@
-﻿using Arcanic.Mediator.Messaging.Abstractions.Handler.Main;
-using Arcanic.Mediator.Messaging.Abstractions.Handler.Pre;
-using Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
+﻿using Arcanic.Mediator.Abstractions.Handler.Main;
+using Arcanic.Mediator.Abstractions.Handler.Post;
+using Arcanic.Mediator.Abstractions.Handler.Pre;
 
 namespace Arcanic.Mediator.Messaging.Abstractions.Mediator;
 

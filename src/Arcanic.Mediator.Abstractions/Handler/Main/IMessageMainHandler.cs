@@ -1,4 +1,4 @@
-﻿namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Main;
+﻿namespace Arcanic.Mediator.Abstractions.Handler.Main;
 
 /// <summary>
 /// Defines a base interface for main message handlers that can process messages of any type.

@@ -1,4 +1,4 @@
-namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
+namespace Arcanic.Mediator.Abstractions.Handler.Post;
 
 /// <summary>
 /// Defines a strongly-typed post-message handler that processes specific message types and returns specific result types.

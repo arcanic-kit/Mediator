@@ -1,4 +1,4 @@
-namespace Arcanic.Mediator.Messaging.Abstractions.Handler.Post;
+namespace Arcanic.Mediator.Abstractions.Handler.Post;
 
 /// <summary>
 /// Defines a base interface for post-message handlers that can process messages of any type after the main handler.
