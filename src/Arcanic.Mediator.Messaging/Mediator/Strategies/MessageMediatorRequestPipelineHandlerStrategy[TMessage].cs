@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Messaging.Abstractions.Mediator;
 using Arcanic.Mediator.Messaging.Abstractions.Mediator.Context;
-using Arcanic.Mediator.Messaging.Abstractions.Pipeline;
+using Arcanic.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Messaging.Mediator.Strategies;

@@ -8,4 +8,4 @@ namespace Arcanic.Mediator.Command.Abstractions;
 /// authentication, logging, or other preparatory operations.
 /// </summary>
 /// <typeparam name="TCommand">The type of command to handle, which must implement <see cref="ICommand"/>.</typeparam>
-public interface ICommandPreHandler<TCommand> : IAsyncMessagePreHandler<TCommand> where TCommand : ICommand;
+public interface ICommandPreHandler<TCommand> : IAsyncMessagePreHandler<TCommand> where TCommand : notnull;

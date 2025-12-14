@@ -1,27 +1,21 @@
+using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Pipeline;
-using Arcanic.Mediator.Query.Abstractions;
 
-namespace Arcanic.Mediator.Query.Pipeline;
+namespace Arcanic.Mediator.Command.Pipeline;
 
-/// <summary>
-/// Pipeline behavior that executes pre-handler logic before a query is processed.
-/// Invokes all registered <see cref="IQueryPreHandler{TRequest}"/> instances for the given request.
-/// </summary>
-/// <typeparam name="TRequest">The type of the query request.</typeparam>
-/// <typeparam name="TResponse">The type of the response returned by the query.</typeparam>
-public class QueryPreHandlerPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
+public class CommandPreHandlerPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     /// <summary>
     /// The collection of pre-handler instances to be executed before the query handler.
     /// </summary>
-    private readonly IEnumerable<IQueryPreHandler<TRequest>> _preHandlers;
+    private readonly IEnumerable<ICommandPreHandler<TRequest>> _preHandlers;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QueryPreHandlerPipelineBehavior{TRequest,TResponse}"/> class.
+    /// Initializes a new instance of the <see cref="CommandPreHandlerPipelineBehavior{TRequest,TResponse}"/> class.
     /// </summary>
     /// <param name="preHandlers">The collection of pre-handler instances.</param>
-    public QueryPreHandlerPipelineBehavior(IEnumerable<IQueryPreHandler<TRequest>> preHandlers)
+    public CommandPreHandlerPipelineBehavior(IEnumerable<ICommandPreHandler<TRequest>> preHandlers)
         => _preHandlers = preHandlers;
 
     /// <summary>

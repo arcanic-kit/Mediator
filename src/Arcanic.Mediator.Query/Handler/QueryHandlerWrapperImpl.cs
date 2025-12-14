@@ -1,4 +1,4 @@
-﻿using Arcanic.Mediator.Messaging.Abstractions.Pipeline;
+﻿using Arcanic.Mediator.Pipeline;
 using Arcanic.Mediator.Query.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 

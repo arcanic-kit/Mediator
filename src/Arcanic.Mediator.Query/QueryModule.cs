@@ -31,9 +31,7 @@ public class QueryModule : IModule
     /// <param name="services">The service collection to configure with query mediator registrations.</param>
     public void Build(IServiceCollection services)
     {
-        var messageRegistry = (MessageRegistryAccessor.Instance);
-
-        _builder(new QueryModuleBuilder(services, messageRegistry));
+        _builder(new QueryModuleBuilder(services));
 
         services.TryAddTransient<IQueryMediator, QueryMediator>();
     }

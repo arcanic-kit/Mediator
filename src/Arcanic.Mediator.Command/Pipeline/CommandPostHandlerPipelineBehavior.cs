@@ -1,27 +1,21 @@
+using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Pipeline;
-using Arcanic.Mediator.Query.Abstractions;
 
-namespace Arcanic.Mediator.Query.Pipeline;
+namespace Arcanic.Mediator.Command.Pipeline;
 
-/// <summary>
-/// Pipeline behavior that executes post-handler logic after a query has been processed.
-/// Invokes all registered <see cref="IQueryPostHandler{TRequest}"/> instances for the given request.
-/// </summary>
-/// <typeparam name="TRequest">The type of the query request.</typeparam>
-/// <typeparam name="TResponse">The type of the response returned by the query.</typeparam>
-public class QueryPostHandlerPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
+public class CommandPostHandlerPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     /// <summary>
     /// The collection of post-handler instances to be executed after the query handler.
     /// </summary>
-    private readonly IEnumerable<IQueryPostHandler<TRequest>> _postHandlers;
+    private readonly IEnumerable<ICommandPostHandler<TRequest>> _postHandlers;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QueryPostHandlerPipelineBehavior{TRequest,TResponse}"/> class.
+    /// Initializes a new instance of the <see cref="CommandPostHandlerPipelineBehavior{TRequest,TResponse}"/> class.
     /// </summary>
     /// <param name="postHandlers">The collection of post-handler instances.</param>
-    public QueryPostHandlerPipelineBehavior(IEnumerable<IQueryPostHandler<TRequest>> postHandlers)
+    public CommandPostHandlerPipelineBehavior(IEnumerable<ICommandPostHandler<TRequest>> postHandlers)
         => _postHandlers = postHandlers;
 
     /// <summary>

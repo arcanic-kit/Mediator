@@ -1,4 +1,4 @@
-namespace Arcanic.Mediator.Messaging.Abstractions.Pipeline;
+namespace Arcanic.Mediator.Pipeline;
 
 /// <summary>
 /// Defines a pipeline behavior that can wrap the execution of message processing with additional logic.

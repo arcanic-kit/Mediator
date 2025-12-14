@@ -1,8 +1,6 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Messaging.Abstractions.Mediator;
-using Arcanic.Mediator.Messaging.Mediator;
-using Arcanic.Mediator.Messaging.Mediator.Strategies;
 using System.Collections.Concurrent;
+using Arcanic.Mediator.Command.Handler;
 
 namespace Arcanic.Mediator.Command;
 
@@ -15,34 +13,23 @@ namespace Arcanic.Mediator.Command;
 public class CommandMediator : ICommandMediator
 {
     /// <summary>
-    /// The underlying message mediator responsible for coordinating command processing and handler invocation.
-    /// </summary>
-    private readonly IMessageMediator _messageMediator;
-
-    /// <summary>
     /// The service provider used for dependency injection and handler resolution.
     /// </summary>
     private readonly IServiceProvider _serviceProvider;
-    
+
     /// <summary>
-    /// Cache for void command strategies to avoid repeated allocations.
+    /// A thread-safe cache mapping command types to their corresponding handler wrapper instances.
+    /// This avoids repeated allocations and reflection for each command execution.
     /// </summary>
-    private readonly ConcurrentDictionary<Type, MessageMediatorRequestPipelineHandlerStrategy<ICommand>> _voidStrategyCache = new();
-    
-    /// <summary>
-    /// Cache for result command strategies to avoid repeated allocations.
-    /// </summary>
-    private readonly ConcurrentDictionary<Type, object> _resultStrategyCache = new();
+    private static readonly ConcurrentDictionary<Type, CommandHandlerWrapperBase> CommandHandlers = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandMediator"/> class.
     /// </summary>
-    /// <param name="messageMediator">The message mediator instance to use for command processing.</param>
-    /// <param name="serviceProvider">The service provider used for dependency injection and handler resolution.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> or <paramref name="serviceProvider"/> is null.</exception>
-    public CommandMediator(IMessageMediator messageMediator, IServiceProvider serviceProvider)
+    /// <param name="serviceProvider">The service provider for resolving dependencies and handlers.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="serviceProvider"/> is null.</exception>
+    public CommandMediator(IServiceProvider serviceProvider)
     {
-        _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
@@ -55,48 +42,49 @@ public class CommandMediator : ICommandMediator
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
     /// <returns>A task that represents the asynchronous command processing operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    public async Task SendAsync(ICommand command, CancellationToken cancellationToken = default)
+    public Task SendAsync(ICommand command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
         var commandType = command.GetType();
-        var strategy = _voidStrategyCache.GetOrAdd(commandType, 
-            _ => new MessageMediatorRequestPipelineHandlerStrategy<ICommand>(_serviceProvider));
 
-        var options = new MessageMediatorOptions<ICommand, Task>()
+        // Retrieve or create a handler wrapper for the command type.
+        var handler = (CommandHandlerWrapper)CommandHandlers.GetOrAdd(commandType, static requestType =>
         {
-            Strategy = strategy,
-            CancellationToken = cancellationToken,
-        };
+            var wrapperType = typeof(CommandHandlerWrapperImpl<>).MakeGenericType(requestType);
+            var wrapper = Activator.CreateInstance(wrapperType) ?? throw new InvalidOperationException($"Could not create wrapper type for {requestType}");
+            return (CommandHandlerWrapperBase)wrapper;
+        });
 
-        await _messageMediator.Mediate(command, options);
+        // Delegate the handling of the command to the resolved handler.
+        return handler.Handle(command, _serviceProvider, cancellationToken);
     }
 
     /// <summary>
-    /// Sends a command asynchronously for processing and returns a result of the specified type.
+    /// Sends a command asynchronously for processing and expects a result of type <typeparamref name="TCommandResponse"/>.
     /// The command is routed through a complete pipeline including pre-handlers, the main handler, and post-handlers.
     /// Uses cached strategy instances to improve performance.
     /// </summary>
-    /// <typeparam name="TCommandResult">The type of result expected from the command processing.</typeparam>
-    /// <param name="command">The command to send for processing that returns a result.</param>
+    /// <typeparam name="TCommandResponse">The type of the response expected from the command.</typeparam>
+    /// <param name="command">The command to send for processing.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
-    /// <returns>A task that represents the asynchronous command processing operation, containing the command result.</returns>
+    /// <returns>A task that represents the asynchronous command processing operation, containing the command response.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    public async Task<TCommandResult> SendAsync<TCommandResult>(ICommand<TCommandResult> command, CancellationToken cancellationToken = default)
+    public Task<TCommandResponse> SendAsync<TCommandResponse>(ICommand<TCommandResponse> command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
         var commandType = command.GetType();
-        var strategy = (MessageMediatorRequestPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>)
-            _resultStrategyCache.GetOrAdd(commandType, 
-                _ => new MessageMediatorRequestPipelineHandlerStrategy<ICommand<TCommandResult>, TCommandResult>(_serviceProvider));
 
-        var options = new MessageMediatorOptions<ICommand<TCommandResult>, Task<TCommandResult>>()
+        // Retrieve or create a handler wrapper for the command type.
+        var handler = (CommandHandlerWrapper<TCommandResponse>)CommandHandlers.GetOrAdd(commandType, static requestType =>
         {
-            Strategy = strategy,
-            CancellationToken = cancellationToken,
-        };
+            var wrapperType = typeof(CommandHandlerWrapperImpl<,>).MakeGenericType(requestType, typeof(TCommandResponse));
+            var wrapper = Activator.CreateInstance(wrapperType) ?? throw new InvalidOperationException($"Could not create wrapper type for {requestType}");
+            return (CommandHandlerWrapperBase)wrapper;
+        });
 
-        return await _messageMediator.Mediate(command, options);
+        // Delegate the handling of the command to the resolved handler.
+        return handler.Handle(command, _serviceProvider, cancellationToken);
     }
 }

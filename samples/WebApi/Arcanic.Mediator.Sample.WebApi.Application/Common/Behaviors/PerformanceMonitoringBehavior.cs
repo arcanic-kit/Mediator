@@ -1,6 +1,6 @@
-using Arcanic.Mediator.Messaging.Abstractions.Pipeline;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using Arcanic.Mediator.Pipeline;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
 

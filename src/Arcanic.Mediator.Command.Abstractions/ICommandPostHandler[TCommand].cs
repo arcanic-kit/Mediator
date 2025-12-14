@@ -8,4 +8,4 @@ namespace Arcanic.Mediator.Command.Abstractions;
 /// caching, cleanup operations, or other follow-up activities.
 /// </summary>
 /// <typeparam name="TCommand">The type of command to handle, which must implement <see cref="ICommand"/>.</typeparam>
-public interface ICommandPostHandler<TCommand> : IAsyncMessagePostHandler<TCommand> where TCommand : ICommand;
+public interface ICommandPostHandler<TCommand> : IAsyncMessagePostHandler<TCommand> where TCommand : notnull;

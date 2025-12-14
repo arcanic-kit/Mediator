@@ -1,7 +1,8 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Messaging.Abstractions.Registry;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Arcanic.Mediator.Command.Pipeline;
+using Arcanic.Mediator.Pipeline;
 
 namespace Arcanic.Mediator.Command;
 
@@ -16,21 +17,9 @@ public class CommandModuleBuilder
     /// </summary>
     private readonly IServiceCollection _services;
     
-    /// <summary>
-    /// The message registry used for mapping command types to their handlers.
-    /// </summary>
-    private readonly IMessageRegistry _messageRegistry;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CommandModuleBuilder"/> class.
-    /// </summary>
-    /// <param name="services">The service collection to register services with.</param>
-    /// <param name="messageRegistry">The message registry to register command-handler mappings with.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="messageRegistry"/> is null.</exception>
-    public CommandModuleBuilder(IServiceCollection services, IMessageRegistry messageRegistry)
+    public CommandModuleBuilder(IServiceCollection services)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
-        _messageRegistry = messageRegistry ?? throw new ArgumentNullException(nameof(messageRegistry));
     }
 
     /// <summary>
@@ -46,40 +35,38 @@ public class CommandModuleBuilder
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
-        var concreteTypes = assembly.GetTypes()
-            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true });
-
-        foreach (var handlerType in concreteTypes)
-        {
-            var commandHandlerInterfaces = handlerType.GetInterfaces()
+        var commandHandlerRegistrations = assembly.GetTypes()
+            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true })
+            .SelectMany(handlerType => handlerType.GetInterfaces()
                 .Where(IsCommandHandlerInterface)
-                .ToList();
-
-            if (commandHandlerInterfaces.Count == 0)
-                continue;
-
-            foreach (var commandHandlerInterface in commandHandlerInterfaces)
+                .Select(commandHandlerInterface => new { handlerType, commandHandlerInterface }))
+            .Where(registration => 
             {
-                var commandType = commandHandlerInterface.GetGenericArguments().FirstOrDefault();
+                var commandType = registration.commandHandlerInterface.GetGenericArguments().FirstOrDefault();
                 
                 if (commandType == null)
                 {
                     throw new InvalidOperationException(
-                        $"Unable to determine command type for handler '{handlerType.FullName}'. " +
-                        $"The handler interface '{commandHandlerInterface.FullName}' does not have generic arguments.");
+                        $"Unable to determine command type for handler '{registration.handlerType.FullName}'. " +
+                        $"The handler interface '{registration.commandHandlerInterface.FullName}' does not have generic arguments.");
                 }
 
-                // Ensure the command type implements ICommand or ICommand<T>
-                if (!commandType.GetInterfaces().Any(IsCommandInterface) && commandType != typeof(ICommand))
+                if (!commandType.GetInterfaces().Any(IsCommandInterface))
                 {
                     throw new InvalidOperationException(
-                        $"Command type '{commandType.FullName}' handled by '{handlerType.FullName}' must implement ICommand or ICommand<T> interface.");
+                        $"Command type '{commandType.FullName}' handled by '{registration.handlerType.FullName}' must implement ICommand<T> interface.");
                 }
-
-                _messageRegistry.Register(commandType, handlerType);
-                _services.AddTransient(handlerType);
-            }
+                
+                return true;
+            });
+        
+        foreach (var registration in commandHandlerRegistrations)
+        {
+            _services.AddTransient(registration.commandHandlerInterface, registration.handlerType);
         }
+        
+        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
         return this;
     }

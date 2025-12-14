@@ -1,11 +1,11 @@
 ﻿using Arcanic.Mediator.Command;
 using Arcanic.Mediator.Event;
-using Arcanic.Mediator.Messaging.Abstractions.Pipeline;
 using Arcanic.Mediator.Query;
 using Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
+using Arcanic.Mediator.Pipeline;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application;
 

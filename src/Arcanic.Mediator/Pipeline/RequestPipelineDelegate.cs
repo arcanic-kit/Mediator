@@ -1,4 +1,4 @@
-namespace Arcanic.Mediator.Messaging.Abstractions.Pipeline;
+namespace Arcanic.Mediator.Pipeline;
 
 /// <summary>
 /// Represents a delegate that can be invoked to continue the message processing pipeline.
