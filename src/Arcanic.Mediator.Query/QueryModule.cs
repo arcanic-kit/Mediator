@@ -1,5 +1,4 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
-using Arcanic.Mediator.Messaging.Registry;
 using Arcanic.Mediator.Query.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

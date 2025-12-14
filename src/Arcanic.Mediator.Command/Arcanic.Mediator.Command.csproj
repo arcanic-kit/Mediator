@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Arcanic.Mediator.Command.Abstractions\Arcanic.Mediator.Command.Abstractions.csproj" />
-    <ProjectReference Include="..\Arcanic.Mediator.Messaging\Arcanic.Mediator.Messaging.csproj" />
+    <ProjectReference Include="..\Arcanic.Mediator\Arcanic.Mediator.csproj" />
   </ItemGroup>
 
 </Project>

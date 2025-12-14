@@ -24,8 +24,6 @@
     <ProjectReference Include="..\..\src\Arcanic.Mediator.Query.Abstractions\Arcanic.Mediator.Query.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\Arcanic.Mediator.Event\Arcanic.Mediator.Event.csproj" />
     <ProjectReference Include="..\..\src\Arcanic.Mediator.Event.Abstractions\Arcanic.Mediator.Event.Abstractions.csproj" />
-    <ProjectReference Include="..\..\src\Arcanic.Mediator.Messaging\Arcanic.Mediator.Messaging.csproj" />
-    <ProjectReference Include="..\..\src\Arcanic.Mediator.Messaging.Abstractions\Arcanic.Mediator.Messaging.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

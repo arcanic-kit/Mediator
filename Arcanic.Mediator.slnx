@@ -27,10 +27,6 @@
     <Project Path="src/Arcanic.Mediator.Event.Abstractions/Arcanic.Mediator.Event.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator.Event/Arcanic.Mediator.Event.csproj" />
   </Folder>
-  <Folder Name="/src/Modules/Messaging/">
-    <Project Path="src/Arcanic.Mediator.Messaging.Abstractions/Arcanic.Mediator.Messaging.Abstractions.csproj" />
-    <Project Path="src/Arcanic.Mediator.Messaging/Arcanic.Mediator.Messaging.csproj" />
-  </Folder>
   <Folder Name="/src/Modules/Query/">
     <Project Path="src/Arcanic.Mediator.Query.Abstractions/Arcanic.Mediator.Query.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator.Query/Arcanic.Mediator.Query.csproj" />

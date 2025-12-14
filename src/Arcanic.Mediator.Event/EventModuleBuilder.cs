@@ -1,5 +1,4 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
-using Arcanic.Mediator.Messaging.Abstractions.Registry;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -16,26 +15,10 @@ public class EventModuleBuilder
     /// The service collection used for dependency injection registration.
     /// </summary>
     private readonly IServiceCollection _services;
-
-    /// <summary>
-    /// The message registry used for mapping command types to their handlers.
-    /// </summary>
-    private readonly IMessageRegistry _messageRegistry;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventModuleBuilder"/> class with the specified
-    /// service collection and message registry.
-    /// </summary>
-    /// <param name="services">The dependency injection service collection used for registering discovered handlers.
-    /// This parameter cannot be null.</param>
-    /// <param name="messageRegistry">The message registry used for mapping event types to their handlers.
-    /// This parameter cannot be null.</param>
-    /// <exception cref="ArgumentNullException">Thrown when either <paramref name="services"/> or 
-    /// <paramref name="messageRegistry"/> is null.</exception>
-    public EventModuleBuilder(IServiceCollection services, IMessageRegistry messageRegistry)
+    
+    public EventModuleBuilder(IServiceCollection services)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
-        _messageRegistry = messageRegistry ?? throw new ArgumentNullException(nameof(messageRegistry));
     }
 
     /// <summary>
@@ -82,9 +65,8 @@ public class EventModuleBuilder
                     throw new InvalidOperationException(
                         $"Event type '{eventType.FullName}' handled by '{handlerType.FullName}' must implement IEvent interface.");
                 }
-
-                _messageRegistry.Register(eventType, handlerType, false);
-                _services.AddTransient(handlerType);
+                
+                _services.AddTransient(eventHandlerInterface, handlerType);
             }
         }
 

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arcanic.Mediator.Messaging.Abstractions\Arcanic.Mediator.Messaging.Abstractions.csproj" />
+    <ProjectReference Include="..\Arcanic.Mediator.Abstractions\Arcanic.Mediator.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
