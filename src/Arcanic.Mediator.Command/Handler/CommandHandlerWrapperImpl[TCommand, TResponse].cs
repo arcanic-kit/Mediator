@@ -1,6 +1,5 @@
 ﻿using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Command.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Command.Handler;
@@ -52,9 +51,11 @@ public class CommandHandlerWrapperImpl<TCommand, TResponse> : CommandHandlerWrap
         var commandPipelineBehaviors = serviceProvider
             .GetServices<ICommandPipelineBehavior<TCommand, TResponse>>()
             .Cast<ICommandPipelineBehavior<TCommand, TResponse>>();
-
+        
+        pipelineBehaviors = pipelineBehaviors.Concat(commandPipelineBehaviors);
+        
         // Applies all pipeline behaviors in reverse order, wrapping the handler.
-        return commandPipelineBehaviors
+        return pipelineBehaviors
             .Reverse()
             .Aggregate((PipelineDelegate<TResponse>) Handler,
                 (next, pipeline) => (t) => pipeline.HandleAsync((TCommand) request, next, t == default ? cancellationToken : t))();

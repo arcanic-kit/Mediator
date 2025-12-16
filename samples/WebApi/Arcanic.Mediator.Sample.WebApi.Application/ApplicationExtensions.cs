@@ -33,6 +33,7 @@ public static class ApplicationExtensions
         });
 
         builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceMonitoringBehavior<,>));
 
         return builder;
     }

@@ -9,8 +9,8 @@ namespace Arcanic.Mediator.Query.Pipeline;
 /// </summary>
 /// <typeparam name="TRequest">The type of the query request.</typeparam>
 /// <typeparam name="TResponse">The type of the response returned by the query.</typeparam>
-public class QueryPostHandlerPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+public class QueryPostHandlerPipelineBehavior<TRequest, TResponse> : IQueryPipelineBehavior<TRequest, TResponse>
+    where TRequest : IQuery<TResponse>
 {
     /// <summary>
     /// The collection of post-handler instances to be executed after the query handler.
