@@ -8,7 +8,7 @@ namespace Arcanic.Mediator.Command.Handler;
 ///     A concrete implementation of <see cref="CommandHandlerWrapper{TResponse}"/> for handling commands of type <typeparamref name="TCommand"/>
 ///     and producing responses of type <typeparamref name="TResponse"/>.
 ///     This class resolves the appropriate <see cref="ICommandHandler{TCommand, TResponse}"/> and applies any registered
-///     <see cref="IRequestPipelineBehavior{TCommand, TResponse}"/> instances in the pipeline.
+///     <see cref="IPipelineBehavior{TMessage,TMessageResult}"/> instances in the pipeline.
 /// </summary>
 /// <typeparam name="TCommand">The type of command to handle.</typeparam>
 /// <typeparam name="TResponse">The type of response returned by the handler.</typeparam>
@@ -32,7 +32,7 @@ public class CommandHandlerWrapperImpl<TCommand, TResponse> : CommandHandlerWrap
     /// <summary>
     ///     Handles the specified command request using the provided service provider and cancellation token.
     ///     Resolves the appropriate <see cref="ICommandHandler{TCommand, TResponse}"/> and applies all registered
-    ///     <see cref="IRequestPipelineBehavior{TCommand, TResponse}"/> instances in reverse order, wrapping the handler.
+    ///     <see cref="IPipelineBehavior{TMessage,TMessageResult}"/> instances in reverse order, wrapping the handler.
     /// </summary>
     /// <param name="request">The command request to handle.</param>
     /// <param name="serviceProvider">The service provider for resolving dependencies.</param>
@@ -48,9 +48,9 @@ public class CommandHandlerWrapperImpl<TCommand, TResponse> : CommandHandlerWrap
 
         // Applies all pipeline behaviors in reverse order, wrapping the handler.
         return serviceProvider
-            .GetServices<IRequestPipelineBehavior<TCommand, TResponse>>()
+            .GetServices<IPipelineBehavior<TCommand, TResponse>>()
             .Reverse()
-            .Aggregate((RequestPipelineDelegate<TResponse>) Handler,
+            .Aggregate((PipelineDelegate<TResponse>) Handler,
                 (next, pipeline) => (t) => pipeline.HandleAsync((TCommand) request, next, t == default ? cancellationToken : t))();
     }
 }

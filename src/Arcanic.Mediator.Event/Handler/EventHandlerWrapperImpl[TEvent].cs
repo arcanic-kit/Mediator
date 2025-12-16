@@ -49,9 +49,9 @@ public class EventHandlerWrapperImpl<TEvent> : EventHandlerWrapper
 
         // Applies all pipeline behaviors in reverse order, wrapping the handler.
         return serviceProvider
-            .GetServices<IRequestPipelineBehavior<TEvent, Unit>>()
+            .GetServices<IPipelineBehavior<TEvent, Unit>>()
             .Reverse()
-            .Aggregate((RequestPipelineDelegate<Unit>) Handler,
+            .Aggregate((PipelineDelegate<Unit>) Handler,
                 (next, pipeline) => (t) => pipeline.HandleAsync((TEvent) request, next, t == default ? cancellationToken : t))();
     }
 }

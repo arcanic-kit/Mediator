@@ -9,7 +9,7 @@ namespace Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed.</typeparam>
 /// <typeparam name="TResult">The type of result returned by the message processing.</typeparam>
-public class LoggingBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
+public class LoggingBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
     where TMessage : notnull
 {
     private readonly ILogger<LoggingBehavior<TMessage, TResult>> _logger;
@@ -30,7 +30,7 @@ public class LoggingBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMess
     /// <param name="next">The delegate representing the next behavior in the pipeline or the final handler execution.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>The result of processing the message through this behavior and the remainder of the pipeline.</returns>
-    public async Task<TResult> HandleAsync(TMessage message, RequestPipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    public async Task<TResult> HandleAsync(TMessage message, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
     {
         var messageName = typeof(TMessage).Name;
         var correlationId = Guid.NewGuid();

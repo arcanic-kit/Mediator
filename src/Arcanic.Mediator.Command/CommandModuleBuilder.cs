@@ -65,8 +65,8 @@ public class CommandModuleBuilder
             _services.AddTransient(registration.commandHandlerInterface, registration.handlerType);
         }
         
-        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
-        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
         return this;
     }

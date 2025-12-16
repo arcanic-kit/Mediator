@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Pipeline;
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed. Must be a non-null reference type.</typeparam>
 /// <typeparam name="TMessageResult">The type of result expected from the message processing.</typeparam>
-public interface IRequestPipelineBehavior<TMessage, TMessageResult> where TMessage : notnull
+public interface IPipelineBehavior<TMessage, TMessageResult> where TMessage : notnull
 {
     /// <summary>
     /// Handles the message processing by optionally performing pre-processing logic, 
@@ -30,5 +30,5 @@ public interface IRequestPipelineBehavior<TMessage, TMessageResult> where TMessa
     /// - Modify the result after next() returns
     /// - Handle exceptions thrown by next() or downstream behaviors
     /// </remarks>
-    Task<TMessageResult> HandleAsync(TMessage message, RequestPipelineDelegate<TMessageResult> next, CancellationToken cancellationToken = default);
+    Task<TMessageResult> HandleAsync(TMessage message, PipelineDelegate<TMessageResult> next, CancellationToken cancellationToken = default);
 }

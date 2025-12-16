@@ -73,8 +73,8 @@ public class QueryModuleBuilder
             _services.AddTransient(registration.queryHandlerInterface, registration.handlerType);
         }
         
-        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>));
-        _services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
 
         return this;
     }

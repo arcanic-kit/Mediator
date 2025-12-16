@@ -9,7 +9,7 @@ namespace Arcanic.Mediator.Query.Pipeline;
 /// </summary>
 /// <typeparam name="TRequest">The type of the query request.</typeparam>
 /// <typeparam name="TResponse">The type of the response returned by the query.</typeparam>
-public class QueryPostHandlerPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
+public class QueryPostHandlerPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     /// <summary>
@@ -31,7 +31,7 @@ public class QueryPostHandlerPipelineBehavior<TRequest, TResponse> : IRequestPip
     /// <param name="next">The next delegate in the pipeline.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The response from the next delegate in the pipeline.</returns>
-    public async Task<TResponse> HandleAsync(TRequest message, RequestPipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    public async Task<TResponse> HandleAsync(TRequest message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
         var response = await next(cancellationToken).ConfigureAwait(false);
 

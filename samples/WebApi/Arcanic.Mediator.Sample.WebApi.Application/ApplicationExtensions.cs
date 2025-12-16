@@ -32,7 +32,7 @@ public static class ApplicationExtensions
             });
         });
 
-        builder.Services.AddTransient(typeof(IRequestPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 
         return builder;
     }

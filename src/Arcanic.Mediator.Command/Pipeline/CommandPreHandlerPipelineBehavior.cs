@@ -3,7 +3,7 @@ using Arcanic.Mediator.Pipeline;
 
 namespace Arcanic.Mediator.Command.Pipeline;
 
-public class CommandPreHandlerPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
+public class CommandPreHandlerPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
     /// <summary>
@@ -25,7 +25,7 @@ public class CommandPreHandlerPipelineBehavior<TRequest, TResponse> : IRequestPi
     /// <param name="next">The next delegate in the pipeline.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The response from the next delegate in the pipeline.</returns>
-    public async Task<TResponse> HandleAsync(TRequest message, RequestPipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    public async Task<TResponse> HandleAsync(TRequest message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
         foreach (var preHandler in _preHandlers)
         {
