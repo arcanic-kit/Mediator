@@ -1,10 +1,15 @@
+using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Pipeline;
 
 namespace Arcanic.Mediator.Command.Pipeline;
 
-public class CommandPostHandlerPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+/// <summary>
+/// Pipeline behavior that executes a collection of post-handler instances after the main command handler.
+/// </summary>
+/// <typeparam name="TRequest">The type of the command request.</typeparam>
+/// <typeparam name="TResponse">The type of the command response.</typeparam>
+public class CommandPostHandlerPipelineBehavior<TRequest, TResponse> : ICommandPipelineBehavior<TRequest, TResponse>
+    where TRequest : ICommand
 {
     /// <summary>
     /// The collection of post-handler instances to be executed after the query handler.

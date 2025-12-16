@@ -1,8 +1,6 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
-using Arcanic.Mediator.Command.Pipeline;
-using Arcanic.Mediator.Pipeline;
 
 namespace Arcanic.Mediator.Command;
 
@@ -17,6 +15,11 @@ public class CommandModuleBuilder
     /// </summary>
     private readonly IServiceCollection _services;
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CommandModuleBuilder"/> class.
+    /// </summary>
+    /// <param name="services">The service collection used for dependency injection registration.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
     public CommandModuleBuilder(IServiceCollection services)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
@@ -64,9 +67,6 @@ public class CommandModuleBuilder
         {
             _services.AddTransient(registration.commandHandlerInterface, registration.handlerType);
         }
-        
-        _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
-        _services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
         return this;
     }

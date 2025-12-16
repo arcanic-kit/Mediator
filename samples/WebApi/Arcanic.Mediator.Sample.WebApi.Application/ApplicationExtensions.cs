@@ -5,7 +5,7 @@ using Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
-using Arcanic.Mediator.Pipeline;
+using Arcanic.Mediator.Abstractions.Pipeline;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application;
 

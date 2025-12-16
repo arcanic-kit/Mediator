@@ -8,12 +8,12 @@ public class AddProductCommandHandler(IEventPublisher eventPublisher) : ICommand
 {
     public async Task<int> HandleAsync(AddProductCommand request, CancellationToken cancellationToken = default)
     {
-        await eventPublisher.PublishAsync(new ProductCreatedEvent
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Price = request.Price
-        }, cancellationToken);
+        // await eventPublisher.PublishAsync(new ProductCreatedEvent
+        // {
+        //     Id = Guid.NewGuid(),
+        //     Name = request.Name,
+        //     Price = request.Price
+        // }, cancellationToken);
 
         return 1;
     }

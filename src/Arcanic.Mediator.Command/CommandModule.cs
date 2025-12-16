@@ -1,5 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
 using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Command.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -40,5 +41,8 @@ public class CommandModule: IModule
         _builder(new CommandModuleBuilder(services));
 
         services.TryAddTransient<ICommandMediator, CommandMediator>();
+        
+        services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
+        services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
     }
 }

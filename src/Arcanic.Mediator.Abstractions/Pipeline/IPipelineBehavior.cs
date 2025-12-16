@@ -1,4 +1,4 @@
-namespace Arcanic.Mediator.Pipeline;
+namespace Arcanic.Mediator.Abstractions.Pipeline;
 
 /// <summary>
 /// Defines a pipeline behavior that can wrap the execution of message processing with additional logic.
@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Pipeline;
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed. Must be a non-null reference type.</typeparam>
 /// <typeparam name="TMessageResult">The type of result expected from the message processing.</typeparam>
-public interface IPipelineBehavior<TMessage, TMessageResult> where TMessage : notnull
+public interface IPipelineBehavior<in TMessage, TMessageResult> where TMessage : notnull
 {
     /// <summary>
     /// Handles the message processing by optionally performing pre-processing logic, 

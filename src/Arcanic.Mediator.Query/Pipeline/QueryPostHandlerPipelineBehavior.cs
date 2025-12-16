@@ -1,4 +1,4 @@
-using Arcanic.Mediator.Pipeline;
+using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Abstractions;
 
 namespace Arcanic.Mediator.Query.Pipeline;
