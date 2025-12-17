@@ -1,5 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
 using Arcanic.Mediator.Event.Abstractions;
+using Arcanic.Mediator.Event.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -34,5 +35,8 @@ public class EventModule: IModule
         _builder(new EventModuleBuilder(services));
 
         services.TryAddTransient<IEventPublisher, EventPublisher>();
+        
+        services.AddTransient(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>));
+        services.AddTransient(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
     }
 }
