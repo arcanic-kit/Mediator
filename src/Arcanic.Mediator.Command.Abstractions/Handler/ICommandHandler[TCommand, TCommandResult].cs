@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Handler.Main;
 
-namespace Arcanic.Mediator.Command.Abstractions;
+namespace Arcanic.Mediator.Command.Abstractions.Handler;
 
 /// <summary>
 /// Defines a handler for processing commands that return a result of the specified type.

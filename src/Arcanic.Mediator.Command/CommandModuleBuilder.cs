@@ -1,6 +1,7 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Arcanic.Mediator.Command.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Command;
 

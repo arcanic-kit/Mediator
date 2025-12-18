@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Abstractions.Handler.Pre;
 
-namespace Arcanic.Mediator.Command.Abstractions;
+namespace Arcanic.Mediator.Command.Abstractions.Handler;
 
 /// <summary>
 /// Defines a pre-handler that executes before the main command handler.

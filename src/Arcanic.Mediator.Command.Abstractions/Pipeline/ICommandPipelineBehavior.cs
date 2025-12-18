@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Pipeline;
 
-namespace Arcanic.Mediator.Command.Abstractions;
+namespace Arcanic.Mediator.Command.Abstractions.Pipeline;
 
 /// <summary>
 /// Defines a pipeline behavior interface for command handling, extending <see cref="IPipelineBehavior{TMessage,TMessageResult}"/>.

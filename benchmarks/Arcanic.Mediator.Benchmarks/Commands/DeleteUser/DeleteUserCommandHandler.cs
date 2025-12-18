@@ -1,4 +1,5 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Command.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Benchmarks.Commands.DeleteUser;
 

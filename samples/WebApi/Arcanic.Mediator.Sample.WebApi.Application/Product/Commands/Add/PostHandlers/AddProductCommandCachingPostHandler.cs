@@ -1,4 +1,4 @@
-using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Command.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.Add.PostHandlers;
 
