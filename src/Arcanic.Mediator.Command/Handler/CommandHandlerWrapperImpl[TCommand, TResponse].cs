@@ -51,8 +51,7 @@ public class CommandHandlerWrapperImpl<TCommand, TResponse> : CommandHandlerWrap
         var pipelineBehaviors = serviceProvider.GetServices<IPipelineBehavior<TCommand, TResponse>>();
 
         var commandPipelineBehaviors = serviceProvider
-            .GetServices<ICommandPipelineBehavior<TCommand, TResponse>>()
-            .Cast<ICommandPipelineBehavior<TCommand, TResponse>>();
+            .GetServices<ICommandPipelineBehavior<TCommand, TResponse>>();
         
         pipelineBehaviors = pipelineBehaviors.Concat(commandPipelineBehaviors);
         
