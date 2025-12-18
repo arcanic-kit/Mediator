@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Pipeline;
 
-namespace Arcanic.Mediator.Event.Abstractions;
+namespace Arcanic.Mediator.Event.Abstractions.Pipeline;
 
 /// <summary>
 /// Defines a pipeline behavior for event handling in the mediator pattern.

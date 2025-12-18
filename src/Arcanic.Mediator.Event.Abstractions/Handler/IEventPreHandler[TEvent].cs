@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Abstractions.Handler.Pre;
 
-namespace Arcanic.Mediator.Event.Abstractions;
+namespace Arcanic.Mediator.Event.Abstractions.Handler;
 
 /// <summary>
 /// Defines a pre-handler that executes before the main event handlers.

@@ -1,4 +1,4 @@
-using Arcanic.Mediator.Event.Abstractions;
+using Arcanic.Mediator.Event.Abstractions.Handler;
 using Arcanic.Mediator.Sample.WebApi.Domain.Events;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Events.PreHandlers;

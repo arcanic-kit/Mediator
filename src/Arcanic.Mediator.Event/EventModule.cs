@@ -1,5 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
 using Arcanic.Mediator.Event.Abstractions;
+using Arcanic.Mediator.Event.Abstractions.Pipeline;
 using Arcanic.Mediator.Event.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

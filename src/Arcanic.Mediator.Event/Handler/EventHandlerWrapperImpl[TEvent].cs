@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Event.Abstractions;
+using Arcanic.Mediator.Event.Abstractions.Handler;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Event.Handler;

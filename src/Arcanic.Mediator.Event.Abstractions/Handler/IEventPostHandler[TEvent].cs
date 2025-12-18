@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Abstractions.Handler.Post;
 
-namespace Arcanic.Mediator.Event.Abstractions;
+namespace Arcanic.Mediator.Event.Abstractions.Handler;
 
 /// <summary>
 /// Defines a post-handler that executes after the main event handlers.

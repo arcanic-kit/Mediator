@@ -1,4 +1,5 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
+using Arcanic.Mediator.Event.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Benchmarks.Events.UserDeleted;
 

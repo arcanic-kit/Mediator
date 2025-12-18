@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Handler.Main;
 
-namespace Arcanic.Mediator.Event.Abstractions;
+namespace Arcanic.Mediator.Event.Abstractions.Handler;
 
 /// <summary>
 /// Defines a contract for handling events of a specific type within the mediator framework.
