@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Pipeline;
 
-namespace Arcanic.Mediator.Query.Abstractions;
+namespace Arcanic.Mediator.Query.Abstractions.Pipeline;
 
 /// <summary>
 /// Defines a pipeline behavior interface for query handling, extending <see cref="IPipelineBehavior{TQuery, TQueryResponse}"/>.

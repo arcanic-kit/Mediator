@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Abstractions.Handler.Pre;
 
-namespace Arcanic.Mediator.Query.Abstractions;
+namespace Arcanic.Mediator.Query.Abstractions.Handler;
 
 /// <summary>
 /// Defines a pre-handler that executes before the main query handler.

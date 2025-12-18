@@ -1,4 +1,4 @@
-using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Queries.Get.PreHandlers;
 

@@ -1,4 +1,5 @@
 ﻿using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Benchmarks.Queries.GetUser;
 

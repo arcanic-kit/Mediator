@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.Handler.Main;
 
-namespace Arcanic.Mediator.Query.Abstractions;
+namespace Arcanic.Mediator.Query.Abstractions.Handler;
 
 /// <summary>
 /// Defines a contract for handling queries of a specific type within the mediator framework.

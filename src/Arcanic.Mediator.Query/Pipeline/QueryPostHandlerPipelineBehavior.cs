@@ -1,5 +1,7 @@
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Handler;
+using Arcanic.Mediator.Query.Abstractions.Pipeline;
 
 namespace Arcanic.Mediator.Query.Pipeline;
 
