@@ -32,8 +32,8 @@ public static class ApplicationExtensions
             });
         });
 
-        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceMonitoringBehavior<,>));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceMonitoringPipelineBehavior<,>));
 
         return builder;
     }

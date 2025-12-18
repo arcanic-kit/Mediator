@@ -10,19 +10,19 @@ namespace Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed.</typeparam>
 /// <typeparam name="TResult">The type of result returned by the message processing.</typeparam>
-public class PerformanceMonitoringBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
+public class PerformanceMonitoringPipelineBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
     where TMessage : notnull
 {
-    private readonly ILogger<PerformanceMonitoringBehavior<TMessage, TResult>> _logger;
+    private readonly ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResult>> _logger;
     private readonly long _slowExecutionThresholdMs;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PerformanceMonitoringBehavior{TMessage, TResult}"/> class.
+    /// Initializes a new instance of the <see cref="PerformanceMonitoringPipelineBehavior{TMessage,TResult}"/> class.
     /// </summary>
     /// <param name="logger">The logger instance for recording performance metrics.</param>
     /// <param name="slowExecutionThresholdMs">The threshold in milliseconds above which execution is considered slow. Default is 500ms.</param>
-    public PerformanceMonitoringBehavior(
-        ILogger<PerformanceMonitoringBehavior<TMessage, TResult>> logger, 
+    public PerformanceMonitoringPipelineBehavior(
+        ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResult>> logger, 
         long slowExecutionThresholdMs = 500)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));

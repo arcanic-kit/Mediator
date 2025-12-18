@@ -9,16 +9,16 @@ namespace Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed.</typeparam>
 /// <typeparam name="TResult">The type of result returned by the message processing.</typeparam>
-public class LoggingBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
+public class LoggingPipelineBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
     where TMessage : notnull
 {
-    private readonly ILogger<LoggingBehavior<TMessage, TResult>> _logger;
+    private readonly ILogger<LoggingPipelineBehavior<TMessage, TResult>> _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LoggingBehavior{TMessage, TResult}"/> class.
+    /// Initializes a new instance of the <see cref="LoggingPipelineBehavior{TMessage,TResult}"/> class.
     /// </summary>
     /// <param name="logger">The logger instance for recording message processing details.</param>
-    public LoggingBehavior(ILogger<LoggingBehavior<TMessage, TResult>> logger)
+    public LoggingPipelineBehavior(ILogger<LoggingPipelineBehavior<TMessage, TResult>> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
