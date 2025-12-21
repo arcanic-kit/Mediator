@@ -9,7 +9,7 @@ namespace Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed.</typeparam>
 /// <typeparam name="TResult">The type of result returned by the message processing.</typeparam>
-public class LoggingPipelineBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
+public class LoggingPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
     where TMessage : notnull
 {
     private readonly ILogger<LoggingPipelineBehavior<TMessage, TResult>> _logger;

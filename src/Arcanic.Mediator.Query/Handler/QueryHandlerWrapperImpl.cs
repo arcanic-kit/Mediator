@@ -46,11 +46,16 @@ public class QueryHandlerWrapperImpl<TQuery, TResponse> : QueryHandlerWrapper<TR
         Task<TResponse> Handler(CancellationToken t = default) => serviceProvider.GetRequiredService<IQueryHandler<TQuery, TResponse>>()
             .HandleAsync((TQuery) request, t == default ? cancellationToken : t);
 
-        // Applies all pipeline behaviors in reverse order, wrapping the handler.
-        return serviceProvider
+        var allPipelineBehaviors = serviceProvider
             .GetServices<IQueryPipelineBehavior<TQuery, TResponse>>()
-            .Reverse()
+            .Cast<IPipelineBehavior<TQuery, TResponse>>()
+            .Concat(serviceProvider.GetServices<IRequestPipelineBehavior<TQuery, TResponse>>()
+            .Cast<IPipelineBehavior<TQuery, TResponse>>())
+            .Concat(serviceProvider.GetServices<IPipelineBehavior<TQuery, TResponse>>());
+
+        return allPipelineBehaviors
             .Aggregate((PipelineDelegate<TResponse>) Handler,
                 (next, pipeline) => (t) => pipeline.HandleAsync((TQuery) request, next, t == default ? cancellationToken : t))();
     }
+
 }
