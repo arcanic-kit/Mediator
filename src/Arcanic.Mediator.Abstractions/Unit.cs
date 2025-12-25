@@ -1,7 +1,4 @@
-﻿namespace Arcanic.Mediator;
-
-using System;
-using System.Threading.Tasks;
+﻿namespace Arcanic.Mediator.Abstractions;
 
 /// <summary>
 /// Represents a void type, since <see cref="System.Void"/> is not a valid return type in C#.
