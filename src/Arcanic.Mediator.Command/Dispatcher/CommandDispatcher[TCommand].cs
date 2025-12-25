@@ -1,47 +1,44 @@
-﻿using Arcanic.Mediator.Abstractions.Pipeline;
+using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Handler;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
-using Arcanic.Mediator.Command.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Arcanic.Mediator.Command.Handler;
+namespace Arcanic.Mediator.Command.Dispatcher;
 
 /// <summary>
-///     Concrete implementation of <see cref="CommandHandlerWrapper"/> for handling commands of type <typeparamref name="TCommand"/>.
-///     Resolves the appropriate <see cref="ICommandHandler{TCommand}"/> and applies any registered
-///     <see cref="IPipelineBehavior{TMessage,TMessageResult}"/> instances in the pipeline.
+/// Concrete implementation of command dispatcher for a specific command type.
+/// Handles the dispatch of the appropriate command handler and applies any registered pipeline behaviors.
 /// </summary>
-/// <typeparam name="TCommand">The type of command to handle.</typeparam>
-public class CommandHandlerWrapperImpl<TCommand> : CommandHandlerWrapper
+/// <typeparam name="TCommand">The type of command to dispatch.</typeparam>
+public class CommandDispatcher<TCommand> : CommandDispatcherBase
     where TCommand : ICommand
 {
     /// <summary>
-    ///     Handles the specified command request using the provided service provider and cancellation token.
-    ///     Casts the request to the appropriate command type and delegates to the strongly-typed handler.
+    /// Dispatches the specified command using the provided service provider and cancellation token.
+    /// Casts the command to the appropriate type and delegates to the strongly-typed dispatcher.
     /// </summary>
-    /// <param name="request">The command request to handle (as an object).</param>
+    /// <param name="command">The command to dispatch (as an object).</param>
     /// <param name="serviceProvider">The service provider for resolving dependencies.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
-    ///     A task representing the asynchronous operation, with an optional result object.
+    /// A task representing the asynchronous operation, with an optional result object.
     /// </returns>
-    public override async Task<object?> Handle(object request, IServiceProvider serviceProvider,
+    public override async Task<object?> DispatchAsync(object command, IServiceProvider serviceProvider,
         CancellationToken cancellationToken) =>
-        await Handle((ICommand) request, serviceProvider, cancellationToken).ConfigureAwait(false);
+        await DispatchAsync((ICommand) command, serviceProvider, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    ///     Handles the specified command using the provided service provider and cancellation token.
-    ///     Resolves the appropriate <see cref="ICommandHandler{TCommand}"/> and applies all registered
-    ///     <see cref="IPipelineBehavior{TMessage,TMessageResult}"/> instances in reverse order, wrapping the handler.
+    /// Dispatches the specified command using the provided service provider and cancellation token.
+    /// Resolves the appropriate command handler and applies all registered pipeline behaviors in reverse order.
     /// </summary>
-    /// <param name="command">The command to handle.</param>
+    /// <param name="command">The command to dispatch.</param>
     /// <param name="serviceProvider">The service provider for resolving dependencies.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
-    ///     A task representing the asynchronous operation, with a result of type <see cref="Unit"/>.
+    /// A task representing the asynchronous operation, with a result of type <see cref="Unit"/>.
     /// </returns>
-    public override Task<Unit> Handle(ICommand command, IServiceProvider serviceProvider,
+    private Task<Unit> DispatchAsync(ICommand command, IServiceProvider serviceProvider,
         CancellationToken cancellationToken)
     {
         // Defines the core handler delegate that invokes the command handler.
