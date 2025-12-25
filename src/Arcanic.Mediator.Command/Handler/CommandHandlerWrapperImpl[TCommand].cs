@@ -31,33 +31,36 @@ public class CommandHandlerWrapperImpl<TCommand> : CommandHandlerWrapper
         await Handle((ICommand) request, serviceProvider, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    ///     Handles the specified command request using the provided service provider and cancellation token.
+    ///     Handles the specified command using the provided service provider and cancellation token.
     ///     Resolves the appropriate <see cref="ICommandHandler{TCommand}"/> and applies all registered
     ///     <see cref="IPipelineBehavior{TMessage,TMessageResult}"/> instances in reverse order, wrapping the handler.
     /// </summary>
-    /// <param name="request">The command request to handle.</param>
+    /// <param name="command">The command to handle.</param>
     /// <param name="serviceProvider">The service provider for resolving dependencies.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>
     ///     A task representing the asynchronous operation, with a result of type <see cref="Unit"/>.
     /// </returns>
-    public override Task<Unit> Handle(ICommand request, IServiceProvider serviceProvider,
+    public override Task<Unit> Handle(ICommand command, IServiceProvider serviceProvider,
         CancellationToken cancellationToken)
     {
         // Defines the core handler delegate that invokes the command handler.
         async Task<Unit> Handler(CancellationToken t = default)
         {
             await serviceProvider.GetRequiredService<ICommandHandler<TCommand>>()
-                .HandleAsync((TCommand) request, t == default ? cancellationToken : t);
+                .HandleAsync((TCommand) command, t == default ? cancellationToken : t);
 
             return Unit.Value;
         }
 
-        // Applies all pipeline behaviors in reverse order, wrapping the handler.
-        return serviceProvider
+        var allPipelineBehaviors = serviceProvider
             .GetServices<ICommandPipelineBehavior<TCommand, Unit>>()
-            .Reverse()
+            .Cast<IPipelineBehavior<TCommand, Unit>>()
+            .Concat(serviceProvider.GetServices<IRequestPipelineBehavior<TCommand, Unit>>())
+            .Concat(serviceProvider.GetServices<IPipelineBehavior<TCommand, Unit>>());
+
+        return allPipelineBehaviors
             .Aggregate((PipelineDelegate<Unit>) Handler,
-                (next, pipeline) => (t) => pipeline.HandleAsync((TCommand) request, next, t == default ? cancellationToken : t))();
+                (next, pipeline) => (t) => pipeline.HandleAsync((TCommand) command, next, t == default ? cancellationToken : t))();
     }
 }
