@@ -47,11 +47,11 @@ jobs:
         echo "Package version: $VERSION"
 
     - name: Restore dependencies
-      run: dotnet restore Arcanic.Mediator.sln
+      run: dotnet restore Arcanic.Mediator.slnx
 
     - name: Build solution
       run: |
-        dotnet build Arcanic.Mediator.sln \
+        dotnet build Arcanic.Mediator.slnx \
           --configuration Release \
           --no-restore \
           -p:Version=${{ steps.version.outputs.VERSION }} \
@@ -62,7 +62,7 @@ jobs:
 
     - name: Run tests
       run: |
-        dotnet test Arcanic.Mediator.sln \
+        dotnet test Arcanic.Mediator.slnx \
           --configuration Release \
           --no-build \
           --verbosity normal \
