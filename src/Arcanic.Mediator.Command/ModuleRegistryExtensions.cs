@@ -1,5 +1,4 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
-using Arcanic.Mediator.Messaging;
 
 namespace Arcanic.Mediator.Command;
 
@@ -22,12 +21,6 @@ public static class ModuleRegistryExtensions
     {
         ArgumentNullException.ThrowIfNull(moduleRegistry);
         ArgumentNullException.ThrowIfNull(commandModuleBuilder);
-
-        //Ensure MessageModule is registered first with default configuration
-        if (!moduleRegistry.IsModuleRegistered<MessageModule>())
-        {
-            moduleRegistry.Register(new MessageModule(_ => {}));
-        }
 
         moduleRegistry.Register(new CommandModule(commandModuleBuilder));
 

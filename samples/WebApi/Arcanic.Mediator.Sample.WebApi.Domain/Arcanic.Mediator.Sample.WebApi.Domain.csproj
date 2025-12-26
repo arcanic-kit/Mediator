@@ -10,8 +10,4 @@
     <ProjectReference Include="..\..\..\src\Arcanic.Mediator.Event\Arcanic.Mediator.Event.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ValueObjects\" />
-  </ItemGroup>
-
 </Project>

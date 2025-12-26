@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Dev\Workspaces\IntelloSolutions\Projects\Arcanic\Mediator\assets\images\logo.png" />
+    <None Remove="C:\Dev\Workspaces\IntelloSolutions\Projects\Arcanic\Mediator\README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Arcanic.Mediator\Arcanic.Mediator.csproj" />
+    <ProjectReference Include="..\..\src\Arcanic.Mediator.Abstractions\Arcanic.Mediator.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Arcanic.Mediator.Command\Arcanic.Mediator.Command.csproj" />
+    <ProjectReference Include="..\..\src\Arcanic.Mediator.Command.Abstractions\Arcanic.Mediator.Command.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Arcanic.Mediator.Query\Arcanic.Mediator.Query.csproj" />
+    <ProjectReference Include="..\..\src\Arcanic.Mediator.Query.Abstractions\Arcanic.Mediator.Query.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Arcanic.Mediator.Event\Arcanic.Mediator.Event.csproj" />
+    <ProjectReference Include="..\..\src\Arcanic.Mediator.Event.Abstractions\Arcanic.Mediator.Event.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,5 +1,4 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
-using Arcanic.Mediator.Messaging;
 
 namespace Arcanic.Mediator.Event;
 
@@ -25,12 +24,6 @@ public static class ModuleRegistryExtensions
     {
         ArgumentNullException.ThrowIfNull(moduleRegistry);
         ArgumentNullException.ThrowIfNull(eventModuleBuilder);
-
-        //Ensure MessageModule is registered first with default configuration
-        if (!moduleRegistry.IsModuleRegistered<MessageModule>())
-        {
-            moduleRegistry.Register(new MessageModule(_ => { }));
-        }
 
         moduleRegistry.Register(new EventModule(eventModuleBuilder));
 

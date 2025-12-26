@@ -1,6 +1,6 @@
-using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Handler;
 
-namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Queries.Get.PostHandlers;
+namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Queries.Get.PostHandlers;
 
 /// <summary>
 /// Post-handler for caching operations after GetProductQuery completes successfully.

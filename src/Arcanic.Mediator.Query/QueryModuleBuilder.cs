@@ -1,7 +1,7 @@
-﻿using Arcanic.Mediator.Messaging.Abstractions.Registry;
-using Arcanic.Mediator.Query.Abstractions;
+﻿using Arcanic.Mediator.Query.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Arcanic.Mediator.Query.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Query;
 
@@ -12,21 +12,19 @@ namespace Arcanic.Mediator.Query;
 /// </summary>
 public class QueryModuleBuilder
 {
+    /// <summary>
+    /// The service collection used for dependency injection registration.
+    /// </summary>
     private readonly IServiceCollection _services;
-    private readonly IMessageRegistry _messageRegistry;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="QueryModuleBuilder"/> class with the specified
     /// service collection and message registry.
     /// </summary>
     /// <param name="services">The dependency injection service collection used for registering discovered handlers.</param>
-    /// <param name="messageRegistry">The message registry used for mapping query types to their handlers.</param>
-    /// <exception cref="ArgumentNullException">Thrown when either <paramref name="services"/> or 
-    /// <paramref name="messageRegistry"/> is null.</exception>
-    public QueryModuleBuilder(IServiceCollection services, IMessageRegistry messageRegistry)
+    public QueryModuleBuilder(IServiceCollection services)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
-        _messageRegistry = messageRegistry ?? throw new ArgumentNullException(nameof(messageRegistry));
     }
 
     /// <summary>
@@ -44,39 +42,34 @@ public class QueryModuleBuilder
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
-        var concreteTypes = assembly.GetTypes()
-            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true });
-
-        foreach (var handlerType in concreteTypes)
-        {
-            var queryHandlerInterfaces = handlerType.GetInterfaces()
+        var queryHandlerRegistrations = assembly.GetTypes()
+            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true })
+            .SelectMany(handlerType => handlerType.GetInterfaces()
                 .Where(IsQueryHandlerInterface)
-                .ToList();
-
-            if (queryHandlerInterfaces.Count == 0)
-                continue;
-
-            foreach (var queryHandlerInterface in queryHandlerInterfaces)
+                .Select(queryHandlerInterface => new { handlerType, queryHandlerInterface }))
+            .Where(registration => 
             {
-                var queryType = queryHandlerInterface.GetGenericArguments().FirstOrDefault();
+                var queryType = registration.queryHandlerInterface.GetGenericArguments().FirstOrDefault();
                 
                 if (queryType == null)
                 {
                     throw new InvalidOperationException(
-                        $"Unable to determine query type for handler '{handlerType.FullName}'. " +
-                        $"The handler interface '{queryHandlerInterface.FullName}' does not have generic arguments.");
+                        $"Unable to determine query type for handler '{registration.handlerType.FullName}'. " +
+                        $"The handler interface '{registration.queryHandlerInterface.FullName}' does not have generic arguments.");
                 }
 
-                // Ensure the query type implements IQuery<T>
                 if (!queryType.GetInterfaces().Any(IsQueryInterface))
                 {
                     throw new InvalidOperationException(
-                        $"Query type '{queryType.FullName}' handled by '{handlerType.FullName}' must implement IQuery<T> interface.");
+                        $"Query type '{queryType.FullName}' handled by '{registration.handlerType.FullName}' must implement IQuery<T> interface.");
                 }
-
-                _messageRegistry.Register(queryType, handlerType);
-                _services.AddScoped(handlerType);
-            }
+                
+                return true;
+            });
+        
+        foreach (var registration in queryHandlerRegistrations)
+        {
+            _services.AddTransient(registration.queryHandlerInterface, registration.handlerType);
         }
 
         return this;

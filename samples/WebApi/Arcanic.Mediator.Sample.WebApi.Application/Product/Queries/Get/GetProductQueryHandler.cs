@@ -1,6 +1,6 @@
-﻿using Arcanic.Mediator.Query.Abstractions;
+﻿using Arcanic.Mediator.Query.Abstractions.Handler;
 
-namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Queries.Get;
+namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Queries.Get;
 
 public class GetProductQueryHandler: IQueryHandler<GetProductQuery, GetProductQueryResponse>
 {

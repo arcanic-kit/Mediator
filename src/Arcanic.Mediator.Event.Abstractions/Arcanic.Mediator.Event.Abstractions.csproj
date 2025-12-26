@@ -1,10 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-
     <!-- Package Information -->
     <PackageId>Arcanic.Mediator.Event.Abstractions</PackageId>
     <Description>Event abstractions for Arcanic.Mediator providing interfaces for event handling patterns and event-driven architecture.</Description>
@@ -13,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arcanic.Mediator.Messaging.Abstractions\Arcanic.Mediator.Messaging.Abstractions.csproj" />
+    <ProjectReference Include="..\Arcanic.Mediator.Abstractions\Arcanic.Mediator.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

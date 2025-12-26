@@ -1,6 +1,6 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
 
-namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Commands.Add;
+namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.Add;
 
 public class AddProductCommand: ICommand<int>
 {
