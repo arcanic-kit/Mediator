@@ -1,6 +1,7 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
 using Arcanic.Mediator.Event.Abstractions;
-using Arcanic.Mediator.Messaging.Registry;
+using Arcanic.Mediator.Event.Abstractions.Pipeline;
+using Arcanic.Mediator.Event.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -32,10 +33,11 @@ public class EventModule: IModule
     /// <param name="services">The service collection to configure with event mediator registrations.</param>
     public void Build(IServiceCollection services)
     {
-        var messageRegistry = (MessageRegistryAccessor.Instance);
+        _builder(new EventModuleBuilder(services));
 
-        _builder(new EventModuleBuilder(services, messageRegistry));
-
-        services.TryAddScoped<IEventPublisher, EventPublisher>();
+        services.TryAddTransient<IEventPublisher, EventPublisher>();
+        
+        services.AddTransient(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>));
+        services.AddTransient(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
     }
 }

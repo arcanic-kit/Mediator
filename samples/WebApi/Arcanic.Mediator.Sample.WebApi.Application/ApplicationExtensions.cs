@@ -1,8 +1,11 @@
 ﻿using Arcanic.Mediator.Command;
-using Arcanic.Mediator.Query;
 using Arcanic.Mediator.Event;
+using Arcanic.Mediator.Query;
+using Arcanic.Mediator.Sample.WebApi.Application.Common.Behaviors;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
+using Arcanic.Mediator.Abstractions.Pipeline;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application;
 
@@ -13,21 +16,24 @@ public static class ApplicationExtensions
         // Example: Add Arcanic Mediator with modules
         builder.Services.AddArcanicMediator(moduleRegistry =>
         {
-            moduleRegistry.AddCommandModule(commandModuleBuilder =>
+            moduleRegistry.AddCommandModule(commandBuilder =>
             {
-                commandModuleBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
+                commandBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
             });
 
-            moduleRegistry.AddQueryModule(queryModuleBuilder =>
+            moduleRegistry.AddQueryModule(queryBuilder =>
             {
-                queryModuleBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
+                queryBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
             });
 
-            moduleRegistry.AddEventModule(eventModuleBuilder =>
+            moduleRegistry.AddEventModule(eventBuilder =>
             {
-                eventModuleBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
+                eventBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
             });
         });
+
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));
+        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceMonitoringPipelineBehavior<,>));
 
         return builder;
     }

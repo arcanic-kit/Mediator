@@ -47,11 +47,11 @@ jobs:
         echo "Package version: $VERSION"
 
     - name: Restore dependencies
-      run: dotnet restore Arcanic.Mediator.sln
+      run: dotnet restore Arcanic.Mediator.slnx
 
     - name: Build solution
       run: |
-        dotnet build Arcanic.Mediator.sln \
+        dotnet build Arcanic.Mediator.slnx \
           --configuration Release \
           --no-restore \
           -p:Version=${{ steps.version.outputs.VERSION }} \
@@ -62,7 +62,7 @@ jobs:
 
     - name: Run tests
       run: |
-        dotnet test Arcanic.Mediator.sln \
+        dotnet test Arcanic.Mediator.slnx \
           --configuration Release \
           --no-build \
           --verbosity normal \
@@ -179,8 +179,6 @@ jobs:
           - Arcanic.Mediator.Event.Abstractions v${{ steps.version.outputs.VERSION }}
           - Arcanic.Mediator.Query v${{ steps.version.outputs.VERSION }}
           - Arcanic.Mediator.Query.Abstractions v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Messaging v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Messaging.Abstractions v${{ steps.version.outputs.VERSION }}
           
           See the [packages on NuGet.org](https://www.nuget.org/packages?q=Arcanic.Mediator)
         draft: false

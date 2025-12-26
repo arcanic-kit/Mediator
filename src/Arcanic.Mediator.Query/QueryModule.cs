@@ -1,6 +1,8 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
-using Arcanic.Mediator.Messaging.Registry;
+using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Pipeline;
+using Arcanic.Mediator.Query.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -31,10 +33,11 @@ public class QueryModule : IModule
     /// <param name="services">The service collection to configure with query mediator registrations.</param>
     public void Build(IServiceCollection services)
     {
-        var messageRegistry = (MessageRegistryAccessor.Instance);
+        _builder(new QueryModuleBuilder(services));
 
-        _builder(new QueryModuleBuilder(services, messageRegistry));
-
-        services.TryAddScoped<IQueryMediator, QueryMediator>();
+        services.TryAddTransient<IQueryMediator, QueryMediator>();
+        
+        services.AddTransient(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>));
+        services.AddTransient(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
     }
 }

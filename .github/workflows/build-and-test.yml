@@ -29,14 +29,14 @@ jobs:
         dotnet-version: ${{ matrix.dotnet-version }}
 
     - name: Restore dependencies
-      run: dotnet restore Arcanic.Mediator.sln
+      run: dotnet restore Arcanic.Mediator.slnx
 
     - name: Build
-      run: dotnet build Arcanic.Mediator.sln --configuration Release --no-restore
+      run: dotnet build Arcanic.Mediator.slnx --configuration Release --no-restore
 
     - name: Test
       run: |
-        dotnet test Arcanic.Mediator.sln \
+        dotnet test Arcanic.Mediator.slnx \
           --configuration Release \
           --no-build \
           --verbosity normal \
@@ -45,7 +45,7 @@ jobs:
 
     - name: Pack (validation)
       run: |
-        dotnet pack Arcanic.Mediator.sln \
+        dotnet pack Arcanic.Mediator.slnx \
           --configuration Release \
           --no-build \
           --output ./packages

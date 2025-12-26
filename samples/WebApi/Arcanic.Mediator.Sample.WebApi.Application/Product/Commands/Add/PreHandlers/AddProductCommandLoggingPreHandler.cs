@@ -1,5 +1,4 @@
-using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Samples.WebApi.Application.Product.Commands.Add;
+using Arcanic.Mediator.Command.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.Add.PreHandlers;
 

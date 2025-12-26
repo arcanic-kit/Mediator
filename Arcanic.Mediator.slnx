@@ -1,0 +1,38 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Arcanic.Mediator.Benchmarks/Arcanic.Mediator.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/samples/" />
+  <Folder Name="/samples/WebApi/">
+    <Project Path="samples/WebApi/Arcanic.Mediator.Sample.WebApi.Application/Arcanic.Mediator.Sample.WebApi.Application.csproj" />
+    <Project Path="samples/WebApi/Arcanic.Mediator.Sample.WebApi.Domain/Arcanic.Mediator.Sample.WebApi.Domain.csproj" />
+    <Project Path="samples/WebApi/Arcanic.Mediator.Sample.WebApi.Infrastructure/Arcanic.Mediator.Sample.WebApi.Infrastructure.csproj" />
+    <Project Path="samples/WebApi/Arcanic.Mediator.Samples.WebApi.Web/Arcanic.Mediator.Samples.WebApi.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Arcanic.Mediator.Abstractions/Arcanic.Mediator.Abstractions.csproj" />
+    <Project Path="src/Arcanic.Mediator/Arcanic.Mediator.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Command/">
+    <Project Path="src/Arcanic.Mediator.Command.Abstractions/Arcanic.Mediator.Command.Abstractions.csproj" />
+    <Project Path="src/Arcanic.Mediator.Command/Arcanic.Mediator.Command.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Event/">
+    <Project Path="src/Arcanic.Mediator.Event.Abstractions/Arcanic.Mediator.Event.Abstractions.csproj" />
+    <Project Path="src/Arcanic.Mediator.Event/Arcanic.Mediator.Event.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Query/">
+    <Project Path="src/Arcanic.Mediator.Query.Abstractions/Arcanic.Mediator.Query.Abstractions.csproj" />
+    <Project Path="src/Arcanic.Mediator.Query/Arcanic.Mediator.Query.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/_SolutionItems/">
+    <File Path="Directory.Build.props" />
+  </Folder>
+</Solution>

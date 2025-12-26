@@ -1,7 +1,6 @@
-﻿using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Messaging.Abstractions.Mediator;
-using Arcanic.Mediator.Messaging.Mediator;
-using Arcanic.Mediator.Messaging.Mediator.Strategies;
+﻿using System.Collections.Concurrent;
+using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Command.Dispatcher;
 
 namespace Arcanic.Mediator.Command;
 
@@ -9,27 +8,35 @@ namespace Arcanic.Mediator.Command;
 /// Provides a mediator implementation for command handling, routing commands to their appropriate handlers
 /// through the underlying message mediator framework using a pipeline strategy that includes pre-handlers,
 /// main handlers, and post-handlers.
+/// Optimized version that caches strategy instances to avoid repeated allocations.
 /// </summary>
 public class CommandMediator : ICommandMediator
 {
     /// <summary>
-    /// The underlying message mediator that handles the actual message routing and processing.
+    /// The service provider used for dependency injection and handler resolution.
     /// </summary>
-    private readonly IMessageMediator _messageMediator;
+    private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    /// A thread-safe cache mapping command types to their corresponding dispatcher instances.
+    /// This avoids repeated allocations and reflection for each command execution.
+    /// </summary>
+    private static readonly ConcurrentDictionary<Type, CommandDispatcherBase> CommandDispatchers = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandMediator"/> class.
     /// </summary>
-    /// <param name="messageMediator">The message mediator instance to use for command processing.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> is null.</exception>
-    public CommandMediator(IMessageMediator messageMediator)
+    /// <param name="serviceProvider">The service provider for resolving dependencies and handlers.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="serviceProvider"/> is null.</exception>
+    public CommandMediator(IServiceProvider serviceProvider)
     {
-        _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
     /// <summary>
     /// Sends a command asynchronously for processing without expecting a result.
     /// The command is routed through a complete pipeline including pre-handlers, the main handler, and post-handlers.
+    /// Uses cached dispatcher instances to improve performance.
     /// </summary>
     /// <param name="command">The command to send for processing.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
@@ -39,36 +46,46 @@ public class CommandMediator : ICommandMediator
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<ICommand>();
-        var options = new MessageMediatorOptions<ICommand, Task>()
-        {
-            Strategy = strategy,
-            CancellationToken = cancellationToken,
-        };
+        var commandType = command.GetType();
 
-        await _messageMediator.Mediate(command, options);
+        // Retrieve or create a dispatcher for the command type.
+        var dispatcher = CommandDispatchers.GetOrAdd(commandType, static requestType =>
+        {
+            var dispatcherType = typeof(CommandDispatcher<>).MakeGenericType(requestType);
+            var dispatcherInstance = Activator.CreateInstance(dispatcherType) ?? throw new InvalidOperationException($"Could not create dispatcher type for {requestType}");
+            return (CommandDispatcherBase)dispatcherInstance;
+        });
+
+        // Delegate the dispatching of the command to the resolved dispatcher.
+        await dispatcher.DispatchAsync(command, _serviceProvider, cancellationToken);
     }
 
     /// <summary>
-    /// Sends a command asynchronously for processing and returns a result of the specified type.
+    /// Sends a command asynchronously for processing and expects a result of type <typeparamref name="TCommandResponse"/>.
     /// The command is routed through a complete pipeline including pre-handlers, the main handler, and post-handlers.
+    /// Uses cached dispatcher instances to improve performance.
     /// </summary>
-    /// <typeparam name="TCommandResult">The type of result expected from the command processing.</typeparam>
-    /// <param name="command">The command to send for processing that returns a result.</param>
+    /// <typeparam name="TCommandResponse">The type of the response expected from the command.</typeparam>
+    /// <param name="command">The command to send for processing.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests during command processing.</param>
-    /// <returns>A task that represents the asynchronous command processing operation, containing the command result.</returns>
+    /// <returns>A task that represents the asynchronous command processing operation, containing the command response.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="command"/> is null.</exception>
-    public async Task<TCommandResult> SendAsync<TCommandResult>(ICommand<TCommandResult> command, CancellationToken cancellationToken = default)
+    public async Task<TCommandResponse> SendAsync<TCommandResponse>(ICommand<TCommandResponse> command, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
 
-        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<ICommand<TCommandResult>, TCommandResult>();
-        var options = new MessageMediatorOptions<ICommand<TCommandResult>, Task<TCommandResult>>()
-        {
-            Strategy = strategy,
-            CancellationToken = cancellationToken,
-        };
+        var commandType = command.GetType();
 
-        return await _messageMediator.Mediate(command, options);
+        // Retrieve or create a dispatcher for the command type.
+        var dispatcher = CommandDispatchers.GetOrAdd(commandType, static requestType =>
+        {
+            var dispatcherType = typeof(CommandDispatcher<,>).MakeGenericType(requestType, typeof(TCommandResponse));
+            var dispatcherInstance = Activator.CreateInstance(dispatcherType) ?? throw new InvalidOperationException($"Could not create dispatcher type for {requestType}");
+            return (CommandDispatcherBase)dispatcherInstance;
+        });
+
+        // Delegate the dispatching of the command to the resolved dispatcher.
+        var result = await dispatcher.DispatchAsync(command, _serviceProvider, cancellationToken);
+        return (TCommandResponse)result!;
     }
 }

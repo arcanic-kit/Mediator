@@ -1,47 +1,60 @@
-﻿using Arcanic.Mediator.Messaging.Abstractions.Mediator;
-using Arcanic.Mediator.Messaging.Mediator;
-using Arcanic.Mediator.Messaging.Mediator.Strategies;
+﻿using System.Collections.Concurrent;
+using Arcanic.Mediator.Query.Dispatcher;
 using Arcanic.Mediator.Query.Abstractions;
 
 namespace Arcanic.Mediator.Query;
 
 /// <summary>
-/// Provides query mediation capabilities by coordinating the execution of queries
-/// through the underlying message mediator framework.
+/// Provides query mediation capabilities with performance optimizations.
+/// Uses a cached dispatcher pattern to minimize reflection overhead.
 /// </summary>
 public class QueryMediator : IQueryMediator
 {
-    private readonly IMessageMediator _messageMediator;
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="QueryMediator"/> class with the specified message mediator.
+    /// Thread-safe cache of query dispatchers to avoid reflection overhead.
+    /// Keyed by query type for efficient lookup and reuse.
     /// </summary>
-    /// <param name="messageMediator">The message mediator instance used for coordinating query processing.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="messageMediator"/> is null.</exception>
-    public QueryMediator(IMessageMediator messageMediator)
+    private static readonly ConcurrentDictionary<Type, QueryDispatcherBase> QueryDispatchers = new();
+
+    /// <summary>
+    /// Initializes a new instance of the QueryMediator.
+    /// </summary>
+    /// <param name="serviceProvider">Service provider for dependency injection and handler resolution.</param>
+    /// <exception cref="ArgumentNullException">Thrown when serviceProvider is null.</exception>
+    public QueryMediator(IServiceProvider serviceProvider)
     {
-        _messageMediator = messageMediator ?? throw new ArgumentNullException(nameof(messageMediator));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
     /// <summary>
-    /// Asynchronously executes a query and returns the result using a single handler strategy.
+    /// Sends a query asynchronously and returns the response.
+    /// Utilizes cached dispatchers for optimal performance.
     /// </summary>
-    /// <typeparam name="TQueryResult">The type of result returned by the query.</typeparam>
+    /// <typeparam name="TQueryResponse">The expected response type.</typeparam>
     /// <param name="query">The query to execute.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>A task representing the asynchronous query execution with the result.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="query"/> is null.</exception>
-    public async Task<TQueryResult> SendAsync<TQueryResult>(IQuery<TQueryResult> query, CancellationToken cancellationToken = default)
+    /// <param name="cancellationToken">Cancellation token for operation cancellation.</param>
+    /// <returns>The query response of type TQueryResponse.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when query is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when dispatcher creation fails.</exception>
+    public async Task<TQueryResponse> SendAsync<TQueryResponse>(IQuery<TQueryResponse> query, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        var strategy = new MessageMediatorPipelineRequestHandlerStrategy<IQuery<TQueryResult>, TQueryResult>();
-        var options = new MessageMediatorOptions<IQuery<TQueryResult>, Task<TQueryResult>>()
-        {
-            Strategy = strategy,
-            CancellationToken = cancellationToken,
-        };
+        var queryType = query.GetType();
 
-        return await _messageMediator.Mediate(query, options);
+        // Retrieve or create dispatcher using thread-safe GetOrAdd
+        var dispatcher = QueryDispatchers.GetOrAdd(queryType, static requestType =>
+        {
+            // Create typed dispatcher: QueryDispatcher<TQuery, TQueryResponse>
+            var dispatcherType = typeof(QueryDispatcher<,>).MakeGenericType(requestType, typeof(TQueryResponse));
+            var dispatcher = Activator.CreateInstance(dispatcherType) ?? throw new InvalidOperationException($"Could not create dispatcher type for {requestType}");
+            return (QueryDispatcherBase)dispatcher;
+        });
+
+        // Execute query through dispatcher and return typed result
+        var result = await dispatcher.DispatchAsync(query, _serviceProvider, cancellationToken);
+        return (TQueryResponse)result!;
     }
 }

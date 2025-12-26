@@ -1,4 +1,4 @@
-﻿namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Queries.Get;
+﻿namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Queries.Get;
 
 public class GetProductQueryResponse
 {

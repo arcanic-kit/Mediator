@@ -1,6 +1,7 @@
 ﻿using Arcanic.Mediator.Abstractions.Modules;
 using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Messaging.Registry;
+using Arcanic.Mediator.Command.Abstractions.Pipeline;
+using Arcanic.Mediator.Command.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -38,10 +39,11 @@ public class CommandModule: IModule
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var messageRegistry = MessageRegistryAccessor.Instance;
+        _builder(new CommandModuleBuilder(services));
 
-        _builder(new CommandModuleBuilder(services, messageRegistry));
-
-        services.TryAddScoped<ICommandMediator, CommandMediator>();
+        services.TryAddTransient<ICommandMediator, CommandMediator>();
+        
+        services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
+        services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
     }
 }

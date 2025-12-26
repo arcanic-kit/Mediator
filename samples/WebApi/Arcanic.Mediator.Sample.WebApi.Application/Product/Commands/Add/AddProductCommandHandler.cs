@@ -1,8 +1,8 @@
-﻿using Arcanic.Mediator.Command.Abstractions;
+﻿using Arcanic.Mediator.Command.Abstractions.Handler;
 using Arcanic.Mediator.Event.Abstractions;
 using Arcanic.Mediator.Sample.WebApi.Domain.Events;
 
-namespace Arcanic.Mediator.Samples.WebApi.Application.Product.Commands.Add;
+namespace Arcanic.Mediator.Sample.WebApi.Application.Product.Commands.Add;
 
 public class AddProductCommandHandler(IEventPublisher eventPublisher) : ICommandHandler<AddProductCommand, int>
 {
