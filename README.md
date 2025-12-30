@@ -387,7 +387,7 @@ Arcanic Mediator supports pipeline behaviors that allow you to implement cross-c
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Microsoft.Extensions.Logging;
 
-public class LoggingPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult> 
+public class LoggingPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
     where TMessage : notnull
 {
     private readonly ILogger<LoggingPipelineBehavior<TMessage, TResult>> _logger;
@@ -582,8 +582,6 @@ builder.Services.AddArcanicMediator(moduleRegistry =>
 });
 ```
 
-*Performance varies based on handler complexity, pipeline behaviors, and system configuration.*
-
 ## Advanced Features
 
 ### Cross-Cutting Concerns
@@ -660,6 +658,7 @@ public class TransactionPipelineBehavior<TMessage, TResult> : IRequestPipelineBe
         }
     }
 }
+```
 
 ## Best Practices
 
@@ -850,7 +849,7 @@ services.AddArcanicMediator(moduleRegistry =>
 | **Modularity** | Single package | Separate packages for Commands/Queries/Events |
 | **Interface Names** | `IRequest<T>` | `ICommand<T>`, `IQuery<T>`, `IEvent` |
 | **Mediator Interfaces** | `IMediator` | `ICommandMediator`, `IQueryMediator`, `IEventPublisher` |
-| **Pipeline Behaviors** | `IPipelineBehavior<T,R>` | `IRequestPipelineBehavior<T,R>`, `IPipelineBehavior<T,R>`   |
+| **Pipeline Behaviors** | `IPipelineBehavior<T,R>` | `IRequestPipelineBehavior<T,R>`, `IPipelineBehavior<T,R>` |
 | **Pre/Post Handlers** | Manual implementation | Built-in support                    |
 | **Performance** | Good | Optimized for minimal overhead      |
 
@@ -858,7 +857,7 @@ services.AddArcanicMediator(moduleRegistry =>
 
 ```csharp
 // MediatR style
-public class GetProductQuery : IRequest<ProductDto> 
+public class GetProductQuery : IRequest<ProductDto>
 {
     public int Id { get; set; }
 }
