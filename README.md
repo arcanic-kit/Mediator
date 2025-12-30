@@ -384,22 +384,23 @@ Arcanic Mediator supports pipeline behaviors that allow you to implement cross-c
 ### Creating a Pipeline Behavior
 
 ```csharp
+using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Microsoft.Extensions.Logging;
 
-public class LoggingPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
-    where TMessage : notnull
+public class LoggingPipelineBehavior<TRequest, TResult> : IRequestPipelineBehavior<TRequest, TResult>
+    where TRequest : IRequest
 {
-    private readonly ILogger<LoggingPipelineBehavior<TMessage, TResult>> _logger;
+    private readonly ILogger<LoggingPipelineBehavior<TRequest, TResult>> _logger;
 
-    public LoggingPipelineBehavior(ILogger<LoggingPipelineBehavior<TMessage, TResult>> logger)
+    public LoggingPipelineBehavior(ILogger<LoggingPipelineBehavior<TRequest, TResult>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<TResult> HandleAsync(TMessage message, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    public async Task<TResult> HandleAsync(TRequest request, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
     {
-        var messageName = typeof(TMessage).Name;
+        var messageName = typeof(TRequest).Name;
         var correlationId = Guid.NewGuid();
 
         _logger.LogInformation(
@@ -631,10 +632,10 @@ public class ProductNotFoundException : Exception
 }
 
 // ✅ Good: Use pipeline behaviors for common error handling
-public class ExceptionHandlingPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
-    where TMessage : notnull
+public class ExceptionHandlingPipelineBehavior<TRequest, TResult> : IRequestPipelineBehavior<TRequest, TResult>
+    where TRequest : IRequest
 {
-    public async Task<TResult> HandleAsync(TMessage message, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    public async Task<TResult> HandleAsync(TRequest request, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -648,7 +649,7 @@ public class ExceptionHandlingPipelineBehavior<TMessage, TResult> : IRequestPipe
         catch (Exception ex)
         {
             // Log and rethrow
-            // _logger.LogError(ex, "Unexpected error processing {MessageType}", typeof(TMessage).Name);
+            // _logger.LogError(ex, "Unexpected error processing {RequestType}", typeof(TRequest).Name);
             throw;
         }
     }

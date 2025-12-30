@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Microsoft.Extensions.Logging;
 
@@ -9,11 +10,11 @@ namespace CleanArchitecture.Application.Common.PipelineBehaviors;
 /// This behavior can identify slow operations and provide insights into system performance.
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed.</typeparam>
-/// <typeparam name="TResult">The type of result returned by the message processing.</typeparam>
-public class PerformanceMonitoringPipelineBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
-    where TMessage : notnull
+/// <typeparam name="TResponse">The type of result returned by the message processing.</typeparam>
+public class PerformanceMonitoringPipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
+    where TMessage : IMessage
 {
-    private readonly ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResult>> _logger;
+    private readonly ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResponse>> _logger;
     private readonly long _slowExecutionThresholdMs;
 
     /// <summary>
@@ -22,7 +23,7 @@ public class PerformanceMonitoringPipelineBehavior<TMessage, TResult> : IPipelin
     /// <param name="logger">The logger instance for recording performance metrics.</param>
     /// <param name="slowExecutionThresholdMs">The threshold in milliseconds above which execution is considered slow. Default is 500ms.</param>
     public PerformanceMonitoringPipelineBehavior(
-        ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResult>> logger, 
+        ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResponse>> logger, 
         long slowExecutionThresholdMs = 500)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -37,7 +38,7 @@ public class PerformanceMonitoringPipelineBehavior<TMessage, TResult> : IPipelin
     /// <param name="next">The delegate representing the next behavior in the pipeline or the final handler execution.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>The result of processing the message through this behavior and the remainder of the pipeline.</returns>
-    public async Task<TResult> HandleAsync(TMessage message, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    public async Task<TResponse> HandleAsync(TMessage message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
         var messageName = typeof(TMessage).Name;
         var operationId = Guid.NewGuid();

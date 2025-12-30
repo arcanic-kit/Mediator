@@ -6,8 +6,8 @@ namespace Arcanic.Mediator.Abstractions.Pipeline;
 /// caching, performance monitoring, and exception handling in a composable manner.
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed. Must be a non-null reference type.</typeparam>
-/// <typeparam name="TMessageResult">The type of result expected from the message processing.</typeparam>
-public interface IPipelineBehavior<in TMessage, TMessageResult> where TMessage : notnull
+/// <typeparam name="TResponse">The type of response expected from the message processing.</typeparam>
+public interface IPipelineBehavior<in TMessage, TResponse> where TMessage : IMessage
 {
     /// <summary>
     /// Handles the message processing by optionally performing pre-processing logic, 
@@ -30,5 +30,5 @@ public interface IPipelineBehavior<in TMessage, TMessageResult> where TMessage :
     /// - Modify the result after next() returns
     /// - Handle exceptions thrown by next() or downstream behaviors
     /// </remarks>
-    Task<TMessageResult> HandleAsync(TMessage message, PipelineDelegate<TMessageResult> next, CancellationToken cancellationToken = default);
+    Task<TResponse> HandleAsync(TMessage message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default);
 }
