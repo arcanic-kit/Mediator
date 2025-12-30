@@ -53,8 +53,7 @@ public class EventDispatcher<TEvent> : EventDispatcherBase
 
         var allPipelineBehaviors = serviceProvider
             .GetServices<IEventPipelineBehavior<TEvent, Unit>>()
-            .Concat(serviceProvider.GetServices<IPipelineBehavior<TEvent, Unit>>()
-                .Where(x => x is not IRequestPipelineBehavior<TEvent, Unit>));
+            .Concat(serviceProvider.GetServices<IPipelineBehavior<TEvent, Unit>>());
 
         return await allPipelineBehaviors
             .Aggregate((PipelineDelegate<Unit>) Handler,
