@@ -1,0 +1,19 @@
+using Arcanic.Mediator.Command.Abstractions.Handler;
+
+namespace CleanArchitecture.Application.Product.Commands.Add.PostHandlers;
+
+/// <summary>
+/// Post-handler for sending notifications after AddProductCommand completes successfully.
+/// This demonstrates cross-cutting concerns like notifications that should run after the main business logic.
+/// </summary>
+public class AddProductCommandNotificationPostHandler : ICommandPostHandler<AddProductCommand>
+{
+    public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
+    {
+        // Example notification logic
+        await Task.Run(() => 
+        {
+            Console.WriteLine($"[POST-HANDLER] Notification: New product '{command.Name}' has been created and stakeholders notified");
+        }, cancellationToken);
+    }
+}

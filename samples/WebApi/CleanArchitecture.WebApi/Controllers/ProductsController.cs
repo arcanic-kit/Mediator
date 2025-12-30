@@ -1,0 +1,61 @@
+using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Query.Abstractions;
+using CleanArchitecture.Application.Product.Commands.Add;
+using CleanArchitecture.Application.Product.Commands.UpdatePrice;
+using CleanArchitecture.Application.Product.Queries.Get;
+using CleanArchitecture.WebApi.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace CleanArchitecture.WebApi.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class ProductsController(ICommandMediator commandMediator, IQueryMediator queryMediator)
+        : ControllerBase
+    {
+        [HttpGet("{Id}")]
+        public async Task<ProductDetails?> Get(int Id)
+        {
+            var response = await queryMediator.SendAsync(new GetProductQuery
+            {
+                Id = Id
+            });
+
+            if (response.Product is null)
+            {
+                return null;
+            }
+
+            return new ProductDetails()
+            {
+                Id = response.Product.Id,
+                Name = response.Product.Name,
+                Price = response.Product.Price,
+            };
+        }
+
+        [HttpPost()]
+        public async Task<int?> Add()
+        {
+            var response = await commandMediator.SendAsync(new AddProductCommand
+            {
+                Name = "Sample Product",
+                Price = 9.99m
+            });
+
+            return null;
+        }
+
+        [HttpPut("{id}/price")]
+        public async Task<int?> UpdatePrice(int id, [FromBody] UpdateProductPriceCommand command)
+        {
+            await commandMediator.SendAsync(new UpdateProductPriceCommand
+            {
+                Id = id,
+                Price = command.Price
+            });
+
+            return null;
+        }
+    }
+}
