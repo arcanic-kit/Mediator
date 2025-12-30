@@ -45,19 +45,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddArcanicMediator(moduleRegistry =>
 {
     // Register command module with auto-discovery
-    moduleRegistry.AddCommandModule(commandBuilder =>
+    moduleRegistry.AddCommandModule(commandBuilder => 
     {
         commandBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
     });
 
     // Register query module with auto-discovery
-    moduleRegistry.AddQueryModule(queryBuilder =>
+    moduleRegistry.AddQueryModule(queryBuilder => 
     {
         queryBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
     });
 
     // Register event module with auto-discovery
-    moduleRegistry.AddEventModule(eventBuilder =>
+    moduleRegistry.AddEventModule(eventBuilder => 
     {
         eventBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
     });
