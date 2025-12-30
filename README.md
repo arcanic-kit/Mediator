@@ -387,7 +387,7 @@ Arcanic Mediator supports pipeline behaviors that allow you to implement cross-c
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Microsoft.Extensions.Logging;
 
-public class LoggingPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
+public class LoggingPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult> 
     where TMessage : notnull
 {
     private readonly ILogger<LoggingPipelineBehavior<TMessage, TResult>> _logger;
