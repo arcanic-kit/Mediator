@@ -1,7 +1,7 @@
 using Arcanic.Mediator.Event.Abstractions.Handler;
 using CleanArchitecture.Domain.Products.Events;
 
-namespace CleanArchitecture.Application.Product.Events.PreHandlers;
+namespace CleanArchitecture.Application.Product.Events.ProductCreated.PreHandlers;
 
 /// <summary>
 /// Pre-handler for validation ProductCreatedEvent before the main event handlers execute.

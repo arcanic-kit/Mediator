@@ -1,7 +1,7 @@
 ﻿using Arcanic.Mediator.Event.Abstractions.Handler;
 using CleanArchitecture.Domain.Products.Events;
 
-namespace CleanArchitecture.Application.Product.Events;
+namespace CleanArchitecture.Application.Product.Events.ProductCreated;
 
 public class ConsoleProductCreatedEventHandler : IEventHandler<ProductCreatedEvent>
 {

@@ -1,7 +1,7 @@
 using Arcanic.Mediator.Event.Abstractions.Handler;
 using CleanArchitecture.Domain.Products.Events;
 
-namespace CleanArchitecture.Application.Product.Events.PostHandlers;
+namespace CleanArchitecture.Application.Product.Events.ProductCreated.PostHandlers;
 
 /// <summary>
 /// Post-handler for metrics collection after ProductCreatedEvent processing completes.
