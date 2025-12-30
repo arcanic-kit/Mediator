@@ -11,4 +11,4 @@
 /// concerns such as logging, validation, caching, or transaction handling to be applied
 /// to requests before they reach their handlers.
 /// </remarks>
-public interface IRequestPipelineBehavior<in TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull { }
+public interface IRequestPipelineBehavior<in TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest { }

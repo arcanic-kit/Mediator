@@ -1,4 +1,5 @@
-﻿using Arcanic.Mediator.Query.Abstractions.Handler;
+﻿using Arcanic.Mediator.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Query.Abstractions;
 
@@ -13,5 +14,5 @@ namespace Arcanic.Mediator.Query.Abstractions;
 /// and will be processed by a single handler that implements <see cref="IQueryHandler{TQuery,TResult}"/>
 /// for the specific query and result types.
 /// </remarks>
-public interface IQuery<TQueryResult>;
+public interface IQuery<TQueryResult> : IRequest;
 

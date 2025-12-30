@@ -8,11 +8,11 @@
     <Project Path="benchmarks/Arcanic.Mediator.Benchmarks/Arcanic.Mediator.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/samples/" />
-  <Folder Name="/samples/WebApi/">
-    <Project Path="samples/WebApi/Arcanic.Mediator.Sample.WebApi.Application/Arcanic.Mediator.Sample.WebApi.Application.csproj" />
-    <Project Path="samples/WebApi/Arcanic.Mediator.Sample.WebApi.Domain/Arcanic.Mediator.Sample.WebApi.Domain.csproj" />
-    <Project Path="samples/WebApi/Arcanic.Mediator.Sample.WebApi.Infrastructure/Arcanic.Mediator.Sample.WebApi.Infrastructure.csproj" />
-    <Project Path="samples/WebApi/Arcanic.Mediator.Samples.WebApi.Web/Arcanic.Mediator.Samples.WebApi.Web.csproj" />
+  <Folder Name="/samples/CleanArchitecture/">
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.Application/CleanArchitecture.Application.csproj" />
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.Domain/CleanArchitecture.Domain.csproj" />
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.Infrastructure/CleanArchitecture.Infrastructure.csproj" />
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.WebApi/CleanArchitecture.WebApi.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Arcanic.Mediator.Abstractions/Arcanic.Mediator.Abstractions.csproj" />
