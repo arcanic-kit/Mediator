@@ -527,61 +527,6 @@ Typical performance characteristics:
 - **Queries**: ~100-500ns per operation (simple handlers)
 - **Events**: ~1-5μs per event (with multiple handlers)
 
-## Configuration
-
-### Basic Configuration
-
-```csharp
-builder.Services.AddArcanicMediator(moduleRegistry =>
-{
-    // Register all modules with auto-discovery
-    moduleRegistry
-        .AddCommandModule(cmd => cmd.RegisterFromAssembly(Assembly.GetExecutingAssembly()))
-        .AddQueryModule(qry => qry.RegisterFromAssembly(Assembly.GetExecutingAssembly()))
-        .AddEventModule(evt => evt.RegisterFromAssembly(Assembly.GetExecutingAssembly()));
-});
-```
-
-### Selective Module Registration
-
-```csharp
-// Only register commands and queries (no events)
-builder.Services.AddArcanicMediator(moduleRegistry =>
-{
-    moduleRegistry
-        .AddCommandModule(cmd => cmd.RegisterFromAssembly(typeof(CreateProductCommand).Assembly))
-        .AddQueryModule(qry => qry.RegisterFromAssembly(typeof(GetProductQuery).Assembly));
-});
-```
-
-### Multiple Assembly Registration
-
-```csharp
-builder.Services.AddArcanicMediator(moduleRegistry =>
-{
-    moduleRegistry.AddCommandModule(cmd =>
-    {
-        cmd.RegisterFromAssembly(typeof(CreateProductCommand).Assembly);
-        cmd.RegisterFromAssembly(typeof(CreateUserCommand).Assembly);
-        cmd.RegisterFromAssembly(Assembly.Load("MyExternalHandlers"));
-    });
-});
-```
-
-### Manual Handler Registration
-
-```csharp
-builder.Services.AddArcanicMediator(moduleRegistry =>
-{
-    moduleRegistry.AddCommandModule(cmd =>
-    {
-        // Register specific handlers manually
-        cmd.Register<CreateProductCommand, CreateProductCommandHandler>();
-        cmd.Register<AddProductCommand, int, AddProductCommandHandler>();
-    });
-});
-```
-
 ## Advanced Features
 
 ### Cross-Cutting Concerns
@@ -624,38 +569,6 @@ public class ValidationPipelineBehavior<TMessage, TResult> : IRequestPipelineBeh
 
         // Continue with pipeline
         return await next();
-    }
-}
-```
-
-### Transaction Management
-
-```csharp
-public class TransactionPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
-    where TMessage : notnull
-{
-    private readonly IDbContext _dbContext;
-
-    public TransactionPipelineBehavior(IDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
-    public async Task<TResult> HandleAsync(TMessage message, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
-    {
-        using var transaction = await _dbContext.BeginTransactionAsync(cancellationToken);
-        
-        try
-        {
-            var result = await next();
-            await transaction.CommitAsync(cancellationToken);
-            return result;
-        }
-        catch
-        {
-            await transaction.RollbackAsync(cancellationToken);
-            throw;
-        }
     }
 }
 ```
@@ -777,9 +690,9 @@ public async Task CreateProduct_Should_Process_Full_Pipeline()
 
 Check out the [samples directory](./samples) for complete working examples:
 
-### Web API Sample
+### Clean Architecture Sample
 
-The [WebAPI sample](./samples/WebApi) demonstrates a Clean Architecture implementation with:
+The [Clean Architecture sample](./samples/CleanArchitecture) demonstrates a Clean Architecture implementation with:
 
 - **Domain Layer** - Core business entities and events
 - **Application Layer** - Commands, queries, and handlers  

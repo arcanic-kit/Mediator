@@ -9,10 +9,10 @@
   </Folder>
   <Folder Name="/samples/" />
   <Folder Name="/samples/CleanArchitecture/">
-    <Project Path="samples/WebApi/CleanArchitecture.Application/CleanArchitecture.Application.csproj" />
-    <Project Path="samples/WebApi/CleanArchitecture.Domain/CleanArchitecture.Domain.csproj" />
-    <Project Path="samples/WebApi/CleanArchitecture.Infrastructure/CleanArchitecture.Infrastructure.csproj" />
-    <Project Path="samples/WebApi/CleanArchitecture.WebApi/CleanArchitecture.WebApi.csproj" />
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.Application/CleanArchitecture.Application.csproj" />
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.Domain/CleanArchitecture.Domain.csproj" />
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.Infrastructure/CleanArchitecture.Infrastructure.csproj" />
+    <Project Path="samples/CleanArchitecture/CleanArchitecture.WebApi/CleanArchitecture.WebApi.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Arcanic.Mediator.Abstractions/Arcanic.Mediator.Abstractions.csproj" />
