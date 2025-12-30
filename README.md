@@ -376,7 +376,6 @@ public class ProductController : ControllerBase
     }
 }
 ```
-```
 
 ## Pipeline Behaviors
 
