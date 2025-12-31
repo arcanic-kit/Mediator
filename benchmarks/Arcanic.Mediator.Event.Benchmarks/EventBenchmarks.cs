@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Arcanic.Mediator.Event.Abstractions;
 using Arcanic.Mediator.Event.Benchmarks.UserCreated;
 using Arcanic.Mediator.Event.Benchmarks.UserDeleted;

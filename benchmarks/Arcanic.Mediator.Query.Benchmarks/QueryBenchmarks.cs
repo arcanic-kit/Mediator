@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Benchmarks.GetUser;
 using Arcanic.Mediator.Query.Benchmarks.SearchUsers;

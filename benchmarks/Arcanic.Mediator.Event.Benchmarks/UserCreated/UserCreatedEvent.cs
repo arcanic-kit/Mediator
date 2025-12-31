@@ -1,4 +1,5 @@
-﻿using Arcanic.Mediator.Event.Abstractions;
+﻿using System;
+using Arcanic.Mediator.Event.Abstractions;
 
 namespace Arcanic.Mediator.Event.Benchmarks.UserCreated;
 

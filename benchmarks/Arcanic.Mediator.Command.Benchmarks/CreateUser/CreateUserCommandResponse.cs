@@ -1,4 +1,4 @@
-﻿﻿namespace Arcanic.Mediator.Command.Benchmarks.CreateUser;
+﻿namespace Arcanic.Mediator.Command.Benchmarks.CreateUser;
 
 public class CreateUserCommandResponse
 {

@@ -1,4 +1,7 @@
-﻿using Arcanic.Mediator.Query.Abstractions.Handler;
+﻿using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Arcanic.Mediator.Query.Abstractions.Handler;
 
 namespace Arcanic.Mediator.Query.Benchmarks.SearchUsers;
 

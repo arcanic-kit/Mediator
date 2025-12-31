@@ -1,4 +1,6 @@
-﻿namespace Arcanic.Mediator.Query.Benchmarks.SearchUsers;
+﻿using System.Collections.Generic;
+
+namespace Arcanic.Mediator.Query.Benchmarks.SearchUsers;
 
 public class SearchUsersQueryResponse
 {
