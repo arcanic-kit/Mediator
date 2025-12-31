@@ -1,0 +1,9 @@
+<Project>
+
+  <!-- Disable packaging for sample projects -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+</Project>
