@@ -5,7 +5,9 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/benchmarks/">
-    <Project Path="benchmarks/Arcanic.Mediator.Benchmarks/Arcanic.Mediator.Benchmarks.csproj" />
+    <Project Path="benchmarks/Arcanic.Mediator.Command.Benchmarks/Arcanic.Mediator.Command.Benchmarks.csproj" />
+    <Project Path="benchmarks/Arcanic.Mediator.Event.Benchmarks/Arcanic.Mediator.Event.Benchmarks.csproj" />
+    <Project Path="benchmarks/Arcanic.Mediator.Query.Benchmarks/Arcanic.Mediator.Query.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/samples/" />
   <Folder Name="/samples/CleanArchitecture/">
