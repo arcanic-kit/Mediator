@@ -2,6 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Command.Abstractions.Handler;
+using Arcanic.Mediator.Command.Abstractions.Pipeline;
+using Arcanic.Mediator.Command.Pipeline;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Arcanic.Mediator.Command;
 
@@ -25,6 +28,15 @@ public class CommandModuleBuilder
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
     }
+    
+    public CommandModuleBuilder RegisterRequiredServices()
+    {
+        _services.TryAddTransient<ICommandMediator, CommandMediator>();
+        _services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
+        
+        return this;
+    }
 
     /// <summary>
     /// Scans the specified assembly for command types and their corresponding handlers (main, pre, and post), 
@@ -35,7 +47,7 @@ public class CommandModuleBuilder
     /// <returns>The current <see cref="CommandModuleBuilder"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public CommandModuleBuilder RegisterFromAssembly(Assembly assembly)
+    public CommandModuleBuilder RegisterCommandsFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 

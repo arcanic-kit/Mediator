@@ -14,27 +14,16 @@ public static class ApplicationExtensions
 {
     public static IHostApplicationBuilder AddApplicationServices(this IHostApplicationBuilder builder)
     {
-        // Example: Add Arcanic Mediator with modules
-        builder.Services.AddArcanicMediator(moduleRegistry =>
-        {
-            moduleRegistry.AddCommandModule(commandBuilder =>
-            {
-                commandBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
-            });
-
-            moduleRegistry.AddQueryModule(queryBuilder =>
-            {
-                queryBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
-            });
-
-            moduleRegistry.AddEventModule(eventBuilder =>
-            {
-                eventBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
-            });
-        });
-
-        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));
-        builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceMonitoringPipelineBehavior<,>));
+        builder.Services.AddArcanicMediator()
+            .Configure()
+            .AddPipelineBehavior(typeof(LoggingPipelineBehavior<,>))
+            .AddPipelineBehavior(typeof(PerformanceMonitoringPipelineBehavior<,>))
+            .AddCommands(Assembly.GetExecutingAssembly())
+            .AddQueries(Assembly.GetExecutingAssembly())
+            .AddEvents(Assembly.GetExecutingAssembly());
+        
+        // builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));
+        // builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceMonitoringPipelineBehavior<,>));
 
         return builder;
     }

@@ -2,6 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Event.Abstractions.Handler;
+using Arcanic.Mediator.Event.Abstractions.Pipeline;
+using Arcanic.Mediator.Event.Pipeline;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Arcanic.Mediator.Event;
 
@@ -26,7 +29,16 @@ public class EventModuleBuilder
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
     }
-
+    
+    public EventModuleBuilder RegisterRequiredServices()
+    {
+        _services.TryAddTransient<IEventPublisher, EventPublisher>();
+        _services.AddTransient(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
+        
+        return this;
+    }
+    
     /// <summary>
     /// Registers all event handler types from the specified assembly.
     /// Discovers types implementing <see cref="IEventHandler{T}"/>, <see cref="IEventPreHandler{TEvent}"/>, or <see cref="IEventPostHandler{TEvent}"/>
@@ -38,7 +50,7 @@ public class EventModuleBuilder
     /// <exception cref="InvalidOperationException">
     /// Thrown if a handler interface does not have generic arguments or if the event type does not implement <see cref="IEvent"/>.
     /// </exception>
-    public EventModuleBuilder RegisterFromAssembly(Assembly assembly)
+    public EventModuleBuilder RegisterEventsFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 

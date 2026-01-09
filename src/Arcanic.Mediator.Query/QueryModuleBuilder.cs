@@ -2,6 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Query.Abstractions.Handler;
+using Arcanic.Mediator.Query.Abstractions.Pipeline;
+using Arcanic.Mediator.Query.Pipeline;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Arcanic.Mediator.Query;
 
@@ -27,6 +30,15 @@ public class QueryModuleBuilder
         _services = services ?? throw new ArgumentNullException(nameof(services));
     }
 
+    public QueryModuleBuilder RegisterRequiredServices()
+    {
+        _services.TryAddTransient<IQueryMediator, QueryMediator>();
+        _services.AddTransient(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>));
+        _services.AddTransient(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
+        
+        return this;
+    }
+
     /// <summary>
     /// Discovers and registers all query types and their corresponding handlers from the specified assembly.
     /// This method performs automatic registration by scanning for types that implement <see cref="IQuery{T}"/>
@@ -38,7 +50,7 @@ public class QueryModuleBuilder
     /// <returns>The current <see cref="QueryModuleBuilder"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public QueryModuleBuilder RegisterFromAssembly(Assembly assembly)
+    public QueryModuleBuilder RegisterQueriesFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
