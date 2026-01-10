@@ -292,6 +292,32 @@ builder.Services.AddArcanicMediator()
     .AddEvents(Assembly.GetExecutingAssembly());
 ```
 
+## Configuration
+
+Configure mediator services with custom settings:
+
+```csharp
+// Configure service lifetime (default is Transient)
+builder.Services.AddArcanicMediator(config =>
+{
+    config.Lifetime = ServiceLifetime.Scoped; // or Singleton, Transient
+})
+.AddCommands(Assembly.GetExecutingAssembly())
+.AddQueries(Assembly.GetExecutingAssembly())
+.AddEvents(Assembly.GetExecutingAssembly());
+```
+
+### ArcanicMediatorServiceConfiguration Options
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Lifetime` | `ServiceLifetime` | `Transient` | Controls how mediator service instances are created and managed by the DI container |
+
+**Service Lifetime Options:**
+- **Transient** - New instance created each time (default)
+- **Scoped** - One instance per request/scope
+- **Singleton** - Single instance for the application lifetime
+
 ## Architecture
 
 The library follows a modular architecture with clear separation:
