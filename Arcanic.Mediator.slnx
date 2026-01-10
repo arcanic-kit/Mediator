@@ -35,6 +35,8 @@
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/_SolutionItems/">
+    <File Path=".gitignore" />
     <File Path="Directory.Build.props" />
+    <File Path="README.md" />
   </Folder>
 </Solution>
