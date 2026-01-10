@@ -1,53 +1,66 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Handler;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Pipeline;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Arcanic.Mediator.Command;
 
 /// <summary>
-/// Provides a builder for configuring command processing services by automatically discovering and registering
-/// command types and their corresponding handlers from assemblies. Supports main, pre, and post command handlers.
+/// Provides functionality for registering command-related services and handlers with the dependency injection container.
+/// This class handles automatic discovery and registration of command handlers, pre-handlers, post-handlers,
+/// and required pipeline services from assemblies.
 /// </summary>
-public class CommandModuleBuilder
+public class CommandServiceRegistrar
 {
+    /// <summary>
+    /// The configuration settings for the Arcanic Mediator service, including service lifetime options.
+    /// </summary>
+    private readonly ArcanicMediatorServiceConfiguration _configuration;
+
     /// <summary>
     /// The service collection used for dependency injection registration.
     /// </summary>
     private readonly IServiceCollection _services;
-    
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="CommandModuleBuilder"/> class.
+    /// Initializes a new instance of the <see cref="CommandServiceRegistrar"/> class.
     /// </summary>
     /// <param name="services">The service collection used for dependency injection registration.</param>
+    /// <param name="configuration">The configuration settings for the Arcanic Mediator service.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
-    public CommandModuleBuilder(IServiceCollection services)
+    public CommandServiceRegistrar(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
-    
-    public CommandModuleBuilder RegisterRequiredServices()
+
+    /// <summary>
+    /// Registers the core services required for command processing, including the command mediator
+    /// and default pipeline behaviors for pre and post-processing.
+    /// </summary>
+    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
+    public CommandServiceRegistrar RegisterRequiredServices()
     {
-        _services.TryAddTransient<ICommandMediator, CommandMediator>();
-        _services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>));
-        _services.AddTransient(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
-        
+        _services.Add(new ServiceDescriptor(typeof(ICommandMediator), typeof(CommandMediator), _configuration.Lifetime));
+        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>), _configuration.Lifetime));
+
         return this;
     }
 
     /// <summary>
-    /// Scans the specified assembly for command types and their corresponding handlers (main, pre, and post), 
+    /// Scans the specified assembly for command types and their corresponding handlers (main, pre, and post),
     /// then registers them in the dependency injection container and message registry.
     /// </summary>
     /// <param name="assembly">The assembly to scan for command types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
-    /// <returns>The current <see cref="CommandModuleBuilder"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public CommandModuleBuilder RegisterCommandsFromAssembly(Assembly assembly)
+    public CommandServiceRegistrar RegisterCommandsFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -56,10 +69,10 @@ public class CommandModuleBuilder
             .SelectMany(handlerType => handlerType.GetInterfaces()
                 .Where(IsCommandHandlerInterface)
                 .Select(commandHandlerInterface => new { handlerType, commandHandlerInterface }))
-            .Where(registration => 
+            .Where(registration =>
             {
                 var commandType = registration.commandHandlerInterface.GetGenericArguments().FirstOrDefault();
-                
+
                 if (commandType == null)
                 {
                     throw new InvalidOperationException(
@@ -72,10 +85,10 @@ public class CommandModuleBuilder
                     throw new InvalidOperationException(
                         $"Command type '{commandType.FullName}' handled by '{registration.handlerType.FullName}' must implement ICommand<T> interface.");
                 }
-                
+
                 return true;
             });
-        
+
         foreach (var registration in commandHandlerRegistrations)
         {
             _services.AddTransient(registration.commandHandlerInterface, registration.handlerType);
@@ -95,8 +108,8 @@ public class CommandModuleBuilder
         {
             var genericTypeDefinition = type.GetGenericTypeDefinition();
             return genericTypeDefinition == typeof(ICommand<>);
-        }   
-        
+        }
+
         return type == typeof(ICommand);
     }
 
@@ -111,7 +124,7 @@ public class CommandModuleBuilder
             return false;
 
         var genericTypeDefinition = type.GetGenericTypeDefinition();
-       
+
         return genericTypeDefinition == typeof(ICommandHandler<>) ||
                genericTypeDefinition == typeof(ICommandHandler<,>) ||
                genericTypeDefinition == typeof(ICommandPreHandler<>) ||

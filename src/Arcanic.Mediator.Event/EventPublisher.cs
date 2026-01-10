@@ -1,4 +1,4 @@
-﻿﻿using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Arcanic.Mediator.Event.Abstractions;
 using Arcanic.Mediator.Event.Dispatcher;
 
