@@ -330,7 +330,7 @@ public class ProductController : ControllerBase
 Create reusable behaviors for complex cross-cutting concerns:
 
 ```csharp
-public class ValidationPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
+public class ValidationPipelineBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
     where TMessage : notnull
 {
     private readonly IValidator<TMessage> _validator;
