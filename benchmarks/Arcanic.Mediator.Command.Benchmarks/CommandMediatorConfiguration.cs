@@ -13,14 +13,7 @@ public static class CommandMediatorConfiguration
     /// </summary>
     public static IServiceCollection AddArcanicCommandMediator(this IServiceCollection services)
     {
-        services.AddArcanicMediator(moduleRegistry =>
-        {
-            // Register Command Module
-            moduleRegistry.AddCommandModule(commandModuleBuilder =>
-            {
-                commandModuleBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
-            });
-        });
+        services.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
 
         return services;
     }
