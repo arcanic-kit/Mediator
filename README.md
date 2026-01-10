@@ -181,6 +181,12 @@ public class AddProductCommandNotificationPostHandler : ICommandPostHandler<AddP
         Console.WriteLine($"Product '{request.Name}' has been created");
         await Task.CompletedTask;
     }
+    
+    private async Task SendNotificationAsync(string message)
+    {
+        // Implementation here
+        await Task.CompletedTask;
+    }
 }
 ```
 
@@ -211,6 +217,12 @@ public class ProductCreatedEmailHandler : IEventHandler<ProductCreatedEvent>
     {
         // Send notification email
         Console.WriteLine($"Sending email for product: {request.Name}");
+        await Task.CompletedTask;
+    }
+    
+    private async Task SendEmailAsync(Guid productId, string productName)
+    {
+        // Implementation here
         await Task.CompletedTask;
     }
 }
@@ -274,6 +286,41 @@ public class ProductController : ControllerBase
     public async Task PublishEvent(ProductCreatedEvent @event)
     {
         await _eventPublisher.PublishAsync(@event);
+    }
+
+    public async Task<TResult> HandleAsync(TRequest request, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    {
+        var messageName = typeof(TRequest).Name;
+        var correlationId = Guid.NewGuid();
+
+        _logger.LogInformation(
+            "[BEHAVIOR] Starting execution of {MessageName} with correlation ID {CorrelationId}",
+            messageName, correlationId);
+
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        try
+        {
+            var result = await next();
+            
+            stopwatch.Stop();
+            
+            _logger.LogInformation(
+                "[BEHAVIOR] Successfully completed {MessageName} with correlation ID {CorrelationId} in {ElapsedMilliseconds}ms",
+                messageName, correlationId, stopwatch.ElapsedMilliseconds);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            
+            _logger.LogError(ex,
+                "[BEHAVIOR] Failed execution of {MessageName} with correlation ID {CorrelationId} after {ElapsedMilliseconds}ms",
+                messageName, correlationId, stopwatch.ElapsedMilliseconds);
+                
+            throw;
+        }
     }
 }
 ```
@@ -359,6 +406,149 @@ Run benchmarks:
 ```bash
 cd benchmarks/Arcanic.Mediator.Command.Benchmarks
 dotnet run -c Release
+```
+
+### Custom Pipeline Behaviors
+
+Create reusable behaviors for complex cross-cutting concerns:
+
+```csharp
+public class ValidationPipelineBehavior<TMessage, TResult> : IRequestPipelineBehavior<TMessage, TResult>
+    where TMessage : notnull
+{
+    private readonly IValidator<TMessage> _validator;
+
+    public ValidationPipelineBehavior(IValidator<TMessage> validator)
+    {
+        _validator = validator;
+    }
+
+    public async Task<TResult> HandleAsync(TMessage message, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    {
+        // Validate before processing
+        var validationResult = await _validator.ValidateAsync(message, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            throw new ValidationException(validationResult.Errors);
+        }
+
+        // Continue with pipeline
+        return await next();
+    }
+}
+```
+
+## Best Practices
+
+### Message Design
+
+```csharp
+// ✅ Good: Immutable record types
+public record CreateProductCommand(string Name, decimal Price) : ICommand<int>;
+
+// ✅ Good: Clear naming conventions
+public record GetProductByIdQuery(int ProductId) : IQuery<ProductDto>;
+
+// ✅ Good: Specific event names
+public record ProductCreatedEvent(Guid ProductId, string ProductName, decimal Price) : IEvent;
+
+// ❌ Avoid: Generic names
+public record DataCommand(object Data) : ICommand; // Too generic
+```
+
+### Handler Organization
+
+```csharp
+// ✅ Good: One handler per file, clear naming
+public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand, int>
+{
+    // Implementation
+}
+
+// ✅ Good: Grouped by feature/aggregate
+// Features/Products/Commands/Create/CreateProductCommand.cs
+// Features/Products/Commands/Create/CreateProductCommandHandler.cs
+// Features/Products/Queries/GetById/GetProductByIdQuery.cs
+// Features/Products/Queries/GetById/GetProductByIdQueryHandler.cs
+```
+
+### Dependency Injection
+
+```csharp
+// ✅ Good: Use abstraction packages in business layer
+using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Query.Abstractions;
+
+// ✅ Good: Use implementation packages only in composition root
+// Program.cs or Startup.cs:
+using Arcanic.Mediator.Command;
+using Arcanic.Mediator.Query;
+```
+
+### Error Handling
+
+```csharp
+// ✅ Good: Specific exception types
+public class ProductNotFoundException : Exception
+{
+    public ProductNotFoundException(int productId) 
+        : base($"Product with ID {productId} was not found") { }
+}
+
+// ✅ Good: Use pipeline behaviors for common error handling
+public class ExceptionHandlingPipelineBehavior<TRequest, TResult> : IRequestPipelineBehavior<TRequest, TResult>
+    where TRequest : IRequest
+{
+    public async Task<TResult> HandleAsync(TRequest request, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await next();
+        }
+        catch (DomainException ex)
+        {
+            // Handle domain-specific exceptions
+            throw new BusinessLogicException(ex.Message, ex);
+        }
+        catch (Exception ex)
+        {
+            // Log and rethrow
+            // _logger.LogError(ex, "Unexpected error processing {RequestType}", typeof(TRequest).Name);
+            throw;
+        }
+    }
+}
+```
+
+### Testing
+
+```csharp
+// ✅ Good: Test handlers directly
+[Test]
+public async Task CreateProductCommandHandler_Should_Create_Product()
+{
+    // Arrange
+    var handler = new CreateProductCommandHandler(_mockRepository.Object);
+    var command = new CreateProductCommand("Test Product", 19.99m);
+
+    // Act
+    var result = await handler.HandleAsync(command, CancellationToken.None);
+
+    // Assert
+    Assert.That(result, Is.GreaterThan(0));
+}
+
+// ✅ Good: Integration tests for full pipeline
+[Test]
+public async Task CreateProduct_Should_Process_Full_Pipeline()
+{
+    // Arrange - set up test services with real mediator
+
+    // Act
+    var result = await _commandMediator.SendAsync(command);
+
+    // Assert - verify end-to-end behavior
+}
 ```
 
 ## Samples
