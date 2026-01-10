@@ -5,9 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using Arcanic.Mediator;
-using Arcanic.Mediator.Abstractions.Pipeline;
 using CleanArchitecture.Application.Common.PipelineBehaviors;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace CleanArchitecture.Application;
 
