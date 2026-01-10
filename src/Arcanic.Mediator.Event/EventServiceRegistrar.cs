@@ -1,44 +1,68 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Event.Abstractions.Handler;
+using Arcanic.Mediator.Event.Abstractions.Pipeline;
+using Arcanic.Mediator.Event.Pipeline;
 
 namespace Arcanic.Mediator.Event;
 
 /// <summary>
-/// Provides functionality for configuring and registering event handlers and related components
-/// within the event mediator framework. This builder facilitates automatic discovery and registration
-/// of event types and their corresponding handlers from assemblies.
+/// Provides functionality for registering event-related services and handlers with the dependency injection container.
+/// This class handles automatic discovery and registration of event handlers, pre-handlers, post-handlers,
+/// and required pipeline services from assemblies.
 /// </summary>
-public class EventModuleBuilder
+public class EventServiceRegistrar
 {
+    /// <summary>
+    /// The configuration settings for the Arcanic Mediator service, including service lifetime options.
+    /// </summary>
+    private readonly ArcanicMediatorServiceConfiguration _configuration;
+    
     /// <summary>
     /// The service collection used for dependency injection registration.
     /// </summary>
     private readonly IServiceCollection _services;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventModuleBuilder"/> class.
+    /// Initializes a new instance of the <see cref="EventServiceRegistrar"/> class.
     /// </summary>
     /// <param name="services">The service collection to use for dependency injection registration.</param>
+    /// <param name="configuration">The configuration settings for the Arcanic Mediator service.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="services"/> is null.</exception>
-    public EventModuleBuilder(IServiceCollection services)
+    public EventServiceRegistrar(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
-
+    
+    /// <summary>
+    /// Registers the core services required for event processing, including the event publisher
+    /// and default pipeline behaviors for pre and post-processing.
+    /// </summary>
+    /// <returns>The current <see cref="EventServiceRegistrar"/> instance to enable method chaining.</returns>
+    public EventServiceRegistrar RegisterRequiredServices()
+    {
+        _services.Add(new ServiceDescriptor(typeof(IEventPublisher), typeof(EventPublisher), _configuration.Lifetime));
+        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        
+        return this;
+    }
+    
     /// <summary>
     /// Registers all event handler types from the specified assembly.
     /// Discovers types implementing <see cref="IEventHandler{T}"/>, <see cref="IEventPreHandler{TEvent}"/>, or <see cref="IEventPostHandler{TEvent}"/>
     /// and registers them as transient services in the dependency injection container.
     /// </summary>
     /// <param name="assembly">The assembly to scan for event handler types.</param>
-    /// <returns>The current <see cref="EventModuleBuilder"/> instance for chaining.</returns>
+    /// <returns>The current <see cref="EventServiceRegistrar"/> instance for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown if a handler interface does not have generic arguments or if the event type does not implement <see cref="IEvent"/>.
     /// </exception>
-    public EventModuleBuilder RegisterFromAssembly(Assembly assembly)
+    public EventServiceRegistrar RegisterEventsFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -69,7 +93,7 @@ public class EventModuleBuilder
 
         foreach (var registration in eventHandlerRegistrations)
         {
-            _services.AddTransient(registration.eventHandlerInterface, registration.handlerType);
+            _services.Add(new ServiceDescriptor(registration.eventHandlerInterface, registration.handlerType, _configuration.Lifetime));
         }
 
         return this;

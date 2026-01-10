@@ -13,14 +13,7 @@ public static class QueryMediatorConfiguration
     /// </summary>
     public static IServiceCollection AddArcanicQueryMediator(this IServiceCollection services)
     {
-        services.AddArcanicMediator(moduleRegistry =>
-        {
-            // Register Query Module
-            moduleRegistry.AddQueryModule(queryModuleBuilder =>
-            {
-                queryModuleBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
-            });
-        });
+        services.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
 
         return services;
     }

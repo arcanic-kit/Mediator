@@ -13,15 +13,7 @@ public static class EventMediatorConfiguration
     /// </summary>
     public static IServiceCollection AddArcanicEventMediator(this IServiceCollection services)
     {
-        services.AddArcanicMediator(moduleRegistry =>
-        {
-            // Register Event Module
-            moduleRegistry.AddEventModule(eventModuleBuilder =>
-            {
-                eventModuleBuilder.RegisterFromAssembly(Assembly.GetExecutingAssembly());
-            });
-        });
-
+        services.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
         return services;
     }
 }
