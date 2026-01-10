@@ -287,41 +287,6 @@ public class ProductController : ControllerBase
     {
         await _eventPublisher.PublishAsync(@event);
     }
-
-    public async Task<TResult> HandleAsync(TRequest request, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
-    {
-        var messageName = typeof(TRequest).Name;
-        var correlationId = Guid.NewGuid();
-
-        _logger.LogInformation(
-            "[BEHAVIOR] Starting execution of {MessageName} with correlation ID {CorrelationId}",
-            messageName, correlationId);
-
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        try
-        {
-            var result = await next();
-            
-            stopwatch.Stop();
-            
-            _logger.LogInformation(
-                "[BEHAVIOR] Successfully completed {MessageName} with correlation ID {CorrelationId} in {ElapsedMilliseconds}ms",
-                messageName, correlationId, stopwatch.ElapsedMilliseconds);
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            stopwatch.Stop();
-            
-            _logger.LogError(ex,
-                "[BEHAVIOR] Failed execution of {MessageName} with correlation ID {CorrelationId} after {ElapsedMilliseconds}ms",
-                messageName, correlationId, stopwatch.ElapsedMilliseconds);
-                
-            throw;
-        }
-    }
 }
 ```
 
