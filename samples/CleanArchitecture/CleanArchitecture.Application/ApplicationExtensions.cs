@@ -15,13 +15,13 @@ public static class ApplicationExtensions
     {
         builder.Services.AddArcanicMediator(config =>
         {
-                config.Lifetime = ServiceLifetime.Scoped;
-            })
-            .AddPipelineBehavior(typeof(LoggingPipelineBehavior<,>))
-            .AddPipelineBehavior(typeof(PerformanceMonitoringPipelineBehavior<,>))
-            .AddCommands(Assembly.GetExecutingAssembly())
-            .AddQueries(Assembly.GetExecutingAssembly())
-            .AddEvents(Assembly.GetExecutingAssembly());
+            config.Lifetime = ServiceLifetime.Scoped;
+        })
+        .AddPipelineBehavior(typeof(LoggingPipelineBehavior<,>))
+        .AddPipelineBehavior(typeof(PerformanceMonitoringPipelineBehavior<,>))
+        .AddCommands(Assembly.GetExecutingAssembly())
+        .AddQueries(Assembly.GetExecutingAssembly())
+        .AddEvents(Assembly.GetExecutingAssembly());
 
         return builder;
     }

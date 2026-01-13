@@ -33,12 +33,55 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
     /// <summary>
     /// Adds a pipeline behavior to the mediator configuration.
     /// </summary>
-    /// <param name="implementationType">The type implementing the pipeline behavior.</param>
+    /// <param name="pipelineBehaviorType">The type implementing the pipeline behavior.</param>
     /// <returns>The current builder instance for method chaining.</returns>
-    public IArcanicMediatorBuilder AddPipelineBehavior(Type implementationType)
+    /// <exception cref="ArgumentNullException">Thrown when pipelineBehaviorType is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when pipelineBehaviorType does not implement IPipelineBehavior interface.</exception>
+    public IArcanicMediatorBuilder AddPipelineBehavior(Type pipelineBehaviorType)
     {
-        Services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), implementationType, Configuration.Lifetime));
+        ArgumentNullException.ThrowIfNull(pipelineBehaviorType);
+        
+        ValidatePipelineBehaviorType(pipelineBehaviorType);
+        
+        Services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), pipelineBehaviorType, Configuration.Lifetime));
 
         return this;
+    }
+    
+    /// <summary>
+    /// Validates that the specified type implements the IPipelineBehavior interface.
+    /// </summary>
+    /// <param name="pipelineBehaviorType">The type to validate.</param>
+    /// <exception cref="ArgumentException">Thrown when the type does not implement IPipelineBehavior interface.</exception>
+    private static void ValidatePipelineBehaviorType(Type pipelineBehaviorType)
+    {
+        // Check if the type implements any generic version of IPipelineBehavior<,>
+        var implementsIPipelineBehavior = pipelineBehaviorType
+            .GetInterfaces()
+            .Any(interfaceType => 
+                interfaceType.IsGenericType && 
+                interfaceType.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>));
+
+        if (!implementsIPipelineBehavior)
+        {
+            throw new ArgumentException(
+                $"Type '{pipelineBehaviorType.FullName}' must implement '{typeof(IPipelineBehavior<,>).FullName}' interface.",
+                nameof(pipelineBehaviorType));
+        }
+        
+        // Ensure the type is not abstract and has a public constructor
+        if (pipelineBehaviorType.IsAbstract)
+        {
+            throw new ArgumentException(
+                $"Type '{pipelineBehaviorType.FullName}' cannot be abstract.",
+                nameof(pipelineBehaviorType));
+        }
+        
+        if (pipelineBehaviorType.IsInterface)
+        {
+            throw new ArgumentException(
+                $"Type '{pipelineBehaviorType.FullName}' cannot be an interface.",
+                nameof(pipelineBehaviorType));
+        }
     }
 }
