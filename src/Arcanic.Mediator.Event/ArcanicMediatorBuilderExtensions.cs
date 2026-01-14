@@ -50,7 +50,7 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(eventPipelineBehaviorType);
         
-        ValidateCommandPipelineBehaviorType(eventPipelineBehaviorType);
+        ValidateEventPipelineBehaviorType(eventPipelineBehaviorType);
         
         builder.Services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType, builder.Configuration.Lifetime));
         
@@ -68,7 +68,7 @@ public static class ArcanicMediatorBuilderExtensions
     /// - Cannot be abstract
     /// - Cannot be an interface
     /// </exception>
-    private static void ValidateCommandPipelineBehaviorType(Type eventPipelineBehaviorType)
+    private static void ValidateEventPipelineBehaviorType(Type eventPipelineBehaviorType)
     {
         // Check if the type implements any generic version of IEventPipelineBehavior<,>
         var implementsIEventPipelineBehavior = eventPipelineBehaviorType
