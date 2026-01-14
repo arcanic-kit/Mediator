@@ -21,15 +21,19 @@
     <Project Path="src/Arcanic.Mediator/Arcanic.Mediator.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
-  <Folder Name="/src/Modules/Command/">
-    <Project Path="src/Arcanic.Mediator.Command.Abstractions/Arcanic.Mediator.Command.Abstractions.csproj" />
-    <Project Path="src/Arcanic.Mediator.Command/Arcanic.Mediator.Command.csproj" />
-  </Folder>
   <Folder Name="/src/Modules/Event/">
     <Project Path="src/Arcanic.Mediator.Event.Abstractions/Arcanic.Mediator.Event.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator.Event/Arcanic.Mediator.Event.csproj" />
   </Folder>
-  <Folder Name="/src/Modules/Query/">
+  <Folder Name="/src/Modules/Request/">
+    <Project Path="src/Arcanic.Mediator.Request.Abstractions/Arcanic.Mediator.Request.Abstractions.csproj" />
+    <Project Path="src/Arcanic.Mediator.Request/Arcanic.Mediator.Request.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Request/Command/">
+    <Project Path="src/Arcanic.Mediator.Command.Abstractions/Arcanic.Mediator.Command.Abstractions.csproj" />
+    <Project Path="src/Arcanic.Mediator.Command/Arcanic.Mediator.Command.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Request/Query/">
     <Project Path="src/Arcanic.Mediator.Query.Abstractions/Arcanic.Mediator.Query.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator.Query/Arcanic.Mediator.Query.csproj" />
   </Folder>

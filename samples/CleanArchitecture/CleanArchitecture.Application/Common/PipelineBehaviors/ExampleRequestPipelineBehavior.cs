@@ -1,5 +1,7 @@
 ﻿using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Pipeline;
+using Arcanic.Mediator.Request.Abstractions;
+using Arcanic.Mediator.Request.Abstractions.Pipeline;
 using Microsoft.Extensions.Logging;
 
 namespace CleanArchitecture.Application.Common.PipelineBehaviors;

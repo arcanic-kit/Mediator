@@ -1,6 +1,7 @@
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
+using Arcanic.Mediator.Request.Abstractions.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Query.Dispatcher;
