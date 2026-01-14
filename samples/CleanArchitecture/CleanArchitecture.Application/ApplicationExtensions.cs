@@ -20,6 +20,7 @@ public static class ApplicationExtensions
         .AddPipelineBehavior(typeof(LoggingPipelineBehavior<,>))
         .AddPipelineBehavior(typeof(PerformanceMonitoringPipelineBehavior<,>))
         .AddCommandPipelineBehavior(typeof(ExampleCommandPipelineBehavior<,>))
+        .AddQueryPipelineBehavior(typeof(ExampleQueryPipelineBehavior<,>))
         .AddCommands(Assembly.GetExecutingAssembly())
         .AddQueries(Assembly.GetExecutingAssembly())
         .AddEvents(Assembly.GetExecutingAssembly());

@@ -1,3 +1,8 @@
+using Arcanic.Mediator.Abstractions.Pipeline;
+using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Pipeline;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Arcanic.Mediator.Query.Dispatcher;
 
 /// <summary>
@@ -17,4 +22,47 @@ public abstract class QueryDispatcherBase
     /// </returns>
     public abstract Task<object?> DispatchAsync(object query, IServiceProvider serviceProvider,
         CancellationToken cancellationToken);
+    
+    /// <summary>
+    /// Retrieves all pipeline behaviors for the specified query and response types from the service provider.
+    /// </summary>
+    /// <typeparam name="TQuery">The type of the query that implements <see cref="IQuery{TResponse}"/>.</typeparam>
+    /// <typeparam name="TResponse">The type of the response returned by the query.</typeparam>
+    /// <param name="serviceProvider">The service provider used to resolve pipeline behavior services.</param>
+    /// <returns>
+    /// An enumerable collection of pipeline behaviors in reverse order of registration, 
+    /// including query-specific, request-specific, and generic pipeline behaviors.
+    /// </returns>
+    /// <remarks>
+    /// The method combines three types of pipeline behaviors in the following order:
+    /// 1. Query-specific pipeline behaviors (<see cref="IQueryPipelineBehavior{TQuery, TResponse}"/>)
+    /// 2. Request-specific pipeline behaviors (<see cref="IRequestPipelineBehavior{TQuery, TResponse}"/>)
+    /// 3. Generic pipeline behaviors (<see cref="IPipelineBehavior{TQuery, TResponse}"/>)
+    /// 
+    /// All behaviors are retrieved in reverse order to maintain proper execution order in the pipeline.
+    /// </remarks>
+    protected IEnumerable<IPipelineBehavior<TQuery, TResponse>> GetAllPipelineBehaviors<TQuery, TResponse>(IServiceProvider serviceProvider)
+        where TQuery : IQuery<TResponse>
+    {
+        // Retrieve query-specific pipeline behaviors in reverse order
+        var queryPipelineBehaviors = serviceProvider
+            .GetServices<IQueryPipelineBehavior<TQuery, TResponse>>()
+            .Reverse();
+        
+        // Retrieve request-specific pipeline behaviors in reverse order
+        var requestedPipelineBehaviors = serviceProvider
+            .GetServices<IRequestPipelineBehavior<TQuery, TResponse>>()
+            .Reverse();
+        
+        // Retrieve generic pipeline behaviors in reverse order
+        var pipelineBehaviors = serviceProvider
+            .GetServices<IPipelineBehavior<TQuery, TResponse>>()
+            .Reverse();
+
+        // Combine all pipeline behaviors in the correct execution order
+        return queryPipelineBehaviors
+            .Cast<IPipelineBehavior<TQuery, TResponse>>()
+            .Concat(requestedPipelineBehaviors)
+            .Concat(pipelineBehaviors);
+    }
 }
