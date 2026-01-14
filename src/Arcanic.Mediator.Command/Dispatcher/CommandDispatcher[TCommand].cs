@@ -50,14 +50,8 @@ public class CommandDispatcher<TCommand> : CommandDispatcherBase
 
             return Unit.Value;
         }
-
-        var allPipelineBehaviors = serviceProvider
-            .GetServices<ICommandPipelineBehavior<TCommand, Unit>>()
-            .Cast<IPipelineBehavior<TCommand, Unit>>()
-            .Concat(serviceProvider.GetServices<IRequestPipelineBehavior<TCommand, Unit>>())
-            .Concat(serviceProvider.GetServices<IPipelineBehavior<TCommand, Unit>>());
-
-        return allPipelineBehaviors
+        
+        return GetAllPipelineBehaviors<TCommand, Unit>(serviceProvider)
             .Aggregate((PipelineDelegate<Unit>) Handler,
                 (next, pipeline) => (t) => pipeline.HandleAsync((TCommand) command, next, t == default ? cancellationToken : t))();
     }
