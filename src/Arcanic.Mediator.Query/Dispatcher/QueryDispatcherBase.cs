@@ -33,14 +33,6 @@ public abstract class QueryDispatcherBase
     /// An enumerable collection of pipeline behaviors in reverse order of registration, 
     /// including query-specific, request-specific, and generic pipeline behaviors.
     /// </returns>
-    /// <remarks>
-    /// The method combines three types of pipeline behaviors in the following order:
-    /// 1. Query-specific pipeline behaviors (<see cref="IQueryPipelineBehavior{TQuery, TResponse}"/>)
-    /// 2. Request-specific pipeline behaviors (<see cref="IRequestPipelineBehavior{TQuery, TResponse}"/>)
-    /// 3. Generic pipeline behaviors (<see cref="IPipelineBehavior{TQuery, TResponse}"/>)
-    /// 
-    /// All behaviors are retrieved in reverse order to maintain proper execution order in the pipeline.
-    /// </remarks>
     protected IEnumerable<IPipelineBehavior<TQuery, TResponse>> GetAllPipelineBehaviors<TQuery, TResponse>(IServiceProvider serviceProvider)
         where TQuery : IQuery<TResponse>
     {
