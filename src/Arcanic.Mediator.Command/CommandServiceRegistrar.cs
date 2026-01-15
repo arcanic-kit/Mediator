@@ -1,4 +1,6 @@
-﻿using Arcanic.Mediator.Command.Abstractions;
+﻿using System;
+using System.Linq;
+using Arcanic.Mediator.Command.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;

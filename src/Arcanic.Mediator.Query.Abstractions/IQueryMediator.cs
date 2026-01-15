@@ -1,4 +1,7 @@
-﻿namespace Arcanic.Mediator.Query.Abstractions;
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace Arcanic.Mediator.Query.Abstractions;
 
 /// <summary>
 /// Defines a contract for executing queries within the mediator framework.
