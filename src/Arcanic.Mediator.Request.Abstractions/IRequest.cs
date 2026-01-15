@@ -1,4 +1,6 @@
-﻿namespace Arcanic.Mediator.Abstractions;
+﻿using Arcanic.Mediator.Abstractions;
+
+namespace Arcanic.Mediator.Request.Abstractions;
 
 /// <summary>
 /// Represents the base contract for commands and queries in the mediator pattern.

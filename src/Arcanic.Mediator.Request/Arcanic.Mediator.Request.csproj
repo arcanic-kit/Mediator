@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- Package Information -->
+        <PackageId>Arcanic.Mediator.Request</PackageId>
+        <Description>Request handling implementation for Arcanic.Mediator providing CQRS query processing capabilities with dependency injection support.</Description>
+        <PackageTags>mediator;cqrs;query;implementation;dependency-injection;dotnet</PackageTags>
+        <PackageReleaseNotes>Initial release of Arcanic.Mediator query handling.</PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Arcanic.Mediator.Request.Abstractions\Arcanic.Mediator.Request.Abstractions.csproj" />
+      <ProjectReference Include="..\Arcanic.Mediator\Arcanic.Mediator.csproj" />
+    </ItemGroup>
+
+
+</Project>

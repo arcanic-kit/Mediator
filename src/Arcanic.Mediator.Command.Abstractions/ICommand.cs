@@ -1,4 +1,4 @@
-﻿using Arcanic.Mediator.Abstractions;
+﻿using Arcanic.Mediator.Request.Abstractions;
 
 namespace Arcanic.Mediator.Command.Abstractions;
 

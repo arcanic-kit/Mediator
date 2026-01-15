@@ -1,4 +1,6 @@
-﻿namespace Arcanic.Mediator.Abstractions.Pipeline;
+﻿using Arcanic.Mediator.Abstractions.Pipeline;
+
+namespace Arcanic.Mediator.Request.Abstractions.Pipeline;
 
 /// <summary>
 /// Defines a pipeline behavior that can intercept and process requests in the mediator pipeline.
