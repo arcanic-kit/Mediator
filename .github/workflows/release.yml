@@ -179,6 +179,8 @@ jobs:
           - Arcanic.Mediator.Event.Abstractions v${{ steps.version.outputs.VERSION }}
           - Arcanic.Mediator.Query v${{ steps.version.outputs.VERSION }}
           - Arcanic.Mediator.Query.Abstractions v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Request v${{ steps.version.outputs.VERSION }}
+          - Arcanic.Mediator.Request.Abstractions v${{ steps.version.outputs.VERSION }}
           
           See the [packages on NuGet.org](https://www.nuget.org/packages?q=Arcanic.Mediator)
         draft: false
