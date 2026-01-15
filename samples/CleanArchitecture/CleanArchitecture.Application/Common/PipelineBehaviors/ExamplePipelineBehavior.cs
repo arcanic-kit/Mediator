@@ -11,19 +11,19 @@ namespace CleanArchitecture.Application.Common.PipelineBehaviors;
 /// </summary>
 /// <typeparam name="TMessage">The type of message being processed.</typeparam>
 /// <typeparam name="TResponse">The type of result returned by the message processing.</typeparam>
-public class PerformanceMonitoringPipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
+public class ExamplePipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : IMessage
 {
-    private readonly ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResponse>> _logger;
+    private readonly ILogger<ExamplePipelineBehavior<TMessage, TResponse>> _logger;
     private readonly long _slowExecutionThresholdMs;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="PerformanceMonitoringPipelineBehavior{TMessage,TResult}"/> class.
+    /// Initializes a new instance of the <see cref="ExamplePipelineBehavior{TMessage,TResponse}"/> class.
     /// </summary>
     /// <param name="logger">The logger instance for recording performance metrics.</param>
     /// <param name="slowExecutionThresholdMs">The threshold in milliseconds above which execution is considered slow. Default is 500ms.</param>
-    public PerformanceMonitoringPipelineBehavior(
-        ILogger<PerformanceMonitoringPipelineBehavior<TMessage, TResponse>> logger, 
+    public ExamplePipelineBehavior(
+        ILogger<ExamplePipelineBehavior<TMessage, TResponse>> logger, 
         long slowExecutionThresholdMs = 500)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
