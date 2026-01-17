@@ -32,10 +32,10 @@
     <WarningsNotAsErrors>NU1701;CS0168;CS1574</WarningsNotAsErrors>
   </PropertyGroup>
 
-  <!-- Include logo in all packages -->
+  <!-- Include logo and readme in all packages -->
   <ItemGroup>
-	  <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
-    <None Include="$(MSBuildThisFileDirectory)assets\images\logo.png" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)assets\images\logo.png')" />
+	  <None Include="$(MSBuildThisFileDirectory)\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)\..\assets\images\logo.png" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)\..\assets\images\logo.png')" />
   </ItemGroup>
 
 </Project>

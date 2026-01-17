@@ -4,6 +4,16 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/build-and-test.yml" />
+    <File Path=".github/workflows/README.md" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
+  <Folder Name="/.solution-items/">
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/Arcanic.Mediator.Command.Benchmarks/Arcanic.Mediator.Command.Benchmarks.csproj" />
     <Project Path="benchmarks/Arcanic.Mediator.Event.Benchmarks/Arcanic.Mediator.Event.Benchmarks.csproj" />
@@ -17,6 +27,8 @@
     <Project Path="samples/CleanArchitecture/CleanArchitecture.WebApi/CleanArchitecture.WebApi.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Packages.props" />
     <Project Path="src/Arcanic.Mediator.Abstractions/Arcanic.Mediator.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator/Arcanic.Mediator.csproj" />
   </Folder>
@@ -38,9 +50,4 @@
     <Project Path="src/Arcanic.Mediator.Query/Arcanic.Mediator.Query.csproj" />
   </Folder>
   <Folder Name="/tests/" />
-  <Folder Name="/_SolutionItems/">
-    <File Path=".gitignore" />
-    <File Path="Directory.Build.props" />
-    <File Path="README.md" />
-  </Folder>
 </Solution>
