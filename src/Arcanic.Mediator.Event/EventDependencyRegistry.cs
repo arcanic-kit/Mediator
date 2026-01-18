@@ -1,5 +1,4 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Event.Abstractions.Handler;
@@ -13,40 +12,34 @@ namespace Arcanic.Mediator.Event;
 /// This class handles automatic discovery and registration of event handlers, pre-handlers, post-handlers,
 /// and required pipeline services from assemblies.
 /// </summary>
-public class EventServiceRegistrar
+public class EventDependencyRegistry
 {
     /// <summary>
-    /// The configuration settings for the Arcanic Mediator service, including service lifetime options.
+    /// Lazy singleton accessor for the DependencyRegistry instance that manages service registrations.
     /// </summary>
-    private readonly ArcanicMediatorServiceConfiguration _configuration;
+    private readonly DependencyRegistryAccessor _dependencyRegistryAccessor;
     
     /// <summary>
-    /// The service collection used for dependency injection registration.
+    /// Initializes a new instance of the <see cref="EventDependencyRegistry"/> class.
     /// </summary>
-    private readonly IServiceCollection _services;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventServiceRegistrar"/> class.
-    /// </summary>
-    /// <param name="services">The service collection to use for dependency injection registration.</param>
-    /// <param name="configuration">The configuration settings for the Arcanic Mediator service.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="services"/> is null.</exception>
-    public EventServiceRegistrar(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
+    /// <param name="dependencyRegistryAccessor">The accessor for the dependency registry where services will be registered.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dependencyRegistryAccessor"/> is null.</exception>
+    public EventDependencyRegistry(DependencyRegistryAccessor dependencyRegistryAccessor)
     {
-        _services = services ?? throw new ArgumentNullException(nameof(services));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _dependencyRegistryAccessor = dependencyRegistryAccessor;
     }
     
     /// <summary>
     /// Registers the core services required for event processing, including the event publisher
     /// and default pipeline behaviors for pre and post-processing.
     /// </summary>
-    /// <returns>The current <see cref="EventServiceRegistrar"/> instance to enable method chaining.</returns>
-    public EventServiceRegistrar RegisterRequiredServices()
+    /// <returns>The current <see cref="EventDependencyRegistry"/> instance to enable method chaining.</returns>
+    public EventDependencyRegistry RegisterRequiredServices()
     {
-        _services.Add(new ServiceDescriptor(typeof(IEventPublisher), typeof(EventPublisher), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        _dependencyRegistryAccessor.Registry
+            .Add(typeof(IEventPublisher), typeof(EventPublisher))
+            .Add(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
+            .Add(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
         
         return this;
     }
@@ -57,12 +50,12 @@ public class EventServiceRegistrar
     /// and registers them as transient services in the dependency injection container.
     /// </summary>
     /// <param name="assembly">The assembly to scan for event handler types.</param>
-    /// <returns>The current <see cref="EventServiceRegistrar"/> instance for chaining.</returns>
+    /// <returns>The current <see cref="EventDependencyRegistry"/> instance for chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown if a handler interface does not have generic arguments or if the event type does not implement <see cref="IEvent"/>.
     /// </exception>
-    public EventServiceRegistrar RegisterEventsFromAssembly(Assembly assembly)
+    public EventDependencyRegistry RegisterEventsFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -90,10 +83,10 @@ public class EventServiceRegistrar
 
                 return true;
             });
-
+        
         foreach (var registration in eventHandlerRegistrations)
         {
-            _services.Add(new ServiceDescriptor(registration.eventHandlerInterface, registration.handlerType, _configuration.Lifetime));
+            _dependencyRegistryAccessor.Registry.Add(registration.eventHandlerInterface, registration.handlerType);
         }
 
         return this;
@@ -101,9 +94,10 @@ public class EventServiceRegistrar
 
     /// <summary>
     /// Determines whether the specified type represents the <see cref="IEvent"/> interface.
+    /// This method handles both generic and non-generic forms of the IEvent interface.
     /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <returns>True if the type is <see cref="IEvent"/>; otherwise, false.</returns>
+    /// <param name="type">The type to check for IEvent interface implementation.</param>
+    /// <returns>True if the type is <see cref="IEvent"/> or a generic form of IEvent; otherwise, false.</returns>
     private static bool IsEventInterface(Type type)
     {
         if (type.IsGenericType)

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Query;
 
@@ -21,10 +18,10 @@ public static class ArcanicMediatorBuilderExtensions
     /// <returns>The mediator builder instance to enable method chaining.</returns>
     public static IArcanicMediatorBuilder AddQueries(this IArcanicMediatorBuilder builder, Assembly assembly)
     {
-        var queryServiceRegistrar = new QueryServiceRegistrar(builder.Services, builder.Configuration);
+        var queryDependencyRegistry = new QueryDependencyRegistry(builder.DependencyRegistryAccessor);
 
-        queryServiceRegistrar.RegisterQueriesFromAssembly(assembly);
-        queryServiceRegistrar.RegisterRequiredServices();
+        queryDependencyRegistry.RegisterQueriesFromAssembly(assembly);
+        queryDependencyRegistry.RegisterRequiredServices();
 
         return builder;
     }
@@ -54,7 +51,7 @@ public static class ArcanicMediatorBuilderExtensions
         
         ValidateQueryPipelineBehaviorType(queryPipelineBehaviorType);
         
-        builder.Services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType, builder.Configuration.Lifetime));
+        builder.DependencyRegistryAccessor.Registry.Add(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType);
         
         return builder;
     }

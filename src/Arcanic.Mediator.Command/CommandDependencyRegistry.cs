@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using Arcanic.Mediator.Command.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Arcanic.Mediator.Command.Abstractions;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Handler;
@@ -15,40 +12,34 @@ namespace Arcanic.Mediator.Command;
 /// This class handles automatic discovery and registration of command handlers, pre-handlers, post-handlers,
 /// and required pipeline services from assemblies.
 /// </summary>
-public class CommandServiceRegistrar
+public class CommandDependencyRegistry
 {
     /// <summary>
-    /// The configuration settings for the Arcanic Mediator service, including service lifetime options.
+    /// Lazy singleton accessor for the DependencyRegistry instance that manages service registrations.
     /// </summary>
-    private readonly ArcanicMediatorServiceConfiguration _configuration;
-
+    private readonly DependencyRegistryAccessor _dependencyRegistryAccessor;
+    
     /// <summary>
-    /// The service collection used for dependency injection registration.
+    /// Initializes a new instance of the <see cref="CommandDependencyRegistry"/> class.
     /// </summary>
-    private readonly IServiceCollection _services;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CommandServiceRegistrar"/> class.
-    /// </summary>
-    /// <param name="services">The service collection used for dependency injection registration.</param>
-    /// <param name="configuration">The configuration settings for the Arcanic Mediator service.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
-    public CommandServiceRegistrar(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
+    /// <param name="dependencyRegistryAccessor">The accessor for the dependency registry where services will be registered.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dependencyRegistryAccessor"/> is null.</exception>
+    public CommandDependencyRegistry(DependencyRegistryAccessor dependencyRegistryAccessor)
     {
-        _services = services ?? throw new ArgumentNullException(nameof(services));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _dependencyRegistryAccessor = dependencyRegistryAccessor;
     }
 
     /// <summary>
     /// Registers the core services required for command processing, including the command mediator
     /// and default pipeline behaviors for pre and post-processing.
     /// </summary>
-    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
-    public CommandServiceRegistrar RegisterRequiredServices()
+    /// <returns>The current <see cref="CommandDependencyRegistry"/> instance to enable method chaining.</returns>
+    public CommandDependencyRegistry RegisterRequiredServices()
     {
-        _services.Add(new ServiceDescriptor(typeof(ICommandMediator), typeof(CommandMediator), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        _dependencyRegistryAccessor.Registry
+            .Add(typeof(ICommandMediator), typeof(CommandMediator))
+            .Add(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
+            .Add(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
         return this;
     }
@@ -59,10 +50,10 @@ public class CommandServiceRegistrar
     /// </summary>
     /// <param name="assembly">The assembly to scan for command types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
-    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="CommandDependencyRegistry"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public CommandServiceRegistrar RegisterCommandsFromAssembly(Assembly assembly)
+    public CommandDependencyRegistry RegisterCommandsFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -90,19 +81,20 @@ public class CommandServiceRegistrar
 
                 return true;
             });
-
+        
         foreach (var registration in commandHandlerRegistrations)
         {
-            _services.AddTransient(registration.commandHandlerInterface, registration.handlerType);
+            _dependencyRegistryAccessor.Registry.Add(registration.commandHandlerInterface, registration.handlerType);
         }
 
         return this;
     }
 
     /// <summary>
-    /// Determines whether the specified type is a command interface.
+    /// Determines whether the specified type represents a command interface.
+    /// This method handles both generic and non-generic forms of command interfaces.
     /// </summary>
-    /// <param name="type">The type to check.</param>
+    /// <param name="type">The type to check for command interface implementation.</param>
     /// <returns>True if the type is <see cref="ICommand"/> or <see cref="ICommand{TResult}"/>; otherwise, false.</returns>
     private static bool IsCommandInterface(Type type)
     {
@@ -116,9 +108,12 @@ public class CommandServiceRegistrar
     }
 
     /// <summary>
-    /// Determines whether the specified type is a command handler interface (main, pre, or post).
+    /// Determines whether the specified type represents a command handler interface (main, pre, or post).
+    /// This method checks if the type is a generic interface matching any of the supported command handler patterns:
+    /// <see cref="ICommandHandler{TCommand}"/>, <see cref="ICommandHandler{TCommand, TResult}"/>, 
+    /// <see cref="ICommandPreHandler{TCommand}"/>, or <see cref="ICommandPostHandler{TCommand}"/>.
     /// </summary>
-    /// <param name="type">The type to check.</param>
+    /// <param name="type">The type to examine for command handler interface compatibility.</param>
     /// <returns>True if the type is a command handler interface; otherwise, false.</returns>
     private static bool IsCommandHandlerInterface(Type type)
     {

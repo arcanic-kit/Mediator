@@ -1,11 +1,11 @@
-﻿using Arcanic.Mediator.Command;
-using Arcanic.Mediator.Event;
-using Arcanic.Mediator.Query;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using System.Reflection;
 using Arcanic.Mediator;
+using Arcanic.Mediator.Event;
 using Arcanic.Mediator.Request;
+using Arcanic.Mediator.Command;
+using Arcanic.Mediator.Query;
+using Arcanic.Mediator.Abstractions.Configuration;
 using CleanArchitecture.Application.Common.PipelineBehaviors;
 
 namespace CleanArchitecture.Application;
@@ -16,7 +16,7 @@ public static class ApplicationExtensions
     {
         builder.Services.AddArcanicMediator(config =>
         {
-            config.Lifetime = ServiceLifetime.Scoped;
+            config.InstanceLifetime = InstanceLifetime.Scoped;
         })
         .AddPipelineBehavior(typeof(ExamplePipelineBehavior<,>))
         .AddRequestPipelineBehavior(typeof(ExampleRequestPipelineBehavior<,>))

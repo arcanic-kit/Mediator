@@ -1,4 +1,4 @@
-﻿using Arcanic.Mediator.Abstractions;
+﻿using Arcanic.Mediator.Abstractions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator;
