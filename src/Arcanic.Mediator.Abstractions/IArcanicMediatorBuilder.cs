@@ -1,7 +1,4 @@
-﻿using Arcanic.Mediator.Abstractions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Arcanic.Mediator.Abstractions;
+﻿namespace Arcanic.Mediator.Abstractions;
 
 /// <summary>
 /// Defines the contract for building and configuring an Arcanic mediator instance.
@@ -10,19 +7,7 @@ namespace Arcanic.Mediator.Abstractions;
 /// </summary>
 public interface IArcanicMediatorBuilder
 {
-    /// <summary>
-    /// Gets the configuration settings for the Arcanic Mediator service.
-    /// Contains options and settings that control the behavior of the mediator,
-    /// such as service lifetime and other configuration parameters.
-    /// </summary>
-    /// <value>The <see cref="ArcanicMediatorServiceConfiguration"/> instance containing mediator configuration.</value>
-    ArcanicMediatorServiceConfiguration Configuration { get; }
-
-    /// <summary>
-    /// Gets the service collection used for dependency injection registration.
-    /// </summary>
-    /// <value>The <see cref="IServiceCollection"/> instance for registering services.</value>
-    IServiceCollection Services { get; }
+    DependencyRegistryAccessor DependencyRegistryAccessor { get; }
     
     /// <summary>
     /// Adds a pipeline behavior to the mediator configuration.

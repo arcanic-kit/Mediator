@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Event.Abstractions.Pipeline;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Event;
 
@@ -19,10 +18,10 @@ public static class ArcanicMediatorBuilderExtensions
     /// <returns>The mediator builder instance to enable method chaining.</returns>
     public static IArcanicMediatorBuilder AddEvents(this IArcanicMediatorBuilder builder, Assembly assembly)
     {
-        var eventServiceRegistrar = new EventServiceRegistrar(builder.Services, builder.Configuration);
+        var eventDependencyRegistry = new EventDependencyRegistry(builder.DependencyRegistryAccessor);
 
-        eventServiceRegistrar.RegisterEventsFromAssembly(assembly);
-        eventServiceRegistrar.RegisterRequiredServices();
+        eventDependencyRegistry.RegisterEventsFromAssembly(assembly);
+        eventDependencyRegistry.RegisterRequiredServices();
 
         return builder;
     }
@@ -52,7 +51,7 @@ public static class ArcanicMediatorBuilderExtensions
         
         ValidateEventPipelineBehaviorType(eventPipelineBehaviorType);
         
-        builder.Services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType, builder.Configuration.InstanceLifetime));
+        builder.DependencyRegistryAccessor.Registry.Add(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType);
         
         return builder;
     }

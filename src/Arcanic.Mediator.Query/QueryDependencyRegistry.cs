@@ -1,10 +1,6 @@
-﻿using System;
-using System.Linq;
-using Arcanic.Mediator.Query.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Arcanic.Mediator.Query.Abstractions;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
-using Arcanic.Mediator.Abstractions.Configuration;
 using Arcanic.Mediator.Query.Abstractions.Handler;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Pipeline;
@@ -16,41 +12,29 @@ namespace Arcanic.Mediator.Query;
 /// This class handles automatic discovery and registration of query handlers, pre-handlers, post-handlers,
 /// and required pipeline services from assemblies.
 /// </summary>
-public class QueryServiceRegistrar
+public class QueryDependencyRegistry
 {
     /// <summary>
-    /// The configuration settings for the Arcanic Mediator service, including service lifetime options.
+    /// Lazy singleton accessor for the DependencyRegistry instance.
     /// </summary>
-    private readonly ArcanicMediatorServiceConfiguration _configuration;
+    private readonly DependencyRegistryAccessor _dependencyRegistryAccessor;
 
-    /// <summary>
-    /// The service collection used for dependency injection registration.
-    /// </summary>
-    private readonly IServiceCollection _services;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="QueryServiceRegistrar"/> class with the specified
-    /// service collection and message registry.
-    /// </summary>
-    /// <param name="services">The dependency injection service collection used for registering discovered handlers.</param>
-    /// <param name="configuration">The configuration settings for the Arcanic Mediator service.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="services"/> or <paramref name="configuration"/> is null.</exception>
-    public QueryServiceRegistrar(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
+    public QueryDependencyRegistry(DependencyRegistryAccessor dependencyRegistryAccessor)
     {
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-        _services = services ?? throw new ArgumentNullException(nameof(services));
+        _dependencyRegistryAccessor = dependencyRegistryAccessor;
     }
 
     /// <summary>
     /// Registers the core services required for query processing, including the query mediator
     /// and default pipeline behaviors for pre and post-processing.
     /// </summary>
-    /// <returns>The current <see cref="QueryServiceRegistrar"/> instance to enable method chaining.</returns>
-    public QueryServiceRegistrar RegisterRequiredServices()
+    /// <returns>The current <see cref="QueryDependencyRegistry"/> instance to enable method chaining.</returns>
+    public QueryDependencyRegistry RegisterRequiredServices()
     {
-        _services.Add(new ServiceDescriptor(typeof(IQueryMediator), typeof(QueryMediator), _configuration.InstanceLifetime));
-        _services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
-        _services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
+        _dependencyRegistryAccessor.Registry
+            .Add(typeof(IQueryMediator), typeof(QueryMediator))
+            .Add(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>))
+            .Add(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
 
         return this;
     }
@@ -63,10 +47,10 @@ public class QueryServiceRegistrar
     /// </summary>
     /// <param name="assembly">The assembly to scan for query types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
-    /// <returns>The current <see cref="QueryServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="QueryDependencyRegistry"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public QueryServiceRegistrar RegisterQueriesFromAssembly(Assembly assembly)
+    public QueryDependencyRegistry RegisterQueriesFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -94,10 +78,10 @@ public class QueryServiceRegistrar
 
                 return true;
             });
-
+        
         foreach (var registration in queryHandlerRegistrations)
         {
-            _services.Add(new ServiceDescriptor(registration.queryHandlerInterface, registration.handlerType, _configuration.InstanceLifetime));
+            _dependencyRegistryAccessor.Registry.Add(registration.queryHandlerInterface, registration.handlerType);
         }
 
         return this;

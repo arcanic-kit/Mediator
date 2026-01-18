@@ -1,10 +1,6 @@
-﻿using System;
-using System.Linq;
-using Arcanic.Mediator.Command.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Arcanic.Mediator.Command.Abstractions;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
-using Arcanic.Mediator.Abstractions.Configuration;
 using Arcanic.Mediator.Command.Abstractions.Handler;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Pipeline;
@@ -16,40 +12,29 @@ namespace Arcanic.Mediator.Command;
 /// This class handles automatic discovery and registration of command handlers, pre-handlers, post-handlers,
 /// and required pipeline services from assemblies.
 /// </summary>
-public class CommandServiceRegistrar
+public class CommandDependencyRegistry
 {
     /// <summary>
-    /// The configuration settings for the Arcanic Mediator service, including service lifetime options.
+    /// Lazy singleton accessor for the DependencyRegistry instance.
     /// </summary>
-    private readonly ArcanicMediatorServiceConfiguration _configuration;
-
-    /// <summary>
-    /// The service collection used for dependency injection registration.
-    /// </summary>
-    private readonly IServiceCollection _services;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CommandServiceRegistrar"/> class.
-    /// </summary>
-    /// <param name="services">The service collection used for dependency injection registration.</param>
-    /// <param name="configuration">The configuration settings for the Arcanic Mediator service.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is null.</exception>
-    public CommandServiceRegistrar(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
+    private readonly DependencyRegistryAccessor _dependencyRegistryAccessor;
+    
+    public CommandDependencyRegistry(DependencyRegistryAccessor dependencyRegistryAccessor)
     {
-        _services = services ?? throw new ArgumentNullException(nameof(services));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _dependencyRegistryAccessor = dependencyRegistryAccessor;
     }
 
     /// <summary>
     /// Registers the core services required for command processing, including the command mediator
     /// and default pipeline behaviors for pre and post-processing.
     /// </summary>
-    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
-    public CommandServiceRegistrar RegisterRequiredServices()
+    /// <returns>The current <see cref="CommandDependencyRegistry"/> instance to enable method chaining.</returns>
+    public CommandDependencyRegistry RegisterRequiredServices()
     {
-        _services.Add(new ServiceDescriptor(typeof(ICommandMediator), typeof(CommandMediator), _configuration.InstanceLifetime));
-        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
-        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
+        _dependencyRegistryAccessor.Registry
+            .Add(typeof(ICommandMediator), typeof(CommandMediator))
+            .Add(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
+            .Add(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
         return this;
     }
@@ -60,10 +45,10 @@ public class CommandServiceRegistrar
     /// </summary>
     /// <param name="assembly">The assembly to scan for command types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
-    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="CommandDependencyRegistry"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public CommandServiceRegistrar RegisterCommandsFromAssembly(Assembly assembly)
+    public CommandDependencyRegistry RegisterCommandsFromAssembly(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -91,10 +76,10 @@ public class CommandServiceRegistrar
 
                 return true;
             });
-
+        
         foreach (var registration in commandHandlerRegistrations)
         {
-            _services.AddTransient(registration.commandHandlerInterface, registration.handlerType);
+            _dependencyRegistryAccessor.Registry.Add(registration.commandHandlerInterface, registration.handlerType);
         }
 
         return this;

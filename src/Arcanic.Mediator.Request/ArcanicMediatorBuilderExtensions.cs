@@ -1,6 +1,5 @@
 ﻿using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Request.Abstractions.Pipeline;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Request;
 
@@ -25,7 +24,7 @@ public static class ArcanicMediatorBuilderExtensions
 
         ValidateRequestPipelineBehaviorType(requestPipelineBehaviorType);
         
-        builder.Services.Add(new ServiceDescriptor(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType, builder.Configuration.InstanceLifetime));
+        builder.DependencyRegistryAccessor.Registry.Add(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType);
 
         return builder;
     }

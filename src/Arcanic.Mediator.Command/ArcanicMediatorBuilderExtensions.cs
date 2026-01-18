@@ -1,9 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Command;
 
@@ -27,10 +24,10 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(assembly);
         
-        var commandServiceRegistrar = new CommandServiceRegistrar(builder.Services, builder.Configuration);
+        var commandDependencyRegistry = new CommandDependencyRegistry(builder.DependencyRegistryAccessor);
 
-        commandServiceRegistrar.RegisterCommandsFromAssembly(assembly);
-        commandServiceRegistrar.RegisterRequiredServices();
+        commandDependencyRegistry.RegisterCommandsFromAssembly(assembly);
+        commandDependencyRegistry.RegisterRequiredServices();
 
         return builder;
     }
@@ -55,7 +52,7 @@ public static class ArcanicMediatorBuilderExtensions
         
         ValidateCommandPipelineBehaviorType(commandPipelineBehaviorType);
         
-        builder.Services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType, builder.Configuration.InstanceLifetime));
+        builder.DependencyRegistryAccessor.Registry.Add(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
         
         return builder;
     }

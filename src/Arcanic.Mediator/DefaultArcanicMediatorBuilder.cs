@@ -11,15 +11,10 @@ namespace Arcanic.Mediator;
 public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
 {
     /// <summary>
-    /// Gets the configuration settings for the Arcanic mediator service.
+    /// Lazy singleton accessor for the DependencyRegistry instance.
     /// </summary>
-    public ArcanicMediatorServiceConfiguration Configuration { get; }
+    public DependencyRegistryAccessor DependencyRegistryAccessor { get; }
     
-    /// <summary>
-    /// Gets the service collection used for dependency injection registration.
-    /// </summary>
-    public IServiceCollection Services { get; }
-
     /// <summary>
     /// Initializes a new instance of the DefaultArcanicMediatorBuilder class.
     /// </summary>
@@ -27,8 +22,7 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
     /// <param name="configuration">The configuration settings for the mediator service.</param>
     public DefaultArcanicMediatorBuilder(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
     {
-        Services = services;
-        Configuration = configuration;
+        DependencyRegistryAccessor = new DependencyRegistryAccessor(services, configuration);
     }
 
     /// <summary>
@@ -44,7 +38,7 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
         
         ValidatePipelineBehaviorType(pipelineBehaviorType);
         
-        Services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), pipelineBehaviorType, Configuration.InstanceLifetime));
+        DependencyRegistryAccessor.Registry.Add(typeof(IPipelineBehavior<,>), pipelineBehaviorType);
 
         return this;
     }
