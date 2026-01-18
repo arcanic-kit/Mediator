@@ -55,7 +55,7 @@ public static class ArcanicMediatorBuilderExtensions
         
         ValidateCommandPipelineBehaviorType(commandPipelineBehaviorType);
         
-        builder.Services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType, builder.Configuration.Lifetime));
+        builder.Services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType, builder.Configuration.InstanceLifetime));
         
         return builder;
     }

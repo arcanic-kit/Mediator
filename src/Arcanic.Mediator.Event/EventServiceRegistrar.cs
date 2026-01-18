@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
+using Arcanic.Mediator.Abstractions.Configuration;
 using Arcanic.Mediator.Event.Abstractions.Handler;
 using Arcanic.Mediator.Event.Abstractions.Pipeline;
 using Arcanic.Mediator.Event.Pipeline;
@@ -44,9 +45,9 @@ public class EventServiceRegistrar
     /// <returns>The current <see cref="EventServiceRegistrar"/> instance to enable method chaining.</returns>
     public EventServiceRegistrar RegisterRequiredServices()
     {
-        _services.Add(new ServiceDescriptor(typeof(IEventPublisher), typeof(EventPublisher), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        _services.Add(new ServiceDescriptor(typeof(IEventPublisher), typeof(EventPublisher), _configuration.InstanceLifetime));
+        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
+        _services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
         
         return this;
     }
@@ -93,7 +94,7 @@ public class EventServiceRegistrar
 
         foreach (var registration in eventHandlerRegistrations)
         {
-            _services.Add(new ServiceDescriptor(registration.eventHandlerInterface, registration.handlerType, _configuration.Lifetime));
+            _services.Add(new ServiceDescriptor(registration.eventHandlerInterface, registration.handlerType, _configuration.InstanceLifetime));
         }
 
         return this;

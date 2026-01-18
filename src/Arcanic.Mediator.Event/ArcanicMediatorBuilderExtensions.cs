@@ -52,7 +52,7 @@ public static class ArcanicMediatorBuilderExtensions
         
         ValidateEventPipelineBehaviorType(eventPipelineBehaviorType);
         
-        builder.Services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType, builder.Configuration.Lifetime));
+        builder.Services.Add(new ServiceDescriptor(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType, builder.Configuration.InstanceLifetime));
         
         return builder;
     }

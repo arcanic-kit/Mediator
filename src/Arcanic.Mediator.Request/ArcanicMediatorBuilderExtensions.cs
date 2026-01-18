@@ -24,8 +24,8 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(requestPipelineBehaviorType);
 
         ValidateRequestPipelineBehaviorType(requestPipelineBehaviorType);
-
-        builder.Services.Add(new ServiceDescriptor(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType, builder.Configuration.Lifetime));
+        
+        builder.Services.Add(new ServiceDescriptor(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType, builder.Configuration.InstanceLifetime));
 
         return builder;
     }

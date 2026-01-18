@@ -1,4 +1,5 @@
 ﻿using Arcanic.Mediator.Abstractions;
+using Arcanic.Mediator.Abstractions.Configuration;
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -43,7 +44,7 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
         
         ValidatePipelineBehaviorType(pipelineBehaviorType);
         
-        Services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), pipelineBehaviorType, Configuration.Lifetime));
+        Services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), pipelineBehaviorType, Configuration.InstanceLifetime));
 
         return this;
     }

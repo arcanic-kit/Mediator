@@ -4,6 +4,7 @@ using Arcanic.Mediator.Command.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
+using Arcanic.Mediator.Abstractions.Configuration;
 using Arcanic.Mediator.Command.Abstractions.Handler;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Pipeline;
@@ -46,9 +47,9 @@ public class CommandServiceRegistrar
     /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
     public CommandServiceRegistrar RegisterRequiredServices()
     {
-        _services.Add(new ServiceDescriptor(typeof(ICommandMediator), typeof(CommandMediator), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        _services.Add(new ServiceDescriptor(typeof(ICommandMediator), typeof(CommandMediator), _configuration.InstanceLifetime));
+        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
+        _services.Add(new ServiceDescriptor(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
 
         return this;
     }

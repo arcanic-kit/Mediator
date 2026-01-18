@@ -4,6 +4,7 @@ using Arcanic.Mediator.Query.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
+using Arcanic.Mediator.Abstractions.Configuration;
 using Arcanic.Mediator.Query.Abstractions.Handler;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Pipeline;
@@ -47,9 +48,9 @@ public class QueryServiceRegistrar
     /// <returns>The current <see cref="QueryServiceRegistrar"/> instance to enable method chaining.</returns>
     public QueryServiceRegistrar RegisterRequiredServices()
     {
-        _services.Add(new ServiceDescriptor(typeof(IQueryMediator), typeof(QueryMediator), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>), _configuration.Lifetime));
-        _services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>), _configuration.Lifetime));
+        _services.Add(new ServiceDescriptor(typeof(IQueryMediator), typeof(QueryMediator), _configuration.InstanceLifetime));
+        _services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
+        _services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>), _configuration.InstanceLifetime));
 
         return this;
     }
@@ -96,7 +97,7 @@ public class QueryServiceRegistrar
 
         foreach (var registration in queryHandlerRegistrations)
         {
-            _services.Add(new ServiceDescriptor(registration.queryHandlerInterface, registration.handlerType, _configuration.Lifetime));
+            _services.Add(new ServiceDescriptor(registration.queryHandlerInterface, registration.handlerType, _configuration.InstanceLifetime));
         }
 
         return this;

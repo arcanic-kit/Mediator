@@ -54,7 +54,7 @@ public static class ArcanicMediatorBuilderExtensions
         
         ValidateQueryPipelineBehaviorType(queryPipelineBehaviorType);
         
-        builder.Services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType, builder.Configuration.Lifetime));
+        builder.Services.Add(new ServiceDescriptor(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType, builder.Configuration.InstanceLifetime));
         
         return builder;
     }
