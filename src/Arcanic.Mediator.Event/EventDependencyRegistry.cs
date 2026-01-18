@@ -1,8 +1,6 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
-using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Arcanic.Mediator.Abstractions;
-using Arcanic.Mediator.Abstractions.Configuration;
 using Arcanic.Mediator.Event.Abstractions.Handler;
 using Arcanic.Mediator.Event.Abstractions.Pipeline;
 using Arcanic.Mediator.Event.Pipeline;
@@ -17,10 +15,15 @@ namespace Arcanic.Mediator.Event;
 public class EventDependencyRegistry
 {
     /// <summary>
-    /// Lazy singleton accessor for the DependencyRegistry instance.
+    /// Lazy singleton accessor for the DependencyRegistry instance that manages service registrations.
     /// </summary>
     private readonly DependencyRegistryAccessor _dependencyRegistryAccessor;
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EventDependencyRegistry"/> class.
+    /// </summary>
+    /// <param name="dependencyRegistryAccessor">The accessor for the dependency registry where services will be registered.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dependencyRegistryAccessor"/> is null.</exception>
     public EventDependencyRegistry(DependencyRegistryAccessor dependencyRegistryAccessor)
     {
         _dependencyRegistryAccessor = dependencyRegistryAccessor;
@@ -91,9 +94,10 @@ public class EventDependencyRegistry
 
     /// <summary>
     /// Determines whether the specified type represents the <see cref="IEvent"/> interface.
+    /// This method handles both generic and non-generic forms of the IEvent interface.
     /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <returns>True if the type is <see cref="IEvent"/>; otherwise, false.</returns>
+    /// <param name="type">The type to check for IEvent interface implementation.</param>
+    /// <returns>True if the type is <see cref="IEvent"/> or a generic form of IEvent; otherwise, false.</returns>
     private static bool IsEventInterface(Type type)
     {
         if (type.IsGenericType)

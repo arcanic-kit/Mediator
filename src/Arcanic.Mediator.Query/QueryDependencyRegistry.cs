@@ -15,10 +15,15 @@ namespace Arcanic.Mediator.Query;
 public class QueryDependencyRegistry
 {
     /// <summary>
-    /// Lazy singleton accessor for the DependencyRegistry instance.
+    /// Lazy singleton accessor for the DependencyRegistry instance that manages service registrations.
     /// </summary>
     private readonly DependencyRegistryAccessor _dependencyRegistryAccessor;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="QueryDependencyRegistry"/> class.
+    /// </summary>
+    /// <param name="dependencyRegistryAccessor">The accessor for the dependency registry where services will be registered.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dependencyRegistryAccessor"/> is null.</exception>
     public QueryDependencyRegistry(DependencyRegistryAccessor dependencyRegistryAccessor)
     {
         _dependencyRegistryAccessor = dependencyRegistryAccessor;

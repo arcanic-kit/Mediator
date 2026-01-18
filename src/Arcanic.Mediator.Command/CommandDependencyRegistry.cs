@@ -15,10 +15,15 @@ namespace Arcanic.Mediator.Command;
 public class CommandDependencyRegistry
 {
     /// <summary>
-    /// Lazy singleton accessor for the DependencyRegistry instance.
+    /// Lazy singleton accessor for the DependencyRegistry instance that manages service registrations.
     /// </summary>
     private readonly DependencyRegistryAccessor _dependencyRegistryAccessor;
     
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CommandDependencyRegistry"/> class.
+    /// </summary>
+    /// <param name="dependencyRegistryAccessor">The accessor for the dependency registry where services will be registered.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="dependencyRegistryAccessor"/> is null.</exception>
     public CommandDependencyRegistry(DependencyRegistryAccessor dependencyRegistryAccessor)
     {
         _dependencyRegistryAccessor = dependencyRegistryAccessor;
@@ -86,9 +91,10 @@ public class CommandDependencyRegistry
     }
 
     /// <summary>
-    /// Determines whether the specified type is a command interface.
+    /// Determines whether the specified type represents a command interface.
+    /// This method handles both generic and non-generic forms of command interfaces.
     /// </summary>
-    /// <param name="type">The type to check.</param>
+    /// <param name="type">The type to check for command interface implementation.</param>
     /// <returns>True if the type is <see cref="ICommand"/> or <see cref="ICommand{TResult}"/>; otherwise, false.</returns>
     private static bool IsCommandInterface(Type type)
     {
@@ -102,9 +108,12 @@ public class CommandDependencyRegistry
     }
 
     /// <summary>
-    /// Determines whether the specified type is a command handler interface (main, pre, or post).
+    /// Determines whether the specified type represents a command handler interface (main, pre, or post).
+    /// This method checks if the type is a generic interface matching any of the supported command handler patterns:
+    /// <see cref="ICommandHandler{TCommand}"/>, <see cref="ICommandHandler{TCommand, TResult}"/>, 
+    /// <see cref="ICommandPreHandler{TCommand}"/>, or <see cref="ICommandPostHandler{TCommand}"/>.
     /// </summary>
-    /// <param name="type">The type to check.</param>
+    /// <param name="type">The type to examine for command handler interface compatibility.</param>
     /// <returns>True if the type is a command handler interface; otherwise, false.</returns>
     private static bool IsCommandHandlerInterface(Type type)
     {
