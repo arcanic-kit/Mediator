@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="DependencyInjection\EventServiceRegistrar.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Arcanic.Mediator.Event.Abstractions\Arcanic.Mediator.Event.Abstractions.csproj" />
     <ProjectReference Include="..\Arcanic.Mediator\Arcanic.Mediator.csproj" />
   </ItemGroup>

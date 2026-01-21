@@ -1,4 +1,6 @@
-﻿namespace Arcanic.Mediator.Abstractions;
+﻿using Arcanic.Mediator.Abstractions.DependencyInjection;
+
+namespace Arcanic.Mediator.Abstractions;
 
 /// <summary>
 /// Defines the contract for building and configuring an Arcanic mediator instance.
@@ -8,11 +10,11 @@
 public interface IArcanicMediatorBuilder
 {
     /// <summary>
-    /// Gets the dependency registry accessor that provides access to the underlying service registration container.
-    /// This accessor allows components to register services and dependencies required by the mediator.
+    /// Gets the service registrar used to register services in the dependency injection container.
+    /// This registrar allows for the configuration and registration of services required by the mediator.
     /// </summary>
-    /// <value>The dependency registry accessor instance used for service registration.</value>
-    DependencyRegistryAccessor DependencyRegistryAccessor { get; }
+    /// <value>An instance of <see cref="IServiceRegistrar"/> for service registration operations.</value>
+    IServiceRegistrar ServiceRegistrar { get; }
     
     /// <summary>
     /// Adds a pipeline behavior to the mediator configuration.

@@ -15,7 +15,7 @@ public static class ArcanicMediatorServiceCollectionExtensions
     /// <returns>A <see cref="DefaultArcanicMediatorBuilder"/> instance for further configuration.</returns>
     public static DefaultArcanicMediatorBuilder AddArcanicMediator(this IServiceCollection services)
     {
-        return new DefaultArcanicMediatorBuilder(services, new  ArcanicMediatorServiceConfiguration());
+        return new DefaultArcanicMediatorBuilder(services, new  ArcanicMediatorConfiguration());
     }
 
     /// <summary>
@@ -24,9 +24,9 @@ public static class ArcanicMediatorServiceCollectionExtensions
     /// <param name="services">The service collection to add the mediator services to.</param>
     /// <param name="configuration">An action to configure the mediator service options.</param>
     /// <returns>A <see cref="DefaultArcanicMediatorBuilder"/> instance for further configuration.</returns>
-    public static DefaultArcanicMediatorBuilder AddArcanicMediator(this IServiceCollection services, Action<ArcanicMediatorServiceConfiguration> configuration)
+    public static DefaultArcanicMediatorBuilder AddArcanicMediator(this IServiceCollection services, Action<ArcanicMediatorConfiguration> configuration)
     {
-        var serviceConfig = new ArcanicMediatorServiceConfiguration();
+        var serviceConfig = new ArcanicMediatorConfiguration();
 
         configuration.Invoke(serviceConfig);
 
@@ -39,7 +39,7 @@ public static class ArcanicMediatorServiceCollectionExtensions
     /// <param name="services">The service collection to add the mediator services to.</param>
     /// <param name="configuration">The mediator service configuration instance to use.</param>
     /// <returns>A <see cref="DefaultArcanicMediatorBuilder"/> instance for further configuration.</returns>
-    public static DefaultArcanicMediatorBuilder AddArcanicMediator(this IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
+    public static DefaultArcanicMediatorBuilder AddArcanicMediator(this IServiceCollection services, ArcanicMediatorConfiguration configuration)
     {
         return new DefaultArcanicMediatorBuilder(services, configuration);
     }

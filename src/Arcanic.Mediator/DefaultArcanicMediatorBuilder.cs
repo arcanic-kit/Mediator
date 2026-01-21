@@ -1,6 +1,8 @@
 ﻿using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Configuration;
+using Arcanic.Mediator.Abstractions.DependencyInjection;
 using Arcanic.Mediator.Abstractions.Pipeline;
+using Arcanic.Mediator.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator;
@@ -13,16 +15,16 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
     /// <summary>
     /// Lazy singleton accessor for the DependencyRegistry instance.
     /// </summary>
-    public DependencyRegistryAccessor DependencyRegistryAccessor { get; }
+    public IServiceRegistrar ServiceRegistrar { get; }
     
     /// <summary>
     /// Initializes a new instance of the DefaultArcanicMediatorBuilder class.
     /// </summary>
     /// <param name="services">The service collection for dependency injection.</param>
     /// <param name="configuration">The configuration settings for the mediator service.</param>
-    public DefaultArcanicMediatorBuilder(IServiceCollection services, ArcanicMediatorServiceConfiguration configuration)
+    public DefaultArcanicMediatorBuilder(IServiceCollection services, ArcanicMediatorConfiguration configuration)
     {
-        DependencyRegistryAccessor = new DependencyRegistryAccessor(services, configuration);
+        ServiceRegistrar = new ServiceRegistrar(configuration, services);
     }
 
     /// <summary>
@@ -37,8 +39,8 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
         ArgumentNullException.ThrowIfNull(pipelineBehaviorType);
         
         ValidatePipelineBehaviorType(pipelineBehaviorType);
-        
-        DependencyRegistryAccessor.Registry.Add(typeof(IPipelineBehavior<,>), pipelineBehaviorType);
+
+        ServiceRegistrar.Register(typeof(IPipelineBehavior<,>), pipelineBehaviorType);
 
         return this;
     }

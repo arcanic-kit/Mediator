@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Event.Abstractions.Pipeline;
+using Arcanic.Mediator.Event.DependencyInjection;
 
 namespace Arcanic.Mediator.Event;
 
@@ -18,10 +19,13 @@ public static class ArcanicMediatorBuilderExtensions
     /// <returns>The mediator builder instance to enable method chaining.</returns>
     public static IArcanicMediatorBuilder AddEvents(this IArcanicMediatorBuilder builder, Assembly assembly)
     {
-        var eventDependencyRegistry = new EventDependencyRegistry(builder.DependencyRegistryAccessor);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(assembly);
 
-        eventDependencyRegistry.RegisterEventsFromAssembly(assembly);
-        eventDependencyRegistry.RegisterRequiredServices();
+        var eventServiceRegistrar = new EventServiceRegistrar(builder.ServiceRegistrar);
+
+        eventServiceRegistrar.RegisterEventsFromAssembly(assembly);
+        eventServiceRegistrar.RegisterRequiredServices();
 
         return builder;
     }
@@ -48,54 +52,11 @@ public static class ArcanicMediatorBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(eventPipelineBehaviorType);
-        
-        ValidateEventPipelineBehaviorType(eventPipelineBehaviorType);
-        
-        builder.DependencyRegistryAccessor.Registry.Add(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType);
-        
-        return builder;
-    }
-    
-    /// <summary>
-    /// Validates that the provided type is suitable for use as an event pipeline behavior.
-    /// This method ensures the type implements the required interface, is not abstract, and is not an interface.
-    /// </summary>
-    /// <param name="eventPipelineBehaviorType">The type to validate for event pipeline behavior compatibility.</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the type does not meet the requirements:
-    /// - Must implement <see cref="IEventPipelineBehavior{TEvent, TEventResult}"/>
-    /// - Cannot be abstract
-    /// - Cannot be an interface
-    /// </exception>
-    private static void ValidateEventPipelineBehaviorType(Type eventPipelineBehaviorType)
-    {
-        // Check if the type implements any generic version of IEventPipelineBehavior<,>
-        var implementsIEventPipelineBehavior = eventPipelineBehaviorType
-            .GetInterfaces()
-            .Any(interfaceType => 
-                interfaceType.IsGenericType && 
-                interfaceType.GetGenericTypeDefinition() == typeof(IEventPipelineBehavior<,>));
 
-        if (!implementsIEventPipelineBehavior)
-        {
-            throw new ArgumentException(
-                $"Type '{eventPipelineBehaviorType.FullName}' must implement '{typeof(IEventPipelineBehavior<,>).FullName}' interface.",
-                nameof(eventPipelineBehaviorType));
-        }
-        
-        // Ensure the type is not abstract and has a public constructor
-        if (eventPipelineBehaviorType.IsAbstract)
-        {
-            throw new ArgumentException(
-                $"Type '{eventPipelineBehaviorType.FullName}' cannot be abstract.",
-                nameof(eventPipelineBehaviorType));
-        }
-        
-        if (eventPipelineBehaviorType.IsInterface)
-        {
-            throw new ArgumentException(
-                $"Type '{eventPipelineBehaviorType.FullName}' cannot be an interface.",
-                nameof(eventPipelineBehaviorType));
-        }
+        var eventServiceRegistrar = new EventServiceRegistrar(builder.ServiceRegistrar);
+
+        eventServiceRegistrar.RegisterEventPipelineBehavior(eventPipelineBehaviorType);
+
+        return builder;
     }
 }
