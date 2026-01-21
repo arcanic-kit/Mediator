@@ -8,37 +8,24 @@ using System.Reflection;
 namespace Arcanic.Mediator.Command.DependencyInjection;
 
 /// <summary>
-/// Provides functionality for registering command-related services and handlers with the dependency injection container.
-/// This class handles automatic discovery and registration of command handlers, pre-handlers, post-handlers,
-/// and required pipeline services from assemblies.
+/// Provides extension methods for <see cref="IServiceRegistrar"/> to simplify registration of command-related services and handlers.
+/// These extensions enable fluent configuration of command processing components including mediators, handlers, and pipeline behaviors.
 /// </summary>
-public class CommandServiceRegistrar
+public static class ServiceRegistrarExtensions
 {
-    private readonly IServiceRegistrar _serviceRegistrar;
-    
-    /// <summary>
-    /// Initializes a new instance of the <see cref="CommandServiceRegistrar"/> class.
-    /// </summary>
-    /// <param name="serviceRegistrar">The service registrar used to register command-related services and handlers.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceRegistrar"/> is <c>null</c>.</exception>
-    public CommandServiceRegistrar(IServiceRegistrar serviceRegistrar)
-    {
-        _serviceRegistrar = serviceRegistrar ?? throw new ArgumentNullException(nameof(serviceRegistrar));
-    }
-
     /// <summary>
     /// Registers the core services required for command processing, including the command mediator
     /// and default pipeline behaviors for pre and post-processing.
     /// </summary>
-    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
-    public CommandServiceRegistrar RegisterRequiredServices()
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
+    public static IServiceRegistrar RegisterCommandRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
-        _serviceRegistrar
+        serviceRegistrar
             .Register(typeof(ICommandMediator), typeof(CommandMediator))
             .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
             .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
-        return this;
+        return serviceRegistrar;
     }
 
     /// <summary>
@@ -47,10 +34,10 @@ public class CommandServiceRegistrar
     /// </summary>
     /// <param name="assembly">The assembly to scan for command types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
-    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public CommandServiceRegistrar RegisterCommandsFromAssembly(Assembly assembly)
+    public static IServiceRegistrar RegisterCommandsFromAssembly(this IServiceRegistrar serviceRegistrar, Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -78,13 +65,13 @@ public class CommandServiceRegistrar
 
                 return true;
             });
-        
+
         foreach (var registration in commandHandlerRegistrations)
         {
-            _serviceRegistrar.Register(registration.commandHandlerInterface, registration.handlerType);
+            serviceRegistrar.Register(registration.commandHandlerInterface, registration.handlerType);
         }
 
-        return this;
+        return serviceRegistrar;
     }
 
     /// <summary>
@@ -96,7 +83,7 @@ public class CommandServiceRegistrar
     /// The type that implements <see cref="ICommandPipelineBehavior{TCommand, TResult}"/>.
     /// Must be a concrete class that is not abstract or an interface.
     /// </param>
-    /// <returns>The current <see cref="CommandServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="commandPipelineBehaviorType"/> is <c>null</c>.
     /// </exception>
@@ -104,14 +91,15 @@ public class CommandServiceRegistrar
     /// Thrown when <paramref name="commandPipelineBehaviorType"/> does not implement the required 
     /// <see cref="ICommandPipelineBehavior{TCommand, TResult}"/> interface, is abstract, or is an interface type.
     /// </exception>
-    public CommandServiceRegistrar RegisterCommandPipelineBehavior(Type commandPipelineBehaviorType)
+    public static IServiceRegistrar RegisterCommandPipelineBehavior(this IServiceRegistrar serviceRegistrar, Type commandPipelineBehaviorType)
     {
         ValidateCommandPipelineBehaviorType(commandPipelineBehaviorType);
 
-        _serviceRegistrar.Register(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
+        serviceRegistrar.Register(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
 
-        return this;
+        return serviceRegistrar;
     }
+
 
     /// <summary>
     /// Determines whether the specified type represents a command interface.

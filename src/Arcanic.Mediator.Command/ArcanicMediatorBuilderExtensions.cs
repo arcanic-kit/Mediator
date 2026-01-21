@@ -24,11 +24,9 @@ public static class ArcanicMediatorBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(assembly);
-        
-        var commandServiceRegistrar = new CommandServiceRegistrar(builder.ServiceRegistrar);
 
-        commandServiceRegistrar.RegisterCommandsFromAssembly(assembly);
-        commandServiceRegistrar.RegisterRequiredServices();
+        builder.ServiceRegistrar.RegisterCommandsFromAssembly(assembly);
+        builder.ServiceRegistrar.RegisterCommandRequiredServices();
 
         return builder;
     }
@@ -51,9 +49,7 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(commandPipelineBehaviorType);
 
-        var commandServiceRegistrar = new CommandServiceRegistrar(builder.ServiceRegistrar);
-
-        commandServiceRegistrar.RegisterCommandPipelineBehavior(commandPipelineBehaviorType);
+        builder.ServiceRegistrar.RegisterCommandPipelineBehavior(commandPipelineBehaviorType);
 
         return builder;
     }
