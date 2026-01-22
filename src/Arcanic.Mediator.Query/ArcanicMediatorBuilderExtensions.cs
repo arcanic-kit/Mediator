@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
+using Arcanic.Mediator.Query.DependencyInjection;
 
 namespace Arcanic.Mediator.Query;
 
@@ -18,10 +19,11 @@ public static class ArcanicMediatorBuilderExtensions
     /// <returns>The mediator builder instance to enable method chaining.</returns>
     public static IArcanicMediatorBuilder AddQueries(this IArcanicMediatorBuilder builder, Assembly assembly)
     {
-        var queryDependencyRegistry = new QueryDependencyRegistry(builder.DependencyRegistryAccessor);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(assembly);
 
-        queryDependencyRegistry.RegisterQueriesFromAssembly(assembly);
-        queryDependencyRegistry.RegisterRequiredServices();
+        builder.ServiceRegistrar.RegisterQueriesFromAssembly(assembly);
+        builder.ServiceRegistrar.RegisterQueryRequiredServices();
 
         return builder;
     }
@@ -48,54 +50,9 @@ public static class ArcanicMediatorBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(queryPipelineBehaviorType);
-        
-        ValidateQueryPipelineBehaviorType(queryPipelineBehaviorType);
-        
-        builder.DependencyRegistryAccessor.Registry.Add(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType);
-        
-        return builder;
-    }
-    
-    /// <summary>
-    /// Validates that the provided type is suitable for use as a query pipeline behavior.
-    /// This method ensures the type implements the required interface, is not abstract, and is not an interface.
-    /// </summary>
-    /// <param name="queryPipelineBehaviorType">The type to validate for query pipeline behavior compatibility.</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the type does not meet the requirements:
-    /// - Must implement <see cref="IQueryPipelineBehavior{TQuery, TQueryResult}"/>
-    /// - Cannot be abstract
-    /// - Cannot be an interface
-    /// </exception>
-    private static void ValidateQueryPipelineBehaviorType(Type queryPipelineBehaviorType)
-    {
-        // Check if the type implements any generic version of IQueryPipelineBehavior<,>
-        var implementsIQueryPipelineBehavior = queryPipelineBehaviorType
-            .GetInterfaces()
-            .Any(interfaceType => 
-                interfaceType.IsGenericType && 
-                interfaceType.GetGenericTypeDefinition() == typeof(IQueryPipelineBehavior<,>));
 
-        if (!implementsIQueryPipelineBehavior)
-        {
-            throw new ArgumentException(
-                $"Type '{queryPipelineBehaviorType.FullName}' must implement '{typeof(IQueryPipelineBehavior<,>).FullName}' interface.",
-                nameof(queryPipelineBehaviorType));
-        }
-        
-        // Ensure the type is not abstract and has a public constructor
-        if (queryPipelineBehaviorType.IsAbstract)
-        {
-            throw new ArgumentException(
-                $"Type '{queryPipelineBehaviorType.FullName}' cannot be abstract.",
-                nameof(queryPipelineBehaviorType));
-        }
-        
-        if (queryPipelineBehaviorType.IsInterface)
-        {
-            throw new ArgumentException(
-                $"Type '{queryPipelineBehaviorType.FullName}' cannot be an interface.",
-                nameof(queryPipelineBehaviorType));
-        }
+        builder.ServiceRegistrar.RegisterQueryPipelineBehavior(queryPipelineBehaviorType);
+
+        return builder;
     }
 }

@@ -1,6 +1,7 @@
-﻿using System.Reflection;
-using Arcanic.Mediator.Abstractions;
+﻿using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
+using Arcanic.Mediator.Command.DependencyInjection;
+using System.Reflection;
 
 namespace Arcanic.Mediator.Command;
 
@@ -23,11 +24,9 @@ public static class ArcanicMediatorBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(assembly);
-        
-        var commandDependencyRegistry = new CommandDependencyRegistry(builder.DependencyRegistryAccessor);
 
-        commandDependencyRegistry.RegisterCommandsFromAssembly(assembly);
-        commandDependencyRegistry.RegisterRequiredServices();
+        builder.ServiceRegistrar.RegisterCommandsFromAssembly(assembly);
+        builder.ServiceRegistrar.RegisterCommandRequiredServices();
 
         return builder;
     }
@@ -49,48 +48,9 @@ public static class ArcanicMediatorBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(commandPipelineBehaviorType);
-        
-        ValidateCommandPipelineBehaviorType(commandPipelineBehaviorType);
-        
-        builder.DependencyRegistryAccessor.Registry.Add(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
-        
+
+        builder.ServiceRegistrar.RegisterCommandPipelineBehavior(commandPipelineBehaviorType);
+
         return builder;
-    }
-
-    /// <summary>
-    /// Validates that the specified type implements the ICommandPipelineBehavior interface.
-    /// </summary>
-    /// <param name="commandPipelineBehaviorType">The type to validate.</param>
-    /// <exception cref="ArgumentException">Thrown when the type does not implement ICommandPipelineBehavior interface.</exception>
-    private static void ValidateCommandPipelineBehaviorType(Type commandPipelineBehaviorType)
-    {
-        // Check if the type implements any generic version of ICommandPipelineBehavior<,>
-        var implementsICommandPipelineBehavior = commandPipelineBehaviorType
-            .GetInterfaces()
-            .Any(interfaceType => 
-                interfaceType.IsGenericType && 
-                interfaceType.GetGenericTypeDefinition() == typeof(ICommandPipelineBehavior<,>));
-
-        if (!implementsICommandPipelineBehavior)
-        {
-            throw new ArgumentException(
-                $"Type '{commandPipelineBehaviorType.FullName}' must implement '{typeof(ICommandPipelineBehavior<,>).FullName}' interface.",
-                nameof(commandPipelineBehaviorType));
-        }
-        
-        // Ensure the type is not abstract and has a public constructor
-        if (commandPipelineBehaviorType.IsAbstract)
-        {
-            throw new ArgumentException(
-                $"Type '{commandPipelineBehaviorType.FullName}' cannot be abstract.",
-                nameof(commandPipelineBehaviorType));
-        }
-        
-        if (commandPipelineBehaviorType.IsInterface)
-        {
-            throw new ArgumentException(
-                $"Type '{commandPipelineBehaviorType.FullName}' cannot be an interface.",
-                nameof(commandPipelineBehaviorType));
-        }
     }
 }

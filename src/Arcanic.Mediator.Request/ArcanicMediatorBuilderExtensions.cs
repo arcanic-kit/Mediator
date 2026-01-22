@@ -1,5 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Request.Abstractions.Pipeline;
+using Arcanic.Mediator.Request.DependencyInjection;
 
 namespace Arcanic.Mediator.Request;
 
@@ -22,51 +23,8 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(requestPipelineBehaviorType);
 
-        ValidateRequestPipelineBehaviorType(requestPipelineBehaviorType);
-        
-        builder.DependencyRegistryAccessor.Registry.Add(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType);
+        builder.ServiceRegistrar.RegisterRequestPipelineBehavior(requestPipelineBehaviorType);
 
         return builder;
-    }
-
-    /// <summary>
-    /// Validates that the specified type implements the <see cref="IRequestPipelineBehavior{TRequest, TResponse}"/> interface
-    /// and meets the requirements for registration as a pipeline behavior.
-    /// </summary>
-    /// <param name="requestPipelineBehaviorType">The type to validate.</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the type does not implement <see cref="IRequestPipelineBehavior{TRequest, TResponse}"/> interface,
-    /// is abstract, or is an interface type.
-    /// </exception>
-    private static void ValidateRequestPipelineBehaviorType(Type requestPipelineBehaviorType)
-    {
-        // Check if the type implements any generic version of IRequestPipelineBehavior<,>
-        var implementsIRequestPipelineBehavior = requestPipelineBehaviorType
-            .GetInterfaces()
-            .Any(interfaceType =>
-                interfaceType.IsGenericType &&
-                interfaceType.GetGenericTypeDefinition() == typeof(IRequestPipelineBehavior<,>));
-
-        if (!implementsIRequestPipelineBehavior)
-        {
-            throw new ArgumentException(
-                $"Type '{requestPipelineBehaviorType.FullName}' must implement '{typeof(IRequestPipelineBehavior<,>).FullName}' interface.",
-                nameof(requestPipelineBehaviorType));
-        }
-
-        // Ensure the type is not abstract and has a public constructor
-        if (requestPipelineBehaviorType.IsAbstract)
-        {
-            throw new ArgumentException(
-                $"Type '{requestPipelineBehaviorType.FullName}' cannot be abstract.",
-                nameof(requestPipelineBehaviorType));
-        }
-
-        if (requestPipelineBehaviorType.IsInterface)
-        {
-            throw new ArgumentException(
-                $"Type '{requestPipelineBehaviorType.FullName}' cannot be an interface.",
-                nameof(requestPipelineBehaviorType));
-        }
     }
 }

@@ -4,7 +4,7 @@
 /// Represents the configuration settings for the Arcanic Mediator service.
 /// Contains options and settings that control the behavior of the mediator.
 /// </summary>
-public class ArcanicMediatorServiceConfiguration
+public class ArcanicMediatorConfiguration
 {
     /// <summary>
     /// Gets or sets the service lifetime for the Arcanic Mediator services.
