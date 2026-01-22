@@ -22,10 +22,8 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(assembly);
 
-        var queryServiceRegistrar = new QueryServiceRegistrar(builder.ServiceRegistrar);
-
-        queryServiceRegistrar.RegisterQueriesFromAssembly(assembly);
-        queryServiceRegistrar.RegisterRequiredServices();
+        builder.ServiceRegistrar.RegisterQueriesFromAssembly(assembly);
+        builder.ServiceRegistrar.RegisterQueryRequiredServices();
 
         return builder;
     }
@@ -53,9 +51,7 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(queryPipelineBehaviorType);
 
-        var queryServiceRegistrar = new QueryServiceRegistrar(builder.ServiceRegistrar);
-
-        queryServiceRegistrar.RegisterQueryPipelineBehavior(queryPipelineBehaviorType);
+        builder.ServiceRegistrar.RegisterQueryPipelineBehavior(queryPipelineBehaviorType);
 
         return builder;
     }

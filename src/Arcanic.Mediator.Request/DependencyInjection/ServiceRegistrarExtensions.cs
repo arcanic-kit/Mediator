@@ -4,27 +4,11 @@ using Arcanic.Mediator.Request.Abstractions.Pipeline;
 namespace Arcanic.Mediator.Request.DependencyInjection;
 
 /// <summary>
-/// Provides functionality for registering request-related pipeline behaviors with the dependency injection container.
-/// This class handles the registration of custom pipeline behaviors that can be applied to request processing
-/// for cross-cutting concerns such as logging, validation, caching, or performance monitoring.
+/// Provides extension methods for <see cref="IServiceRegistrar"/> to register request pipeline behaviors
+/// and other mediator-related services for dependency injection.
 /// </summary>
-public class RequestServiceRegistrar
+public static class ServiceRegistrarExtensions
 {
-    /// <summary>
-    /// The service registrar used to register services in the dependency injection container.
-    /// </summary>
-    private readonly IServiceRegistrar _serviceRegistrar;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RequestServiceRegistrar"/> class.
-    /// </summary>
-    /// <param name="serviceRegistrar">The service registrar used to register request-related services and handlers.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceRegistrar"/> is <c>null</c>.</exception>
-    public RequestServiceRegistrar(IServiceRegistrar serviceRegistrar)
-    {
-        _serviceRegistrar = serviceRegistrar ?? throw new ArgumentNullException(nameof(serviceRegistrar));
-    }
-
     /// <summary>
     /// Registers a custom request pipeline behavior with the dependency injection container.
     /// The pipeline behavior will be executed as part of the request processing pipeline,
@@ -34,7 +18,7 @@ public class RequestServiceRegistrar
     /// The type that implements <see cref="IRequestPipelineBehavior{TRequest, TResponse}"/>.
     /// Must be a concrete class that is not abstract or an interface.
     /// </param>
-    /// <returns>The current <see cref="RequestServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="requestPipelineBehaviorType"/> is <c>null</c>.
     /// </exception>
@@ -42,14 +26,14 @@ public class RequestServiceRegistrar
     /// Thrown when <paramref name="requestPipelineBehaviorType"/> does not implement the required 
     /// <see cref="IRequestPipelineBehavior{TRequest, TResponse}"/> interface, is abstract, or is an interface type.
     /// </exception>
-    public RequestServiceRegistrar RegisterRequestPipelineBehavior(Type requestPipelineBehaviorType)
+    public static IServiceRegistrar RegisterRequestPipelineBehavior(this IServiceRegistrar serviceRegistrar, Type requestPipelineBehaviorType)
     {
         ArgumentNullException.ThrowIfNull(requestPipelineBehaviorType);
         ValidateRequestPipelineBehaviorType(requestPipelineBehaviorType);
 
-        _serviceRegistrar.Register(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType);
+        serviceRegistrar.Register(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType);
 
-        return this;
+        return serviceRegistrar;
     }
 
     /// <summary>

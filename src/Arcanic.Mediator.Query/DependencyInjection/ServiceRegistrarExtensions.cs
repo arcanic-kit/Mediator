@@ -1,47 +1,31 @@
-﻿using Arcanic.Mediator.Query.Abstractions;
-using System.Reflection;
+﻿using Arcanic.Mediator.Abstractions.DependencyInjection;
+using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Handler;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Pipeline;
-using Arcanic.Mediator.Abstractions.DependencyInjection;
+using System.Reflection;
 
 namespace Arcanic.Mediator.Query.DependencyInjection;
 
 /// <summary>
-/// Provides functionality for registering query-related services and handlers with the dependency injection container.
-/// This class handles automatic discovery and registration of query handlers, pre-handlers, post-handlers,
-/// and required pipeline services from assemblies.
+/// Provides extension methods for <see cref="IServiceRegistrar"/> to simplify registration of query-related services and handlers.
+/// These extensions enable fluent configuration of query processing components including mediators, handlers, and pipeline behaviors.
 /// </summary>
-public class QueryServiceRegistrar
+public static class ServiceRegistrarExtensions
 {
-    /// <summary>
-    /// The service registrar used to register services in the dependency injection container.
-    /// </summary>
-    private readonly IServiceRegistrar _serviceRegistrar;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="QueryServiceRegistrar"/> class.
-    /// </summary>
-    /// <param name="serviceRegistrar">The service registrar used to register query-related services and handlers.</param>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceRegistrar"/> is <c>null</c>.</exception>
-    public QueryServiceRegistrar(IServiceRegistrar serviceRegistrar)
-    {
-        _serviceRegistrar = serviceRegistrar ?? throw new ArgumentNullException(nameof(serviceRegistrar));
-    }
-
     /// <summary>
     /// Registers the core services required for query processing, including the query mediator
     /// and default pipeline behaviors for pre and post-processing.
     /// </summary>
-    /// <returns>The current <see cref="QueryServiceRegistrar"/> instance to enable method chaining.</returns>
-    public QueryServiceRegistrar RegisterRequiredServices()
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
+    public static IServiceRegistrar RegisterQueryRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
-        _serviceRegistrar
+        serviceRegistrar
             .Register(typeof(IQueryMediator), typeof(QueryMediator))
             .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>))
             .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
 
-        return this;
+        return serviceRegistrar;
     }
 
     /// <summary>
@@ -52,10 +36,10 @@ public class QueryServiceRegistrar
     /// </summary>
     /// <param name="assembly">The assembly to scan for query types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
-    /// <returns>The current <see cref="QueryServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public QueryServiceRegistrar RegisterQueriesFromAssembly(Assembly assembly)
+    public static IServiceRegistrar RegisterQueriesFromAssembly(this IServiceRegistrar serviceRegistrar, Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -83,13 +67,13 @@ public class QueryServiceRegistrar
 
                 return true;
             });
-        
+
         foreach (var registration in queryHandlerRegistrations)
         {
-            _serviceRegistrar.Register(registration.queryHandlerInterface, registration.handlerType);
+            serviceRegistrar.Register(registration.queryHandlerInterface, registration.handlerType);
         }
 
-        return this;
+        return serviceRegistrar;
     }
 
     /// <summary>
@@ -101,7 +85,7 @@ public class QueryServiceRegistrar
     /// The type that implements <see cref="IQueryPipelineBehavior{TQuery, TQueryResult}"/>.
     /// Must be a concrete class that is not abstract or an interface.
     /// </param>
-    /// <returns>The current <see cref="QueryServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="queryPipelineBehaviorType"/> is <c>null</c>.
     /// </exception>
@@ -109,13 +93,13 @@ public class QueryServiceRegistrar
     /// Thrown when <paramref name="queryPipelineBehaviorType"/> does not implement the required 
     /// <see cref="IQueryPipelineBehavior{TQuery, TQueryResult}"/> interface, is abstract, or is an interface type.
     /// </exception>
-    public QueryServiceRegistrar RegisterQueryPipelineBehavior(Type queryPipelineBehaviorType)
+    public static IServiceRegistrar RegisterQueryPipelineBehavior(this IServiceRegistrar serviceRegistrar, Type queryPipelineBehaviorType)
     {
         ValidateQueryPipelineBehaviorType(queryPipelineBehaviorType);
 
-        _serviceRegistrar.Register(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType);
+        serviceRegistrar.Register(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType);
 
-        return this;
+        return serviceRegistrar;
     }
 
     /// <summary>

@@ -23,9 +23,7 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(requestPipelineBehaviorType);
 
-        var requestServiceRegistrar = new RequestServiceRegistrar(builder.ServiceRegistrar);
-
-        requestServiceRegistrar.RegisterRequestPipelineBehavior(requestPipelineBehaviorType);
+        builder.ServiceRegistrar.RegisterRequestPipelineBehavior(requestPipelineBehaviorType);
 
         return builder;
     }

@@ -22,10 +22,8 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(assembly);
 
-        var eventServiceRegistrar = new EventServiceRegistrar(builder.ServiceRegistrar);
-
-        eventServiceRegistrar.RegisterEventsFromAssembly(assembly);
-        eventServiceRegistrar.RegisterRequiredServices();
+        builder.ServiceRegistrar.RegisterEventsFromAssembly(assembly);
+        builder.ServiceRegistrar.RegisterEventRequiredServices();
 
         return builder;
     }
@@ -53,9 +51,7 @@ public static class ArcanicMediatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(eventPipelineBehaviorType);
 
-        var eventServiceRegistrar = new EventServiceRegistrar(builder.ServiceRegistrar);
-
-        eventServiceRegistrar.RegisterEventPipelineBehavior(eventPipelineBehaviorType);
+        builder.ServiceRegistrar.RegisterEventPipelineBehavior(eventPipelineBehaviorType);
 
         return builder;
     }
