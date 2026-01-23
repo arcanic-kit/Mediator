@@ -27,8 +27,6 @@
     <Project Path="samples/CleanArchitecture/CleanArchitecture.WebApi/CleanArchitecture.WebApi.csproj" />
   </Folder>
   <Folder Name="/src/">
-    <File Path="src/Directory.Build.props" />
-    <File Path="src/Directory.Packages.props" />
     <Project Path="src/Arcanic.Mediator.Abstractions/Arcanic.Mediator.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator/Arcanic.Mediator.csproj" />
   </Folder>
@@ -49,5 +47,7 @@
     <Project Path="src/Arcanic.Mediator.Query.Abstractions/Arcanic.Mediator.Query.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator.Query/Arcanic.Mediator.Query.csproj" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Arcanic.Mediator.Query.Tests/Arcanic.Mediator.Query.Tests.csproj" Id="07072170-c10d-4a37-bed5-df92df7a885c" />
+  </Folder>
 </Solution>
