@@ -54,15 +54,18 @@ public class QueryMediatorTests
         
         var mediator = serviceProvider.GetRequiredService<IQueryMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
-        var query = new SimpleQuery();
+        var query = new SimpleQuery()
+        {
+            Value = 42
+        };
 
         // Act
         var response = await mediator.SendAsync(query);
 
         // Assert
         response.Should().NotBeNull();
-        response.Result.Should().Be(100);
-        response.Message.Should().Be("Processed 100");
+        response.Result.Should().Be(42);
+        response.Message.Should().Be("Processed 42");
         
         executedTypeTracker.ExecutedTypes[0].Should().Be<ExamplePipelineBehavior<SimpleQuery, SimpleQueryResponse>>();
         executedTypeTracker.ExecutedTypes[1].Should().Be<ExampleRequestPipelineBehavior<SimpleQuery, SimpleQueryResponse>>();
