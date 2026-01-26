@@ -48,7 +48,7 @@ public class ExampleRequestPipelineBehavior<TRequest, TResponse> : IRequestPipel
         
         try
         {
-            var result = await next();
+            var result = await next(cancellationToken);
             
             stopwatch.Stop();
             _logger.LogInformation("[REQUEST BEHAVIOR] Completed execution of {RequestName} with correlation ID {CorrelationId} in {ElapsedMilliseconds}ms", 

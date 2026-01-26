@@ -53,7 +53,7 @@ public class ExamplePipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TM
 
         try
         {
-            var result = await next();
+            var result = await next(cancellationToken);
             
             stopwatch.Stop();
             var memoryAfter = GC.GetTotalMemory(false);
