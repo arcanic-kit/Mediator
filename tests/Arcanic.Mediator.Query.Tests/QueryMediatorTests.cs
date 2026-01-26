@@ -1,6 +1,7 @@
 using System.Reflection;
 using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Simple;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Query.Tests;
@@ -16,15 +17,19 @@ public class QueryMediatorTests
         var serviceProvider = service.BuildServiceProvider();
         
         var mediator = serviceProvider.GetRequiredService<IQueryMediator>();
-        var query = new SimpleQuery { Value = 42 };
+        var query = new SimpleQuery();
 
         // Act
         var response = await mediator.SendAsync(query);
 
         // Assert
-        Assert.NotNull(response);
-        Assert.Equal(84, response.Result); // Value * 2
-        Assert.Equal("Processed 42", response.Message);
+        response.Should().NotBeNull();
+        response.Result.Should().Be(100);
+        response.Message.Should().Be("Processed 100");
+        
+        query.ExecutedTypes[0].Should().Be<SimpleQueryPreHandler>();
+        query.ExecutedTypes[1].Should().Be<SimpleQueryHandler>();
+        query.ExecutedTypes[2].Should().Be<SimpleQueryPostHandler>();
     }
 
     // [Fact]

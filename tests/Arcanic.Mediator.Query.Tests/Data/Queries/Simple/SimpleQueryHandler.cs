@@ -4,12 +4,14 @@ namespace Arcanic.Mediator.Query.Tests.Data.Queries.Simple;
 
 public class SimpleQueryHandler : IQueryHandler<SimpleQuery, SimpleQueryResponse>
 {
-    public Task<SimpleQueryResponse> HandleAsync(SimpleQuery request, CancellationToken cancellationToken = default)
+    public Task<SimpleQueryResponse> HandleAsync(SimpleQuery query, CancellationToken cancellationToken = default)
     {
+        query.ExecutedTypes.Add(GetType());
+        
         return Task.FromResult(new SimpleQueryResponse
         {
-            Result = request.Value * 2,
-            Message = $"Processed {request.Value}"
+            Result = 100,
+            Message = $"Processed {100}"
         });
     }
 }

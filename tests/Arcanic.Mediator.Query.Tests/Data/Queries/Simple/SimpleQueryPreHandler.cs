@@ -9,8 +9,11 @@ public class SimpleQueryPreHandler: IQueryPreHandler<SimpleQuery>
 
     public Task HandleAsync(SimpleQuery query, CancellationToken cancellationToken = default)
     {
+        query.ExecutedTypes.Add(GetType());
+        
         WasExecuted = true;
         ReceivedQuery = query;
+        
         return Task.CompletedTask;
     }
 }
