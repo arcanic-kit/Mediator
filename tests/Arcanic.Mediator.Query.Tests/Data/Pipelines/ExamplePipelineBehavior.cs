@@ -1,16 +1,15 @@
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Pipeline;
+using Arcanic.Mediator.Query.Tests.Utils;
 
 namespace Arcanic.Mediator.Query.Tests.Data.Pipelines;
 
-public class ExamplePipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
+public class ExamplePipelineBehavior<TMessage, TResponse>(ExecutedTypeTracker executedTypeTracker) : IPipelineBehavior<TMessage, TResponse>
     where TMessage : IMessage
 {
-    public bool Executed { get; private set; }
-    
     public async Task<TResponse> HandleAsync(TMessage message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
-        Executed = true;
+        executedTypeTracker.ExecutedTypes.Add(GetType());
         return await next(cancellationToken);
     }
 }

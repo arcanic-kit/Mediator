@@ -4,5 +4,5 @@ namespace Arcanic.Mediator.Query.Tests.Data.Queries.Simple;
 
 public class SimpleQuery : IQuery<SimpleQueryResponse>
 {
-    public List<Type> ExecutedTypes { get; } = new();
+    public int Value { get; set; }
 }
