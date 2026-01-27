@@ -49,6 +49,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Arcanic.Mediator.Command.Tests/Arcanic.Mediator.Command.Tests.csproj" Id="41805b25-3fdb-4d30-973a-7d16030f7f55" />
+    <Project Path="tests/Arcanic.Mediator.Event.Tests/Arcanic.Mediator.Event.Tests.csproj" Id="3007eebf-5877-45b1-a520-7503163e73e9" />
     <Project Path="tests/Arcanic.Mediator.Query.Tests/Arcanic.Mediator.Query.Tests.csproj" Id="07072170-c10d-4a37-bed5-df92df7a885c" />
   </Folder>
 </Solution>
