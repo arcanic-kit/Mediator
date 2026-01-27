@@ -44,6 +44,6 @@ public class ExampleCommandPipelineBehavior<TCommand, TResponse> : ICommandPipel
         
         _logger.LogInformation("[COMMAND BEHAVIOR] Starting execution of {CommandName} with correlation ID {CorrelationId}", commandName, correlationId);
         
-        return await next();
+        return await next(cancellationToken);
     }
 }
