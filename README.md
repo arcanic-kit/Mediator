@@ -281,55 +281,508 @@ public class ProductController : ControllerBase
     {
         await _commandMediator.SendAsync(command);
     }
-
-    [HttpPost("event")]
-    public async Task PublishEvent(ProductCreatedEvent @event)
-    {
-        await _eventPublisher.PublishAsync(@event);
-    }
 }
 ```
 
 ## Pipeline Behaviors
 
-Create reusable behaviors for complex cross-cutting concerns:
+Arcanic Mediator provides a powerful pipeline system that allows you to implement cross-cutting concerns through different types of pipeline behaviors. Each message type (Commands, Queries, Events, and generic Requests) has its own dedicated pipeline interface, enabling type-safe and context-aware processing.
+
+### Pipeline Types and Their Differences
+
+| Pipeline Type | Interface | Purpose | Key Characteristics |
+|---------------|-----------|---------|-------------------|
+| **Generic Pipeline** | `IPipelineBehavior<TMessage, TResponse>` | Universal message processing | Works with all message types (Commands, Queries, Events), most flexible |
+| **Request Pipeline** | `IRequestPipelineBehavior<TRequest, TResponse>` | Commands and queries processing | Works with `ICommand` and `IQuery` messages, shared concerns |
+| **Command Pipeline** | `ICommandPipelineBehavior<TCommand, TResponse>` | Write operations processing | Optimized for state changes, transaction support |
+| **Query Pipeline** | `IQueryPipelineBehavior<TQuery, TResponse>` | Read operations processing | Caching-aware, performance monitoring focused |
+| **Event Pipeline** | `IEventPipelineBehavior<TEvent, TResponse>` | Domain event processing | Audit logging, event sourcing support |
+
+### When to Use Each Pipeline Type
+
+- **Generic Pipeline**: Use for cross-cutting concerns that apply to ALL message types including events (correlation tracking, global error handling, metrics collection)
+- **Request Pipeline**: Use for cross-cutting concerns that apply to both commands and queries only (request validation, authorization)
+- **Command Pipeline**: Use for write-specific concerns (transactions, authorization for modifications, business rule validation)
+- **Query Pipeline**: Use for read-specific optimizations (caching, query performance monitoring, read authorization)
+- **Event Pipeline**: Use for event-specific concerns (audit trails, event sourcing, notification reliability)
+
+### Generic Pipeline (Universal)
+
+The most universal pipeline that works with all message types - Commands, Queries, and Events:
 
 ```csharp
-public class ValidationPipelineBehavior<TMessage, TResult> : IPipelineBehavior<TMessage, TResult>
+using Arcanic.Mediator.Abstractions.Pipeline;
+
+public class GlobalMetricsPipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : notnull
 {
-    private readonly IValidator<TMessage> _validator;
+    private readonly IMetricsCollector _metricsCollector;
+    private readonly ILogger<GlobalMetricsPipelineBehavior<TMessage, TResponse>> _logger;
 
-    public ValidationPipelineBehavior(IValidator<TMessage> validator)
+    public GlobalMetricsPipelineBehavior(
+        IMetricsCollector metricsCollector,
+        ILogger<GlobalMetricsPipelineBehavior<TMessage, TResponse>> logger)
     {
-        _validator = validator;
+        _metricsCollector = metricsCollector;
+        _logger = logger;
     }
 
-    public async Task<TResult> HandleAsync(TMessage message, PipelineDelegate<TResult> next, CancellationToken cancellationToken = default)
+    public async Task<TResponse> HandleAsync(TMessage message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
-        // Validate before processing
-        var validationResult = await _validator.ValidateAsync(message, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            throw new ValidationException(validationResult.Errors);
-        }
+        var messageName = typeof(TMessage).Name;
+        var correlationId = Guid.NewGuid();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-        // Continue with pipeline
-        return await next();
+        // Start metrics collection
+        using var activity = _metricsCollector.StartActivity(messageName);
+        
+        _logger.LogDebug("[GLOBAL] Processing {MessageName} with correlation ID {CorrelationId}", 
+            messageName, correlationId);
+
+        try
+        {
+            var result = await next(cancellationToken);
+            
+            stopwatch.Stop();
+            
+            // Record successful execution metrics
+            _metricsCollector.RecordExecution(messageName, stopwatch.Elapsed, success: true);
+            
+            _logger.LogDebug("[GLOBAL] Completed {MessageName} in {ElapsedMs}ms with correlation ID {CorrelationId}", 
+                messageName, stopwatch.ElapsedMilliseconds, correlationId);
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            
+            // Record failed execution metrics
+            _metricsCollector.RecordExecution(messageName, stopwatch.Elapsed, success: false);
+            
+            _logger.LogError(ex, "[GLOBAL] Failed {MessageName} after {ElapsedMs}ms with correlation ID {CorrelationId}", 
+                messageName, stopwatch.ElapsedMilliseconds, correlationId);
+            
+            throw;
+        }
+    }
+}
+
+// Global error handling pipeline
+public class GlobalExceptionPipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
+    where TMessage : notnull
+{
+    private readonly ILogger<GlobalExceptionPipelineBehavior<TMessage, TResponse>> _logger;
+
+    public GlobalExceptionPipelineBehavior(ILogger<GlobalExceptionPipelineBehavior<TMessage, TResponse>> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task<TResponse> HandleAsync(TMessage message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await next(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            var messageName = typeof(TMessage).Name;
+            
+            // Log with structured data for monitoring systems
+            _logger.LogError(ex, 
+                "[GLOBAL ERROR] Unhandled exception in {MessageName}. Message: {@Message}",
+                messageName, message);
+
+            // You could implement circuit breaker, dead letter queue, etc. here
+            
+            throw; // Re-throw to maintain the original exception flow
+        }
     }
 }
 ```
 
-Add cross-cutting concerns with pipeline behaviors:
+### Request Pipeline (Generic)
+
+The most flexible pipeline that handles both commands and queries:
 
 ```csharp
-// Add during configuration
+using Arcanic.Mediator.Abstractions.Pipeline;
+using Arcanic.Mediator.Request.Abstractions;
+using Arcanic.Mediator.Request.Abstractions.Pipeline;
+
+public class LoggingRequestPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest
+{
+    private readonly ILogger<LoggingRequestPipelineBehavior<TRequest, TResponse>> _logger;
+
+    public LoggingRequestPipelineBehavior(ILogger<LoggingRequestPipelineBehavior<TRequest, TResponse>> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task<TResponse> HandleAsync(TRequest request, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        var requestName = typeof(TRequest).Name;
+        var correlationId = Guid.NewGuid();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        _logger.LogInformation("[REQUEST] Starting {RequestName} with correlation ID {CorrelationId}", 
+            requestName, correlationId);
+
+        try
+        {
+            var result = await next(cancellationToken);
+            
+            stopwatch.Stop();
+            _logger.LogInformation("[REQUEST] Completed {RequestName} in {ElapsedMs}ms with correlation ID {CorrelationId}", 
+                requestName, stopwatch.ElapsedMilliseconds, correlationId);
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            _logger.LogError(ex, "[REQUEST] Failed {RequestName} after {ElapsedMs}ms with correlation ID {CorrelationId}", 
+                requestName, stopwatch.ElapsedMilliseconds, correlationId);
+            throw;
+        }
+    }
+}
+```
+
+### Command Pipeline
+
+Specialized pipeline for command processing with transaction support:
+
+```csharp
+using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Command.Abstractions.Pipeline;
+
+public class TransactionCommandPipelineBehavior<TCommand, TResponse> : ICommandPipelineBehavior<TCommand, TResponse>
+    where TCommand : ICommand
+{
+    private readonly IDbContextTransaction _transaction;
+    private readonly ILogger<TransactionCommandPipelineBehavior<TCommand, TResponse>> _logger;
+
+    public TransactionCommandPipelineBehavior(
+        IDbContextTransaction transaction,
+        ILogger<TransactionCommandPipelineBehavior<TCommand, TResponse>> logger)
+    {
+        _transaction = transaction;
+        _logger = logger;
+    }
+
+    public async Task<TResponse> HandleAsync(TCommand command, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        var commandName = typeof(TCommand).Name;
+        
+        _logger.LogInformation("[COMMAND] Starting transaction for {CommandName}", commandName);
+
+        try
+        {
+            var result = await next(cancellationToken);
+            
+            await _transaction.CommitAsync(cancellationToken);
+            _logger.LogInformation("[COMMAND] Transaction committed for {CommandName}", commandName);
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await _transaction.RollbackAsync(cancellationToken);
+            _logger.LogError(ex, "[COMMAND] Transaction rolled back for {CommandName}", commandName);
+            throw;
+        }
+    }
+}
+
+// Authorization pipeline for commands
+public class AuthorizationCommandPipelineBehavior<TCommand, TResponse> : ICommandPipelineBehavior<TCommand, TResponse>
+    where TCommand : ICommand
+{
+    private readonly ICurrentUser _currentUser;
+    private readonly IAuthorizationService _authorizationService;
+
+    public AuthorizationCommandPipelineBehavior(ICurrentUser currentUser, IAuthorizationService authorizationService)
+    {
+        _currentUser = currentUser;
+        _authorizationService = authorizationService;
+    }
+
+    public async Task<TResponse> HandleAsync(TCommand command, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        var authorizationResult = await _authorizationService.AuthorizeAsync(
+            _currentUser.User, command, typeof(TCommand).Name);
+
+        if (!authorizationResult.Succeeded)
+        {
+            throw new UnauthorizedAccessException($"User not authorized to execute {typeof(TCommand).Name}");
+        }
+
+        return await next(cancellationToken);
+    }
+}
+```
+
+### Query Pipeline
+
+Optimized pipeline for query processing with caching support:
+
+```csharp
+using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Query.Abstractions.Pipeline;
+
+public class CachingQueryPipelineBehavior<TQuery, TResponse> : IQueryPipelineBehavior<TQuery, TResponse>
+    where TQuery : IQuery<TResponse>
+{
+    private readonly IMemoryCache _cache;
+    private readonly ILogger<CachingQueryPipelineBehavior<TQuery, TResponse>> _logger;
+
+    public CachingQueryPipelineBehavior(IMemoryCache cache, ILogger<CachingQueryPipelineBehavior<TQuery, TResponse>> logger)
+    {
+        _cache = cache;
+        _logger = logger;
+    }
+
+    public async Task<TResponse> HandleAsync(TQuery query, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        var cacheKey = $"{typeof(TQuery).Name}_{query.GetHashCode()}";
+        
+        // Try to get from cache first
+        if (_cache.TryGetValue(cacheKey, out TResponse cachedResult))
+        {
+            _logger.LogInformation("[QUERY] Cache hit for {QueryName}", typeof(TQuery).Name);
+            return cachedResult;
+        }
+
+        _logger.LogInformation("[QUERY] Cache miss for {QueryName}, executing query", typeof(TQuery).Name);
+
+        // Execute query and cache result
+        var result = await next(cancellationToken);
+        
+        var cacheOptions = new MemoryCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+            SlidingExpiration = TimeSpan.FromMinutes(1)
+        };
+
+        _cache.Set(cacheKey, result, cacheOptions);
+        
+        return result;
+    }
+}
+
+// Performance monitoring pipeline for queries
+public class PerformanceQueryPipelineBehavior<TQuery, TResponse> : IQueryPipelineBehavior<TQuery, TResponse>
+    where TQuery : IQuery<TResponse>
+{
+    private readonly ILogger<PerformanceQueryPipelineBehavior<TQuery, TResponse>> _logger;
+
+    public PerformanceQueryPipelineBehavior(ILogger<PerformanceQueryPipelineBehavior<TQuery, TResponse>> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task<TResponse> HandleAsync(TQuery query, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var queryName = typeof(TQuery).Name;
+
+        try
+        {
+            var result = await next(cancellationToken);
+            
+            stopwatch.Stop();
+            
+            if (stopwatch.ElapsedMilliseconds > 1000) // Log slow queries
+            {
+                _logger.LogWarning("[QUERY] Slow query detected: {QueryName} took {ElapsedMs}ms", 
+                    queryName, stopwatch.ElapsedMilliseconds);
+            }
+            else
+            {
+                _logger.LogInformation("[QUERY] {QueryName} completed in {ElapsedMs}ms", 
+                    queryName, stopwatch.ElapsedMilliseconds);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            stopwatch.Stop();
+            _logger.LogError(ex, "[QUERY] {QueryName} failed after {ElapsedMs}ms", 
+                queryName, stopwatch.ElapsedMilliseconds);
+            throw;
+        }
+    }
+}
+```
+
+### Event Pipeline
+
+Specialized pipeline for event processing with audit and reliability features:
+
+```csharp
+using Arcanic.Mediator.Event.Abstractions;
+using Arcanic.Mediator.Event.Abstractions.Pipeline;
+
+public class AuditEventPipelineBehavior<TEvent, TResponse> : IEventPipelineBehavior<TEvent, TResponse>
+    where TEvent : IEvent
+{
+    private readonly IAuditService _auditService;
+    private readonly ILogger<AuditEventPipelineBehavior<TEvent, TResponse>> _logger;
+
+    public AuditEventPipelineBehavior(IAuditService auditService, ILogger<AuditEventPipelineBehavior<TEvent, TResponse>> logger)
+    {
+        _auditService = auditService;
+        _logger = logger;
+    }
+
+    public async Task<TResponse> HandleAsync(TEvent @event, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        var eventName = typeof(TEvent).Name;
+        var correlationId = Guid.NewGuid();
+
+        // Create audit entry before processing
+        await _auditService.LogEventStartAsync(eventName, @event, correlationId, cancellationToken);
+        
+        _logger.LogInformation("[EVENT] Processing {EventName} with correlation ID {CorrelationId}", 
+            eventName, correlationId);
+
+        try
+        {
+            var result = await next(cancellationToken);
+            
+            // Log successful processing
+            await _auditService.LogEventCompletionAsync(eventName, correlationId, success: true, cancellationToken);
+            
+            return result;
+        }
+        catch (Exception ex)
+        {
+            // Log failed processing
+            await _auditService.LogEventCompletionAsync(eventName, correlationId, success: false, cancellationToken);
+            _logger.LogError(ex, "[EVENT] Failed to process {EventName} with correlation ID {CorrelationId}", 
+                eventName, correlationId);
+            throw;
+        }
+    }
+}
+
+// Reliability pipeline for events (retry logic)
+public class ReliabilityEventPipelineBehavior<TEvent, TResponse> : IEventPipelineBehavior<TEvent, TResponse>
+    where TEvent : IEvent
+{
+    private readonly ILogger<ReliabilityEventPipelineBehavior<TEvent, TResponse>> _logger;
+
+    public ReliabilityEventPipelineBehavior(ILogger<ReliabilityEventPipelineBehavior<TEvent, TResponse>> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task<TResponse> HandleAsync(TEvent @event, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
+    {
+        const int maxRetries = 3;
+        var eventName = typeof(TEvent).Name;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                return await next(cancellationToken);
+            }
+            catch (Exception ex) when (attempt < maxRetries && IsRetriableException(ex))
+            {
+                var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt)); // Exponential backoff
+                
+                _logger.LogWarning(ex, "[EVENT] Attempt {Attempt}/{MaxRetries} failed for {EventName}, retrying in {DelaySeconds}s", 
+                    attempt, maxRetries, eventName, delay.TotalSeconds);
+                
+                await Task.Delay(delay, cancellationToken);
+            }
+        }
+
+        // Final attempt without catching exception
+        return await next(cancellationToken);
+    }
+
+    private static bool IsRetriableException(Exception ex)
+    {
+        // Define which exceptions are retriable (network issues, temporary failures, etc.)
+        return ex is HttpRequestException || 
+               ex is TaskCanceledException || 
+               ex is SocketException;
+    }
+}
+```
+
+### Pipeline Registration and Configuration
+
+Register different pipeline behaviors based on your needs:
+
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+// Add Arcanic Mediator with all pipeline types
 builder.Services.AddArcanicMediator()
-    .AddPipelineBehavior(typeof(LoggingPipelineBehavior<,>))
-    .AddPipelineBehavior(typeof(ValidationPipelineBehavior<,>))
+    // Generic pipelines (apply to ALL message types - Commands, Queries, Events)
+    .AddPipelineBehavior(typeof(GlobalMetricsPipelineBehavior<,>))
+    .AddPipelineBehavior(typeof(GlobalExceptionPipelineBehavior<,>))
+    
+    // Request pipelines (apply to commands and queries)
+    .AddRequestPipelineBehavior(typeof(LoggingRequestPipelineBehavior<,>))
+    
+    // Command-specific pipelines
+    .AddCommandPipelineBehavior(typeof(AuthorizationCommandPipelineBehavior<,>))
+    .AddCommandPipelineBehavior(typeof(TransactionCommandPipelineBehavior<,>))
+    
+    // Query-specific pipelines
+    .AddQueryPipelineBehavior(typeof(CachingQueryPipelineBehavior<,>))
+    .AddQueryPipelineBehavior(typeof(PerformanceQueryPipelineBehavior<,>))
+    
+    // Event-specific pipelines
+    .AddEventPipelineBehavior(typeof(AuditEventPipelineBehavior<,>))
+    .AddEventPipelineBehavior(typeof(ReliabilityEventPipelineBehavior<,>))
+    
+    // Register modules
     .AddCommands(Assembly.GetExecutingAssembly())
     .AddQueries(Assembly.GetExecutingAssembly())
     .AddEvents(Assembly.GetExecutingAssembly());
+
+var app = builder.Build();
+```
+
+### Pipeline Execution Order
+
+Pipelines execute in the order they are registered:
+
+1. **Generic Pipelines** (outermost) - Execute for all message types (Commands, Queries, Events)
+2. **Request Pipelines** - Execute for commands and queries
+3. **Type-specific Pipelines** (Command/Query/Event) - Execute based on message type
+4. **Pre-handlers** - Execute before main handler
+5. **Main handler** - Executes the core business logic
+6. **Post-handlers** - Execute after main handler
+
+Example execution flow for a command:
+```
+Generic Pipeline (Metrics) 
+  → Generic Pipeline (Exception Handling)
+    → Request Pipeline (Logging) 
+      → Command Pipeline (Authorization)
+        → Command Pipeline (Transaction)
+          → Pre-handler (Validation)
+            → Main Handler (Business Logic)
+          → Post-handler (Notifications)
+```
+
+Example execution flow for an event:
+```
+Generic Pipeline (Metrics) 
+  → Generic Pipeline (Exception Handling)
+    → Event Pipeline (Audit)
+      → Event Pipeline (Reliability/Retry)
+        → Event Handlers (Multiple, in parallel)
 ```
 
 ## Configuration
