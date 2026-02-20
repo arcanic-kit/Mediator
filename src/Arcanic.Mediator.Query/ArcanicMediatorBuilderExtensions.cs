@@ -2,6 +2,7 @@
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.DependencyInjection;
+using Arcanic.Mediator.Request.DependencyInjection;
 
 namespace Arcanic.Mediator.Query;
 
@@ -21,6 +22,8 @@ public static class ArcanicMediatorBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(assembly);
+
+        builder.ServiceRegistrar.RegisterRequestRequiredServices();
 
         builder.ServiceRegistrar.RegisterQueriesFromAssembly(assembly);
         builder.ServiceRegistrar.RegisterQueryRequiredServices();

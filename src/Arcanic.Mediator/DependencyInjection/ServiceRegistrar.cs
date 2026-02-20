@@ -52,6 +52,20 @@ public class ServiceRegistrar : IServiceRegistrar
         _services.Add(new ServiceDescriptor(serviceType, implementationType, ConvertToServiceLifetime(_configuration.InstanceLifetime)));
         return this;
     }
+
+    /// <summary>
+    /// Gets a required service from the service collection by building a temporary service provider.
+    /// </summary>
+    /// <typeparam name="T">The type of service to retrieve.</typeparam>
+    /// <returns>The service instance of type <typeparamref name="T"/>.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the service of type <typeparamref name="T"/> is not registered in the service collection.
+    /// </exception>
+    public T GetRequiredService<T>() where T : class
+    {
+        using var serviceProvider = _services.BuildServiceProvider();
+        return serviceProvider.GetRequiredService<T>();
+    }
     
     /// <summary>
     /// Converts an <see cref="InstanceLifetime"/> enumeration value to the corresponding <see cref="ServiceLifetime"/> value.
@@ -74,4 +88,6 @@ public class ServiceRegistrar : IServiceRegistrar
                 "Unknown InstanceLifetime value.")
         };
     }
+
+
 }

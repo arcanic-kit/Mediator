@@ -3,6 +3,7 @@ using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Handler;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Pipeline;
+using Arcanic.Mediator.Request.Abstractions;
 using System.Reflection;
 
 namespace Arcanic.Mediator.Query.DependencyInjection;
@@ -21,7 +22,7 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterQueryRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(IQueryMediator), typeof(QueryMediator))
+            .Register(typeof(IQuerySender), typeof(Request.Mediator))
             .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>))
             .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
 

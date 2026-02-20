@@ -30,4 +30,6 @@ public interface IServiceRegistrar
     /// or when <paramref name="implementationType"/> is abstract or an interface.
     /// </exception>
     IServiceRegistrar Register(Type serviceType, Type implementationType);
+
+    T GetRequiredService<T>() where T : class;
 }

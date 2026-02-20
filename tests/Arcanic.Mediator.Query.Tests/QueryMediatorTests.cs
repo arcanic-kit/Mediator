@@ -1,5 +1,4 @@
 using System.Reflection;
-using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Tests.Data.Pipelines;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Simple;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Error;
@@ -8,6 +7,7 @@ using Arcanic.Mediator.Query.Tests.Data.Queries.UnhandledQuery;
 using Arcanic.Mediator.Query.Tests.Utils;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Arcanic.Mediator.Request.Abstractions;
 
 namespace Arcanic.Mediator.Query.Tests;
 
@@ -22,7 +22,7 @@ public class QueryMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var query = new SimpleQuery()
         {
@@ -55,7 +55,7 @@ public class QueryMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var query = new SimpleQuery()
         {
@@ -85,7 +85,7 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
@@ -99,7 +99,7 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         // Use a query that has no handler registered (UnhandledQuery has no handler implemented)
         var query = new UnhandledQuery { Message = "Test" };
 
@@ -115,7 +115,7 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         var query = new CancellableQuery { DelayMilliseconds = 10 }; // Very short delay to avoid actual cancellation
         
         using var cts = new CancellationTokenSource();
@@ -135,7 +135,7 @@ public class QueryMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var query1 = new SimpleQuery { Value = 1 };
         var query2 = new SimpleQuery { Value = 2 };
@@ -165,7 +165,7 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         var query = new ErrorQuery { ErrorMessage = "Test error message" };
 
         // Act & Assert
@@ -181,7 +181,7 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         var query = new CancellableQuery { DelayMilliseconds = 5000 }; // 5 seconds
         
         using var cts = new CancellationTokenSource();
@@ -202,7 +202,7 @@ public class QueryMediatorTests
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var queryMediator = serviceProvider.GetRequiredService<IQuerySender>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
 
         var simpleQuery = new SimpleQuery { Value = 123 };
