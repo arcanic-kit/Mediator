@@ -23,7 +23,7 @@ namespace CleanArchitecture.WebApi.Controllers
             //    Id = Id
             //});
 
-            var response = await mediator.SendAsync(new GetProductQuery
+            var response = await querySender.SendAsync(new GetProductQuery
             {
                 Id = Id
             });

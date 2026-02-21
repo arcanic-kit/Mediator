@@ -31,5 +31,23 @@ public interface IServiceRegistrar
     /// </exception>
     IServiceRegistrar Register(Type serviceType, Type implementationType);
 
-    T GetRequiredService<T>() where T : class;
+    /// <summary>
+    /// Registers a service alias by binding an interface type to an implementation type
+    /// that is already registered in the dependency injection container. This method enables
+    /// multiple interface registrations for the same concrete implementation.
+    /// </summary>
+    /// <typeparam name="TInterface">
+    /// The interface type to register as an alias. This must be a reference type (class)
+    /// that is implemented by <typeparamref name="TImplementation"/>.
+    /// </typeparam>
+    /// <typeparam name="TImplementation">
+    /// The concrete implementation type that implements <typeparamref name="TInterface"/>.
+    /// This type must already be registered in the container or be registerable.
+    /// </typeparam>
+    /// <returns>
+    /// The current <see cref="IServiceRegistrar"/> instance to enable fluent method chaining.
+    /// </returns>
+    IServiceRegistrar RegisterAlias<TInterface, TImplementation>()
+         where TImplementation : TInterface
+         where TInterface : class;
 }

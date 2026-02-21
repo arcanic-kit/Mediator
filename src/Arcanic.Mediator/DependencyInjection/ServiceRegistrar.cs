@@ -48,25 +48,50 @@ public class ServiceRegistrar : IServiceRegistrar
     {
         ArgumentNullException.ThrowIfNull(serviceType);
         ArgumentNullException.ThrowIfNull(implementationType);
-
+        
         _services.Add(new ServiceDescriptor(serviceType, implementationType, ConvertToServiceLifetime(_configuration.InstanceLifetime)));
+
         return this;
     }
 
     /// <summary>
-    /// Gets a required service from the service collection by building a temporary service provider.
+    /// Registers a service alias by binding an interface type to an implementation type
+    /// that is already registered in the dependency injection container. This method enables
+    /// multiple interface registrations for the same concrete implementation.
     /// </summary>
-    /// <typeparam name="T">The type of service to retrieve.</typeparam>
-    /// <returns>The service instance of type <typeparamref name="T"/>.</returns>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when the service of type <typeparamref name="T"/> is not registered in the service collection.
-    /// </exception>
-    public T GetRequiredService<T>() where T : class
+    /// <typeparam name="TInterface">
+    /// The interface type to register as an alias. This must be a reference type (class)
+    /// that is implemented by <typeparamref name="TImplementation"/>.
+    /// </typeparam>
+    /// <typeparam name="TImplementation">
+    /// The concrete implementation type that implements <typeparamref name="TInterface"/>.
+    /// This type must already be registered in the container or be registerable.
+    /// </typeparam>
+    /// <returns>
+    /// The current <see cref="IServiceRegistrar"/> instance to enable fluent method chaining.
+    /// </returns>
+    public IServiceRegistrar RegisterAlias<TInterface, TImplementation>() 
+        where TImplementation : TInterface
+        where TInterface : class
     {
-        using var serviceProvider = _services.BuildServiceProvider();
-        return serviceProvider.GetRequiredService<T>();
+        switch (ConvertToServiceLifetime(_configuration.InstanceLifetime))
+        {
+            case ServiceLifetime.Singleton:
+                _services.AddSingleton<TInterface>(provider => provider.GetRequiredService<TImplementation>());
+                break;
+            case ServiceLifetime.Scoped:
+                _services.AddScoped<TInterface>(provider => provider.GetRequiredService<TImplementation>());
+                break;
+            case ServiceLifetime.Transient:
+                _services.AddTransient<TInterface>(provider => provider.GetRequiredService<TImplementation>());
+                break;
+            default:
+                break;
+        }
+
+        return this;
     }
-    
+
     /// <summary>
     /// Converts an <see cref="InstanceLifetime"/> enumeration value to the corresponding <see cref="ServiceLifetime"/> value.
     /// </summary>
@@ -88,6 +113,4 @@ public class ServiceRegistrar : IServiceRegistrar
                 "Unknown InstanceLifetime value.")
         };
     }
-
-
 }
