@@ -19,7 +19,7 @@ namespace Arcanic.Mediator.Query.Benchmarks;
 public class QueryBenchmarks
 {
     private IServiceProvider _serviceProvider = default!;
-    private IQuerySender _querySender = default!;
+    private IMediator _mediator = default!;
 
     /// <summary>
     /// Initializes the dependency injection container and query mediator for benchmarking.
@@ -31,7 +31,7 @@ public class QueryBenchmarks
         var arcanicServices = new ServiceCollection();
         arcanicServices.AddArcanicQueryMediator();
         _serviceProvider = arcanicServices.BuildServiceProvider();
-        _querySender = _serviceProvider.GetRequiredService<IQuerySender>();
+        _mediator = _serviceProvider.GetRequiredService<IMediator>();
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class QueryBenchmarks
     public async Task<GetUserQueryResponse> GetUser()
     {
         var query = new GetUserQuery { Id = 1 };
-        return await _querySender.SendAsync(query);
+        return await _mediator.SendAsync(query);
     }
 
     /// <summary>
@@ -73,7 +73,7 @@ public class QueryBenchmarks
             Page = 1,
             PageSize = 10
         };
-        return await _querySender.SendAsync(query);
+        return await _mediator.SendAsync(query);
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public class QueryBenchmarks
         {
             var query = new GetUserQuery { Id = i };
             // Convert ValueTask to Task using AsTask()
-            tasks.Add(_querySender.SendAsync(query));
+            tasks.Add(_mediator.SendAsync(query));
         }
         await Task.WhenAll(tasks);
     }

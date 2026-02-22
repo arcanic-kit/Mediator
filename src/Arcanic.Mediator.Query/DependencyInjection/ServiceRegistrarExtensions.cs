@@ -22,7 +22,6 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterQueryRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .RegisterAlias<IQuerySender, IMediator>()
             .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>))
             .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
 

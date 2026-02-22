@@ -1,6 +1,5 @@
 using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Query;
-using Arcanic.Mediator.Request;
 using Arcanic.Mediator.Request.Abstractions;
 using CleanArchitecture.Application.Product.Commands.Add;
 using CleanArchitecture.Application.Product.Commands.UpdatePrice;
@@ -12,7 +11,7 @@ namespace CleanArchitecture.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ProductsController(ICommandMediator commandMediator, IQuerySender querySender, IMediator mediator)
+    public class ProductsController(ICommandMediator commandMediator, IMediator mediator)
         : ControllerBase
     {
         [HttpGet("{Id}")]
@@ -23,7 +22,7 @@ namespace CleanArchitecture.WebApi.Controllers
             //    Id = Id
             //});
 
-            var response = await querySender.SendAsync(new GetProductQuery
+            var response = await mediator.SendAsync(new GetProductQuery
             {
                 Id = Id
             });
