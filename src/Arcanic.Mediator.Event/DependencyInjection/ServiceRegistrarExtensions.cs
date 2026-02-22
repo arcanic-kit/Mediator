@@ -22,7 +22,7 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterEventRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(IEventPublisher), typeof(EventPublisher))
+            .Register(typeof(IPublisher), typeof(Publisher))
             .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
             .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
 

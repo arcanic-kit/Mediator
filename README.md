@@ -128,11 +128,11 @@ public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand>
 // Command handler with return value
 public class AddProductCommandHandler : ICommandHandler<AddProductCommand, int>
 {
-    private readonly IEventPublisher _eventPublisher;
+    private readonly IPublisher _publisher;
 
-    public AddProductCommandHandler(IEventPublisher eventPublisher)
+    public AddProductCommandHandler(IPublisher publisher)
     {
-        _eventPublisher = eventPublisher;
+        _publisher = publisher;
     }
 
     public async Task<int> HandleAsync(AddProductCommand request, CancellationToken cancellationToken = default)
@@ -141,7 +141,7 @@ public class AddProductCommandHandler : ICommandHandler<AddProductCommand, int>
         var productId = await SaveProductAsync(request.Name, request.Price);
 
         // Publish domain event
-        await _eventPublisher.PublishAsync(new ProductCreatedEvent
+        await _publisher.PublishAsync(new ProductCreatedEvent
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
@@ -890,7 +890,7 @@ services.AddArcanicMediator()
 | **Modularity** | Single package | Separate packages per feature |
 | **Interface Names** | `IRequest<T>` | `ICommand<T>`, `IQuery<T>`, `IEvent` |
 | **Mediator Interfaces** | `IMediator` | `IMediator` |
-| **Event Publishing** | `IMediator.Publish()` | Dedicated `IEventPublisher` interface |
+| **Event Publishing** | `IMediator.Publish()` | Dedicated `IPublisher` interface |
 | **Pre/Post Handlers** | Manual | Built-in support |
 | **Performance** | Good | Optimized with cached dispatchers |
 | **Architecture** | Monolithic | Modular with clear separation of concerns |

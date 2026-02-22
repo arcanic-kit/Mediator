@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace Arcanic.Mediator.Command.Tests;
 
-public class CommandMediatorTests
+public class MediatorTests
 {
     [Fact]
     public async Task SendAsync_WithValidCommandWithResponse_ReturnsExpectedResponse()

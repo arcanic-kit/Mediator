@@ -11,7 +11,7 @@ using Arcanic.Mediator.Request.Abstractions;
 
 namespace Arcanic.Mediator.Query.Tests;
 
-public class QueryMediatorTests
+public class MediatorTests
 {
     [Fact]
     public async Task SendAsync_WithValidQuery_ReturnsExpectedResponse()
