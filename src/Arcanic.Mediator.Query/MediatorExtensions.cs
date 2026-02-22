@@ -3,7 +3,7 @@ using Arcanic.Mediator.Query.Dispatcher;
 using Arcanic.Mediator.Request.Abstractions;
 using Arcanic.Mediator.Request.Abstractions.Dispatcher;
 
-namespace Arcanic.Mediator.Query;
+namespace Arcanic.Mediator.Request.Abstractions;
 
 /// <summary>
 /// Provides extension methods for <see cref="IMediator"/> to support query processing functionality.

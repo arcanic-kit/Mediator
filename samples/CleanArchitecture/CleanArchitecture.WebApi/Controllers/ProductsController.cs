@@ -1,5 +1,3 @@
-using Arcanic.Mediator.Command;
-using Arcanic.Mediator.Query;
 using Arcanic.Mediator.Request.Abstractions;
 using CleanArchitecture.Application.Product.Commands.Add;
 using CleanArchitecture.Application.Product.Commands.UpdatePrice;
