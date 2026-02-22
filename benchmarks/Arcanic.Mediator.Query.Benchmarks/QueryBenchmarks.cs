@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Arcanic.Mediator.Query.Benchmarks.GetUser;
 using Arcanic.Mediator.Query.Benchmarks.SearchUsers;
 using Arcanic.Mediator.Request.Abstractions;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Arcanic.Mediator.Query.Benchmarks;
 

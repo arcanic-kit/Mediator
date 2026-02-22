@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Benchmarks.CreateUser;
 using Arcanic.Mediator.Command.Benchmarks.DeleteUser;
 using Arcanic.Mediator.Command.Benchmarks.UpdateUser;
+using Arcanic.Mediator.Request.Abstractions;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Arcanic.Mediator.Command.Benchmarks;
 
@@ -20,7 +20,7 @@ namespace Arcanic.Mediator.Command.Benchmarks;
 public class CommandBenchmarks
 {
     private IServiceProvider _serviceProvider = default!;
-    private ICommandMediator _commandMediator = default!;
+    private IMediator _mediator = default!;
 
     /// <summary>
     /// Initializes the dependency injection container and command mediator for benchmarking.
@@ -32,7 +32,7 @@ public class CommandBenchmarks
         var arcanicServices = new ServiceCollection();
         arcanicServices.AddArcanicCommandMediator();
         _serviceProvider = arcanicServices.BuildServiceProvider();
-        _commandMediator = _serviceProvider.GetRequiredService<ICommandMediator>();
+        _mediator = _serviceProvider.GetRequiredService<IMediator>();
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public class CommandBenchmarks
             Name = "John Doe",
             Email = "john@example.com"
         };
-        return await _commandMediator.SendAsync(command);
+        return await _mediator.SendAsync(command);
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ public class CommandBenchmarks
             Name = "Jane Doe",
             Email = "jane@example.com"
         };
-        await _commandMediator.SendAsync(command);
+        await _mediator.SendAsync(command);
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public class CommandBenchmarks
             Id = 1,
             Reason = "Account closed by user request"
         };
-        await _commandMediator.SendAsync(command);
+        await _mediator.SendAsync(command);
     }
 
     /// <summary>
@@ -114,7 +114,7 @@ public class CommandBenchmarks
                 Name = $"User {i}",
                 Email = $"user{i}@example.com"
             };
-            tasks.Add(_commandMediator.SendAsync(command));
+            tasks.Add(_mediator.SendAsync(command));
         }
         await Task.WhenAll(tasks);
     }

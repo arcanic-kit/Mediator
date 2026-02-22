@@ -21,7 +21,6 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterCommandRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(ICommandMediator), typeof(CommandMediator))
             .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
             .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
