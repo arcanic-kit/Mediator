@@ -17,11 +17,6 @@ namespace CleanArchitecture.WebApi.Controllers
         [HttpGet("{Id}")]
         public async Task<ProductDetails?> Get(int Id)
         {
-            //await mediator.SendAsync(new GetProductQuery
-            //{
-            //    Id = Id
-            //});
-
             var response = await mediator.SendAsync(new GetProductQuery
             {
                 Id = Id

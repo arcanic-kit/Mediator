@@ -3,7 +3,6 @@ using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Handler;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Pipeline;
-using Arcanic.Mediator.Request.Abstractions;
 using System.Reflection;
 
 namespace Arcanic.Mediator.Query.DependencyInjection;
@@ -34,6 +33,7 @@ public static class ServiceRegistrarExtensions
     /// and their associated handlers that implement <see cref="IQueryHandler{TQuery, TResult}"/>,
     /// <see cref="IQueryPreHandler{TQuery}"/>, or <see cref="IQueryPostHandler{TQuery}"/>.
     /// </summary>
+    /// <param name="serviceRegistrar">The service registrar to register the pipeline behavior with.</param>
     /// <param name="assembly">The assembly to scan for query types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
     /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
@@ -77,10 +77,11 @@ public static class ServiceRegistrarExtensions
     }
 
     /// <summary>
-    /// Registers a custom query pipeline behavior with the dependency injection container.
+    /// Registers a custom query pipeline behavior with the provided service registrar.
     /// The pipeline behavior will be executed as part of the query processing pipeline,
     /// allowing for cross-cutting concerns such as logging, validation, caching, or performance monitoring.
     /// </summary>
+    /// <param name="serviceRegistrar">The service registrar to register the pipeline behavior with.</param>
     /// <param name="queryPipelineBehaviorType">
     /// The type that implements <see cref="IQueryPipelineBehavior{TQuery, TQueryResult}"/>.
     /// Must be a concrete class that is not abstract or an interface.

@@ -1,7 +1,6 @@
 ﻿using Arcanic.Mediator.Abstractions.DependencyInjection;
 using Arcanic.Mediator.Request.Abstractions;
 using Arcanic.Mediator.Request.Abstractions.Pipeline;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Request.DependencyInjection;
 
@@ -24,7 +23,8 @@ public static class ServiceRegistrarExtensions
     {
         ArgumentNullException.ThrowIfNull(serviceRegistrar);
 
-        serviceRegistrar.Register(typeof(IMediator), typeof(Mediator));
+        if (!serviceRegistrar.IsRegistered(typeof(IMediator)))
+            serviceRegistrar.Register(typeof(IMediator), typeof(Mediator));
 
         return serviceRegistrar;
     }

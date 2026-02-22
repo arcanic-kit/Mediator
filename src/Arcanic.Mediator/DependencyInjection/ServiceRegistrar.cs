@@ -48,48 +48,25 @@ public class ServiceRegistrar : IServiceRegistrar
     {
         ArgumentNullException.ThrowIfNull(serviceType);
         ArgumentNullException.ThrowIfNull(implementationType);
-        
+
         _services.Add(new ServiceDescriptor(serviceType, implementationType, ConvertToServiceLifetime(_configuration.InstanceLifetime)));
 
         return this;
     }
 
     /// <summary>
-    /// Registers a service alias by binding an interface type to an implementation type
-    /// that is already registered in the dependency injection container. This method enables
-    /// multiple interface registrations for the same concrete implementation.
+    /// Validates whether a service type is registered in the service collection.
     /// </summary>
-    /// <typeparam name="TInterface">
-    /// The interface type to register as an alias. This must be a reference type (class)
-    /// that is implemented by <typeparamref name="TImplementation"/>.
-    /// </typeparam>
-    /// <typeparam name="TImplementation">
-    /// The concrete implementation type that implements <typeparamref name="TInterface"/>.
-    /// This type must already be registered in the container or be registerable.
-    /// </typeparam>
-    /// <returns>
-    /// The current <see cref="IServiceRegistrar"/> instance to enable fluent method chaining.
-    /// </returns>
-    public IServiceRegistrar RegisterAlias<TInterface, TImplementation>() 
-        where TImplementation : TInterface
-        where TInterface : class
+    /// <param name="serviceType">The type of service to check for registration.</param>
+    /// <returns><c>true</c> if the service type is registered; otherwise, <c>false</c>.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="serviceType"/> is <c>null</c>.
+    /// </exception>
+    public bool IsRegistered(Type serviceType)
     {
-        switch (ConvertToServiceLifetime(_configuration.InstanceLifetime))
-        {
-            case ServiceLifetime.Singleton:
-                _services.AddSingleton<TInterface>(provider => provider.GetRequiredService<TImplementation>());
-                break;
-            case ServiceLifetime.Scoped:
-                _services.AddScoped<TInterface>(provider => provider.GetRequiredService<TImplementation>());
-                break;
-            case ServiceLifetime.Transient:
-                _services.AddTransient<TInterface>(provider => provider.GetRequiredService<TImplementation>());
-                break;
-            default:
-                break;
-        }
+        ArgumentNullException.ThrowIfNull(serviceType);
 
-        return this;
+        return _services.Any(descriptor => descriptor.ServiceType == serviceType);
     }
 
     /// <summary>
