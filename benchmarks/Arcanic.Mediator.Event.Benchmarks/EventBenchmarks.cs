@@ -30,7 +30,7 @@ public class EventBenchmarks
     public void Setup()
     {
         var arcanicServices = new ServiceCollection();
-        arcanicServices.AddArcanicEventMediator();
+        arcanicServices.AddArcanicEventPublisher();
         _serviceProvider = arcanicServices.BuildServiceProvider();
         _publisher = _serviceProvider.GetRequiredService<IPublisher>();
     }
