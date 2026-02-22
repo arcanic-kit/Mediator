@@ -35,6 +35,7 @@ using Arcanic.Mediator;
 using Arcanic.Mediator.Command;
 using Arcanic.Mediator.Query;
 using Arcanic.Mediator.Event;
+using Arcanic.Mediator.Request;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,6 +71,8 @@ public class AddProductCommand : ICommand<int>
 }
 ```
 
+> **Note**: Commands implement `ICommand` or `ICommand<TResult>`, which inherit from `IRequest` for unified mediator processing.
+
 #### Queries
 
 ```csharp
@@ -82,6 +85,8 @@ public class GetProductQuery : IQuery<ProductDto>
 
 public record ProductDto(int Id, string Name, decimal Price);
 ```
+
+> **Note**: Queries implement `IQuery<TResult>`, which inherits from `IRequest` for unified mediator processing.
 
 #### Events
 
@@ -134,7 +139,7 @@ public class AddProductCommandHandler : ICommandHandler<AddProductCommand, int>
     {
         // Save product and get ID
         var productId = await SaveProductAsync(request.Name, request.Price);
-        
+
         // Publish domain event
         await _eventPublisher.PublishAsync(new ProductCreatedEvent
         {
@@ -145,10 +150,11 @@ public class AddProductCommandHandler : ICommandHandler<AddProductCommand, int>
 
         return productId;
     }
-    
+
     private async Task<int> SaveProductAsync(string name, decimal price)
     {
         // Implementation here
+        await Task.Delay(100); // Simulate async work
         return 1;
     }
 }
@@ -242,44 +248,36 @@ public class ProductCreatedLoggingHandler : IEventHandler<ProductCreatedEvent>
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
-using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Request.Abstractions;
 using Arcanic.Mediator.Event.Abstractions;
 
 [ApiController]
 [Route("[controller]")]
 public class ProductController : ControllerBase
 {
-    private readonly ICommandMediator _commandMediator;
-    private readonly IQueryMediator _queryMediator;
-    private readonly IEventPublisher _eventPublisher;
+    private readonly IMediator _mediator;
 
-    public ProductController(
-        ICommandMediator commandMediator, 
-        IQueryMediator queryMediator,
-        IEventPublisher eventPublisher)
+    public ProductController(IMediator mediator)
     {
-        _commandMediator = commandMediator;
-        _queryMediator = queryMediator;
-        _eventPublisher = eventPublisher;
+        _mediator = mediator;
     }
 
     [HttpGet("{id}")]
     public async Task<ProductDto> GetProduct(int id)
     {
-       return await _queryMediator.SendAsync(new GetProductQuery { Id = id });
+       return await _mediator.SendAsync(new GetProductQuery { Id = id });
     }
 
     [HttpPost]
     public async Task<int> CreateProduct(AddProductCommand command)
     {
-        return await _commandMediator.SendAsync(command);
+        return await _mediator.SendAsync(command);
     }
-    
+
     [HttpPost("simple")]
     public async Task CreateProductSimple(CreateProductCommand command)
     {
-        await _commandMediator.SendAsync(command);
+        await _mediator.SendAsync(command);
     }
 }
 ```
@@ -729,22 +727,22 @@ builder.Services.AddArcanicMediator()
     // Generic pipelines (apply to ALL message types - Commands, Queries, Events)
     .AddPipelineBehavior(typeof(GlobalMetricsPipelineBehavior<,>))
     .AddPipelineBehavior(typeof(GlobalExceptionPipelineBehavior<,>))
-    
+
     // Request pipelines (apply to commands and queries)
     .AddRequestPipelineBehavior(typeof(LoggingRequestPipelineBehavior<,>))
-    
+
     // Command-specific pipelines
     .AddCommandPipelineBehavior(typeof(AuthorizationCommandPipelineBehavior<,>))
     .AddCommandPipelineBehavior(typeof(TransactionCommandPipelineBehavior<,>))
-    
+
     // Query-specific pipelines
     .AddQueryPipelineBehavior(typeof(CachingQueryPipelineBehavior<,>))
     .AddQueryPipelineBehavior(typeof(PerformanceQueryPipelineBehavior<,>))
-    
+
     // Event-specific pipelines
     .AddEventPipelineBehavior(typeof(AuditEventPipelineBehavior<,>))
     .AddEventPipelineBehavior(typeof(ReliabilityEventPipelineBehavior<,>))
-    
+
     // Register modules
     .AddCommands(Assembly.GetExecutingAssembly())
     .AddQueries(Assembly.GetExecutingAssembly())
@@ -793,20 +791,20 @@ Configure mediator services with custom settings:
 // Configure service lifetime (default is Transient)
 builder.Services.AddArcanicMediator(config =>
 {
-    config.Lifetime = ServiceLifetime.Scoped; // or Singleton, Transient
+    config.InstanceLifetime = InstanceLifetime.Scoped; // or Singleton, Transient
 })
 .AddCommands(Assembly.GetExecutingAssembly())
 .AddQueries(Assembly.GetExecutingAssembly())
 .AddEvents(Assembly.GetExecutingAssembly());
 ```
 
-### ArcanicMediatorServiceConfiguration Options
+### ArcanicMediatorConfiguration Options
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `Lifetime` | `ServiceLifetime` | `Transient` | Controls how mediator service instances are created and managed by the DI container |
+| `InstanceLifetime` | `InstanceLifetime` | `Transient` | Controls how mediator service instances are created and managed by the DI container |
 
-**Service Lifetime Options:**
+**Instance Lifetime Options:**
 - **Transient** - New instance created each time (default)
 - **Scoped** - One instance per request/scope
 - **Singleton** - Single instance for the application lifetime
@@ -819,6 +817,7 @@ The library follows a modular architecture with clear separation:
 
 - **Arcanic.Mediator** - Core dependency injection extensions and configuration
 - **Arcanic.Mediator.Abstractions** - Common abstractions and pipeline interfaces
+- **Arcanic.Mediator.Request** / **Request.Abstractions** - Unified request processing and mediation
 
 ### Feature Packages
 
@@ -881,7 +880,7 @@ services.AddMediatR(Assembly.GetExecutingAssembly());
 services.AddArcanicMediator()
     .AddCommands(Assembly.GetExecutingAssembly())
     .AddQueries(Assembly.GetExecutingAssembly())
-    .AddEvents(Assembly.GetExecutingAssembly();
+    .AddEvents(Assembly.GetExecutingAssembly());
 ```
 
 ### Key Differences
@@ -890,9 +889,11 @@ services.AddArcanicMediator()
 |---------|---------|------------------|
 | **Modularity** | Single package | Separate packages per feature |
 | **Interface Names** | `IRequest<T>` | `ICommand<T>`, `IQuery<T>`, `IEvent` |
-| **Mediator Interfaces** | `IMediator` | `ICommandMediator`, `IQueryMediator`, `IEventPublisher` |
+| **Mediator Interfaces** | `IMediator` | `IMediator` |
+| **Event Publishing** | `IMediator.Publish()` | Dedicated `IEventPublisher` interface |
 | **Pre/Post Handlers** | Manual | Built-in support |
 | **Performance** | Good | Optimized with cached dispatchers |
+| **Architecture** | Monolithic | Modular with clear separation of concerns |
 
 ## Contributing
 
