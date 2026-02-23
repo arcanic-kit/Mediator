@@ -50,9 +50,25 @@ public class ServiceRegistrar : IServiceRegistrar
         ArgumentNullException.ThrowIfNull(implementationType);
 
         _services.Add(new ServiceDescriptor(serviceType, implementationType, ConvertToServiceLifetime(_configuration.InstanceLifetime)));
+
         return this;
     }
-    
+
+    /// <summary>
+    /// Validates whether a service type is registered in the service collection.
+    /// </summary>
+    /// <param name="serviceType">The type of service to check for registration.</param>
+    /// <returns><c>true</c> if the service type is registered; otherwise, <c>false</c>.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="serviceType"/> is <c>null</c>.
+    /// </exception>
+    public bool IsRegistered(Type serviceType)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+
+        return _services.Any(descriptor => descriptor.ServiceType == serviceType);
+    }
+
     /// <summary>
     /// Converts an <see cref="InstanceLifetime"/> enumeration value to the corresponding <see cref="ServiceLifetime"/> value.
     /// </summary>

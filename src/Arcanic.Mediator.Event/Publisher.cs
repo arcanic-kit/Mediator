@@ -9,7 +9,7 @@ namespace Arcanic.Mediator.Event;
 /// through the underlying message mediator framework. This class serves as a specialized facade
 /// for event-driven communication patterns within the application.
 /// </summary>
-public class EventPublisher : IEventPublisher
+public class Publisher : IPublisher
 {
     /// <summary>
     /// The service provider used for dependency injection and handler resolution.
@@ -23,11 +23,11 @@ public class EventPublisher : IEventPublisher
     private static readonly ConcurrentDictionary<Type, EventDispatcherBase> EventDispatchers = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EventPublisher"/> class.
+    /// Initializes a new instance of the <see cref="Publisher"/> class.
     /// </summary>
     /// <param name="serviceProvider">The service provider for resolving dependencies and handlers.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="serviceProvider"/> is null.</exception>
-    public EventPublisher(IServiceProvider serviceProvider)
+    public Publisher(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }

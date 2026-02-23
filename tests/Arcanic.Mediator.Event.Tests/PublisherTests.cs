@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Arcanic.Mediator.Event.Tests
 {
-    public class EventPublisherTests
+    public class PublisherTests
     {
         [Fact]
         public async Task PublishAsync_WithValidEvent_HandlesEventSuccessfully()
@@ -20,7 +20,7 @@ namespace Arcanic.Mediator.Event.Tests
             service.AddSingleton<ExecutedTypeTracker>();
             var serviceProvider = service.BuildServiceProvider();
             
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
             var simpleEvent = new SimpleEvent()
             {
@@ -29,7 +29,7 @@ namespace Arcanic.Mediator.Event.Tests
             };
 
             // Act
-            await eventPublisher.PublishAsync(simpleEvent);
+            await publisher.PublishAsync(simpleEvent);
 
             // Assert
             executedTypeTracker.ExecutedTypes.Should().Contain(typeof(SimpleEventPreHandler));
@@ -46,7 +46,7 @@ namespace Arcanic.Mediator.Event.Tests
             service.AddSingleton<ExecutedTypeTracker>();
             var serviceProvider = service.BuildServiceProvider();
             
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
             var simpleEvent = new SimpleEvent()
             {
@@ -55,7 +55,7 @@ namespace Arcanic.Mediator.Event.Tests
             };
 
             // Act
-            await eventPublisher.PublishAsync(simpleEvent);
+            await publisher.PublishAsync(simpleEvent);
 
             // Assert
             executedTypeTracker.ExecutedTypes[0].Should().Be<SimpleEventPreHandler>();
@@ -70,11 +70,11 @@ namespace Arcanic.Mediator.Event.Tests
             var service = new ServiceCollection();
             service.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
             var serviceProvider = service.BuildServiceProvider();
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => 
-                eventPublisher.PublishAsync(null!));
+                publisher.PublishAsync(null!));
         }
 
         [Fact]
@@ -84,14 +84,14 @@ namespace Arcanic.Mediator.Event.Tests
             var service = new ServiceCollection();
             service.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
             var serviceProvider = service.BuildServiceProvider();
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             
             // Create an event that has no registered handler
             var unhandledEvent = new UnhandledEvent { Message = "Test" };
 
             // Act & Assert - Should throw because events require handlers
             await Assert.ThrowsAsync<InvalidOperationException>(() => 
-                eventPublisher.PublishAsync(unhandledEvent));
+                publisher.PublishAsync(unhandledEvent));
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace Arcanic.Mediator.Event.Tests
             var service = new ServiceCollection();
             service.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
             var serviceProvider = service.BuildServiceProvider();
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var cancellableEvent = new CancellableEvent { DelayMilliseconds = 10 }; // Very short delay
             
             using var cts = new CancellationTokenSource();
@@ -109,7 +109,7 @@ namespace Arcanic.Mediator.Event.Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<TaskCanceledException>(() => 
-                eventPublisher.PublishAsync(cancellableEvent, cts.Token));
+                publisher.PublishAsync(cancellableEvent, cts.Token));
         }
 
         [Fact]
@@ -121,14 +121,14 @@ namespace Arcanic.Mediator.Event.Tests
             service.AddSingleton<ExecutedTypeTracker>();
             var serviceProvider = service.BuildServiceProvider();
             
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
             var event1 = new SimpleEvent { Value = 1, Message = "First" };
             var event2 = new SimpleEvent { Value = 2, Message = "Second" };
 
             // Act
-            await eventPublisher.PublishAsync(event1);
-            await eventPublisher.PublishAsync(event2);
+            await publisher.PublishAsync(event1);
+            await publisher.PublishAsync(event2);
 
             // Assert
             // Should have executed handlers for both events
@@ -143,12 +143,12 @@ namespace Arcanic.Mediator.Event.Tests
             var service = new ServiceCollection();
             service.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
             var serviceProvider = service.BuildServiceProvider();
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var errorEvent = new ErrorEvent { ErrorMessage = "Test error message" };
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
-                eventPublisher.PublishAsync(errorEvent));
+                publisher.PublishAsync(errorEvent));
             exception.Message.Should().Be("Test error message");
         }
 
@@ -160,11 +160,11 @@ namespace Arcanic.Mediator.Event.Tests
             service.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
             service.AddSingleton<ExecutedTypeTracker>();
             var serviceProvider = service.BuildServiceProvider();
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var simpleEvent = new SimpleEvent { Value = 42, Message = "Test" };
 
             // Act
-            var publishTask = eventPublisher.PublishAsync(simpleEvent);
+            var publishTask = publisher.PublishAsync(simpleEvent);
             
             // Assert
             await publishTask; // Should complete without exception
@@ -180,12 +180,12 @@ namespace Arcanic.Mediator.Event.Tests
             service.AddSingleton<ExecutedTypeTracker>();
             var serviceProvider = service.BuildServiceProvider();
             
-            var eventPublisher = serviceProvider.GetRequiredService<IEventPublisher>();
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
             var simpleEvent = new SimpleEvent { Value = 42, Message = "Test" };
 
             // Act
-            await eventPublisher.PublishAsync(simpleEvent);
+            await publisher.PublishAsync(simpleEvent);
 
             // Assert
             executedTypeTracker.ExecutedTypes.Should().Contain(typeof(SimpleEventHandler));

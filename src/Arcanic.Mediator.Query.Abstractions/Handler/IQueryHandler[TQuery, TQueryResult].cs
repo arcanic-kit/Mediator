@@ -9,10 +9,5 @@ namespace Arcanic.Mediator.Query.Abstractions.Handler;
 /// </summary>
 /// <typeparam name="TQuery">The type of query this handler can process. The query type must implement <see cref="IQuery{TQueryResult}"/>.</typeparam>
 /// <typeparam name="TQueryResult">The type of result returned by the query handler.</typeparam>
-/// <remarks>
-/// Query handlers are automatically discovered and registered when using assembly scanning
-/// functionality. Each handler is registered as a scoped service in the dependency injection
-/// container and will be invoked when the corresponding query type is executed through the <see cref="IQueryMediator"/>.
-/// </remarks>
 public interface IQueryHandler<TQuery, TQueryResult> : IAsyncMessageHandler<TQuery, TQueryResult> where TQuery : IQuery<TQueryResult>;
 

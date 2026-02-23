@@ -22,7 +22,7 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterEventRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(IEventPublisher), typeof(EventPublisher))
+            .Register(typeof(IPublisher), typeof(Publisher))
             .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
             .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
 
@@ -35,6 +35,7 @@ public static class ServiceRegistrarExtensions
     /// and their associated handlers that implement <see cref="IEventHandler{TEvent}"/>, <see cref="IEventPreHandler{TEvent}"/>
     /// , or <see cref="IEventPostHandler{TEvent}"/>.
     /// </summary>
+    /// <param name="serviceRegistrar">The service registrar to register the pipeline behavior with.</param>
     /// <param name="assembly">The assembly to scan for event types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
     /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
@@ -88,6 +89,7 @@ public static class ServiceRegistrarExtensions
     /// The pipeline behavior will be executed as part of the event processing pipeline,
     /// allowing for cross-cutting concerns such as logging, validation, auditing, or performance monitoring.
     /// </summary>
+    /// <param name="serviceRegistrar">The service registrar to register the pipeline behavior with.</param>
     /// <param name="eventPipelineBehaviorType">
     /// The type that implements <see cref="IEventPipelineBehavior{TEvent, TEventResult}"/>.
     /// Must be a concrete class that is not abstract or an interface.

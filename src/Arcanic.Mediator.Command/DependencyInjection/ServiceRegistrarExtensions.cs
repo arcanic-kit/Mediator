@@ -21,7 +21,6 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterCommandRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(ICommandMediator), typeof(CommandMediator))
             .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
             .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
@@ -32,6 +31,7 @@ public static class ServiceRegistrarExtensions
     /// Scans the specified assembly for command types and their corresponding handlers (main, pre, and post),
     /// then registers them in the dependency injection container and message registry.
     /// </summary>
+    /// <param name="serviceRegistrar">The service registrar to register the pipeline behavior with.</param>
     /// <param name="assembly">The assembly to scan for command types and handlers. All concrete classes
     /// implementing the appropriate interfaces will be registered automatically.</param>
     /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
@@ -79,6 +79,7 @@ public static class ServiceRegistrarExtensions
     /// The pipeline behavior will be executed as part of the command processing pipeline,
     /// allowing for cross-cutting concerns such as logging, validation, or caching.
     /// </summary>
+    /// <param name="serviceRegistrar">The service registrar to register the pipeline behavior with.</param>
     /// <param name="commandPipelineBehaviorType">
     /// The type that implements <see cref="ICommandPipelineBehavior{TCommand, TResult}"/>.
     /// Must be a concrete class that is not abstract or an interface.

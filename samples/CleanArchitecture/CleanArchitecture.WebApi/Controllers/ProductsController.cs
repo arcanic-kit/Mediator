@@ -1,5 +1,4 @@
-using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Query.Abstractions;
+using Arcanic.Mediator.Request.Abstractions;
 using CleanArchitecture.Application.Product.Commands.Add;
 using CleanArchitecture.Application.Product.Commands.UpdatePrice;
 using CleanArchitecture.Application.Product.Queries.Get;
@@ -10,13 +9,13 @@ namespace CleanArchitecture.WebApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ProductsController(ICommandMediator commandMediator, IQueryMediator queryMediator)
+    public class ProductsController(IMediator mediator)
         : ControllerBase
     {
         [HttpGet("{Id}")]
         public async Task<ProductDetails?> Get(int Id)
         {
-            var response = await queryMediator.SendAsync(new GetProductQuery
+            var response = await mediator.SendAsync(new GetProductQuery
             {
                 Id = Id
             });
@@ -37,7 +36,7 @@ namespace CleanArchitecture.WebApi.Controllers
         [HttpPost()]
         public async Task<int?> Add()
         {
-            var response = await commandMediator.SendAsync(new AddProductCommand
+            var response = await mediator.SendAsync(new AddProductCommand
             {
                 Name = "Sample Product",
                 Price = 9.99m
@@ -49,7 +48,7 @@ namespace CleanArchitecture.WebApi.Controllers
         [HttpPut("{id}/price")]
         public async Task<int?> UpdatePrice(int id, [FromBody] UpdateProductPriceCommand command)
         {
-            await commandMediator.SendAsync(new UpdateProductPriceCommand
+            await mediator.SendAsync(new UpdateProductPriceCommand
             {
                 Id = id,
                 Price = command.Price

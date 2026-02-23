@@ -1,18 +1,18 @@
-﻿using System.Reflection;
-using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Command.Tests.Data.Pipelines;
-using Arcanic.Mediator.Command.Tests.Data.Commands.Simple;
-using Arcanic.Mediator.Command.Tests.Data.Commands.VoidCommand;
+﻿using Arcanic.Mediator.Command.Tests.Data.Commands.Cancellable;
 using Arcanic.Mediator.Command.Tests.Data.Commands.Error;
-using Arcanic.Mediator.Command.Tests.Data.Commands.Cancellable;
+using Arcanic.Mediator.Command.Tests.Data.Commands.Simple;
 using Arcanic.Mediator.Command.Tests.Data.Commands.UnhandledCommand;
+using Arcanic.Mediator.Command.Tests.Data.Commands.VoidCommand;
+using Arcanic.Mediator.Command.Tests.Data.Pipelines;
 using Arcanic.Mediator.Command.Tests.Utils;
+using Arcanic.Mediator.Request.Abstractions;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Arcanic.Mediator.Command.Tests;
 
-public class CommandMediatorTests
+public class MediatorTests
 {
     [Fact]
     public async Task SendAsync_WithValidCommandWithResponse_ReturnsExpectedResponse()
@@ -23,7 +23,7 @@ public class CommandMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var command = new SimpleCommand
         {
@@ -31,7 +31,7 @@ public class CommandMediatorTests
         };
 
         // Act
-        var response = await commandMediator.SendAsync(command);
+        var response = await mediator.SendAsync(command);
 
         // Assert
         response.Should().NotBeNull();
@@ -52,7 +52,7 @@ public class CommandMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var command = new VoidCommand
         {
@@ -60,7 +60,7 @@ public class CommandMediatorTests
         };
 
         // Act
-        await commandMediator.SendAsync(command);
+        await mediator.SendAsync(command);
 
         // Assert
         executedTypeTracker.ExecutedTypes.Should().ContainSingle()
@@ -80,7 +80,7 @@ public class CommandMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var command = new SimpleCommand
         {
@@ -88,7 +88,7 @@ public class CommandMediatorTests
         };
 
         // Act
-        var response = await commandMediator.SendAsync(command);
+        var response = await mediator.SendAsync(command);
 
         // Assert
         response.Should().NotBeNull();
@@ -110,11 +110,11 @@ public class CommandMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            commandMediator.SendAsync<SimpleCommandResponse>(null!));
+            mediator.SendAsync<SimpleCommandResponse>(null!));
     }
 
     [Fact]
@@ -124,11 +124,11 @@ public class CommandMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            commandMediator.SendAsync(null!));
+            mediator.SendAsync(null!));
     }
 
     [Fact]
@@ -138,13 +138,13 @@ public class CommandMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         // Use a command that has no handler registered (UnhandledCommand has no handler implemented)
         var command = new UnhandledCommand { Message = "Test" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            commandMediator.SendAsync(command));
+            mediator.SendAsync(command));
     }
 
     [Fact]
@@ -154,7 +154,7 @@ public class CommandMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var command = new CancellableCommand { DelayMilliseconds = 10 }; // Very short delay to avoid actual cancellation
         
         using var cts = new CancellationTokenSource();
@@ -162,7 +162,7 @@ public class CommandMediatorTests
 
         // Act & Assert - Use TaskCanceledException as it's what Task.Delay throws
         await Assert.ThrowsAsync<TaskCanceledException>(() => 
-            commandMediator.SendAsync(command, cts.Token));
+            mediator.SendAsync(command, cts.Token));
     }
 
     [Fact]
@@ -174,14 +174,14 @@ public class CommandMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var command1 = new SimpleCommand { Value = 1 };
         var command2 = new SimpleCommand { Value = 2 };
 
         // Act
-        var response1 = await commandMediator.SendAsync(command1);
-        var response2 = await commandMediator.SendAsync(command2);
+        var response1 = await mediator.SendAsync(command1);
+        var response2 = await mediator.SendAsync(command2);
 
         // Assert
         response1.Should().NotBeNull();
@@ -204,12 +204,12 @@ public class CommandMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var command = new ErrorCommand { ErrorMessage = "Test error message" };
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            commandMediator.SendAsync(command));
+            mediator.SendAsync(command));
         exception.Message.Should().Be("Test error message");
     }
 
@@ -220,13 +220,13 @@ public class CommandMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var command = new CancellableCommand { DelayMilliseconds = 5000 }; // 5 seconds
         
         using var cts = new CancellationTokenSource();
 
         // Act
-        var commandTask = commandMediator.SendAsync(command, cts.Token);
+        var commandTask = mediator.SendAsync(command, cts.Token);
         cts.CancelAfter(100); // Cancel after 100ms
 
         // Assert - TaskCanceledException is derived from OperationCanceledException
@@ -242,14 +242,14 @@ public class CommandMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var simpleCommand = new SimpleCommand { Value = 99 };
         var voidCommand = new VoidCommand { Message = "Test void" };
 
         // Act
-        var simpleResponse = await commandMediator.SendAsync(simpleCommand);
-        await commandMediator.SendAsync(voidCommand);
+        var simpleResponse = await mediator.SendAsync(simpleCommand);
+        await mediator.SendAsync(voidCommand);
 
         // Assert
         simpleResponse.Should().NotBeNull();
@@ -271,12 +271,12 @@ public class CommandMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var command = new SimpleCommand { Value = 123 };
 
         // Act
-        var response = await commandMediator.SendAsync(command);
+        var response = await mediator.SendAsync(command);
 
         // Assert
         response.Should().NotBeNull();
@@ -302,12 +302,12 @@ public class CommandMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var commandMediator = serviceProvider.GetRequiredService<ICommandMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var command = new SimpleCommand { Value = 456 };
 
         // Act
-        var response = await commandMediator.SendAsync(command);
+        var response = await mediator.SendAsync(command);
 
         // Assert
         response.Should().NotBeNull();

@@ -20,7 +20,7 @@ namespace Arcanic.Mediator.Event.Benchmarks;
 public class EventBenchmarks
 {
     private IServiceProvider _serviceProvider = default!;
-    private IEventPublisher _eventPublisher = default!;
+    private IPublisher _publisher = default!;
 
     /// <summary>
     /// Initializes the dependency injection container and event publisher for benchmarking.
@@ -30,9 +30,9 @@ public class EventBenchmarks
     public void Setup()
     {
         var arcanicServices = new ServiceCollection();
-        arcanicServices.AddArcanicEventMediator();
+        arcanicServices.AddArcanicEventPublisher();
         _serviceProvider = arcanicServices.BuildServiceProvider();
-        _eventPublisher = _serviceProvider.GetRequiredService<IEventPublisher>();
+        _publisher = _serviceProvider.GetRequiredService<IPublisher>();
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public class EventBenchmarks
             Email = "john@example.com",
             CreatedAt = DateTime.UtcNow
         };
-        await _eventPublisher.PublishAsync(eventObj);
+        await _publisher.PublishAsync(eventObj);
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public class EventBenchmarks
             NewEmail = "new@example.com",
             UpdatedAt = DateTime.UtcNow
         };
-        await _eventPublisher.PublishAsync(eventObj);
+        await _publisher.PublishAsync(eventObj);
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public class EventBenchmarks
             Reason = "User requested account deletion",
             DeletedAt = DateTime.UtcNow
         };
-        await _eventPublisher.PublishAsync(eventObj);
+        await _publisher.PublishAsync(eventObj);
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ public class EventBenchmarks
                 Email = $"user{i}@example.com",
                 CreatedAt = DateTime.UtcNow
             };
-            tasks.Add(_eventPublisher.PublishAsync(eventObj));
+            tasks.Add(_publisher.PublishAsync(eventObj));
         }
         await Task.WhenAll(tasks);
     }

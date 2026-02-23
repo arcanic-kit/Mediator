@@ -1,5 +1,4 @@
 using System.Reflection;
-using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Tests.Data.Pipelines;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Simple;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Error;
@@ -8,10 +7,11 @@ using Arcanic.Mediator.Query.Tests.Data.Queries.UnhandledQuery;
 using Arcanic.Mediator.Query.Tests.Utils;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Arcanic.Mediator.Request.Abstractions;
 
 namespace Arcanic.Mediator.Query.Tests;
 
-public class QueryMediatorTests
+public class MediatorTests
 {
     [Fact]
     public async Task SendAsync_WithValidQuery_ReturnsExpectedResponse()
@@ -22,7 +22,7 @@ public class QueryMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var query = new SimpleQuery()
         {
@@ -30,7 +30,7 @@ public class QueryMediatorTests
         };
 
         // Act
-        var response = await queryMediator.SendAsync(query);
+        var response = await mediator.SendAsync(query);
 
         // Assert
         response.Should().NotBeNull();
@@ -55,7 +55,7 @@ public class QueryMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var query = new SimpleQuery()
         {
@@ -63,7 +63,7 @@ public class QueryMediatorTests
         };
 
         // Act
-        var response = await queryMediator.SendAsync(query);
+        var response = await mediator.SendAsync(query);
 
         // Assert
         response.Should().NotBeNull();
@@ -85,11 +85,11 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            queryMediator.SendAsync<SimpleQueryResponse>(null!));
+            mediator.SendAsync<SimpleQueryResponse>(null!));
     }
 
     [Fact]
@@ -99,13 +99,13 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         // Use a query that has no handler registered (UnhandledQuery has no handler implemented)
         var query = new UnhandledQuery { Message = "Test" };
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            queryMediator.SendAsync(query));
+            mediator.SendAsync(query));
     }
 
     [Fact]
@@ -115,7 +115,7 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var query = new CancellableQuery { DelayMilliseconds = 10 }; // Very short delay to avoid actual cancellation
         
         using var cts = new CancellationTokenSource();
@@ -123,7 +123,7 @@ public class QueryMediatorTests
 
         // Act & Assert - Use TaskCanceledException as it's what Task.Delay throws
         await Assert.ThrowsAsync<TaskCanceledException>(() => 
-            queryMediator.SendAsync(query, cts.Token));
+            mediator.SendAsync(query, cts.Token));
     }
 
     [Fact]
@@ -135,14 +135,14 @@ public class QueryMediatorTests
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
         
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
         var query1 = new SimpleQuery { Value = 1 };
         var query2 = new SimpleQuery { Value = 2 };
 
         // Act
-        var response1 = await queryMediator.SendAsync(query1);
-        var response2 = await queryMediator.SendAsync(query2);
+        var response1 = await mediator.SendAsync(query1);
+        var response2 = await mediator.SendAsync(query2);
 
         // Assert
         response1.Should().NotBeNull();
@@ -165,12 +165,12 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var query = new ErrorQuery { ErrorMessage = "Test error message" };
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            queryMediator.SendAsync(query));
+            mediator.SendAsync(query));
         exception.Message.Should().Be("Test error message");
     }
 
@@ -181,13 +181,13 @@ public class QueryMediatorTests
         var service = new ServiceCollection();
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var query = new CancellableQuery { DelayMilliseconds = 5000 }; // 5 seconds
         
         using var cts = new CancellationTokenSource();
 
         // Act
-        var queryTask = queryMediator.SendAsync(query, cts.Token);
+        var queryTask = mediator.SendAsync(query, cts.Token);
         cts.CancelAfter(100); // Cancel after 100ms
 
         // Assert - TaskCanceledException is derived from OperationCanceledException
@@ -202,15 +202,15 @@ public class QueryMediatorTests
         service.AddArcanicMediator().AddQueries(Assembly.GetExecutingAssembly());
         service.AddSingleton<ExecutedTypeTracker>();
         var serviceProvider = service.BuildServiceProvider();
-        var queryMediator = serviceProvider.GetRequiredService<IQueryMediator>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
         var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
 
         var simpleQuery = new SimpleQuery { Value = 123 };
         var cancellableQuery = new CancellableQuery { DelayMilliseconds = 1 };
 
         // Act
-        var simpleResponse = await queryMediator.SendAsync(simpleQuery);
-        var cancellableResponse = await queryMediator.SendAsync(cancellableQuery);
+        var simpleResponse = await mediator.SendAsync(simpleQuery);
+        var cancellableResponse = await mediator.SendAsync(cancellableQuery);
 
         // Assert
         simpleResponse.Should().NotBeNull();
