@@ -249,7 +249,6 @@ public class ProductCreatedLoggingHandler : IEventHandler<ProductCreatedEvent>
 ```csharp
 using Microsoft.AspNetCore.Mvc;
 using Arcanic.Mediator.Request.Abstractions;
-using Arcanic.Mediator.Event.Abstractions;
 
 [ApiController]
 [Route("[controller]")]
