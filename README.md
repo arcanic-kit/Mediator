@@ -35,7 +35,6 @@ using Arcanic.Mediator;
 using Arcanic.Mediator.Command;
 using Arcanic.Mediator.Query;
 using Arcanic.Mediator.Event;
-using Arcanic.Mediator.Request;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
