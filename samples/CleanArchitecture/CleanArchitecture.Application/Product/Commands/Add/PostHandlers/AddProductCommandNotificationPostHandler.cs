@@ -10,10 +10,10 @@ public class AddProductCommandNotificationPostHandler : ICommandPostHandler<AddP
 {
     public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
     {
-        // Example notification logic
+        // Example notification logic for newly added products
         await Task.Run(() => 
         {
-            Console.WriteLine($"[POST-HANDLER] Notification: New product '{command.Name}' has been created and stakeholders notified");
+            Console.WriteLine($"[POST-HANDLER] Notification: New product '{command.Name}' has been added and stakeholders notified");
         }, cancellationToken);
     }
 }

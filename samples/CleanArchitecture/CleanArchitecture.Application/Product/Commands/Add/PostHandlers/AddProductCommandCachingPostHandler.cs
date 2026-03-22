@@ -10,10 +10,10 @@ public class AddProductCommandCachingPostHandler : ICommandPostHandler<AddProduc
 {
     public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
     {
-        // Example caching logic
+        // Example caching logic for newly added products
         await Task.Run(() => 
         {
-            Console.WriteLine($"[POST-HANDLER] Caching: Product {command.Name} cached successfully");
+            Console.WriteLine($"[POST-HANDLER] Caching: New product '{command.Name}' cached successfully");
         }, cancellationToken);
     }
 }

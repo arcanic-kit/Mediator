@@ -1,8 +1,8 @@
-﻿using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Command.Abstractions;
 
 namespace CleanArchitecture.Application.Product.Commands.Add;
 
-public class AddProductCommand: ICommand<int>
+public class AddProductCommand : ICommand<int>
 {
     public string Name { get; set; } = string.Empty;
     public decimal Price { get; set; }

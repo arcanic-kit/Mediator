@@ -1,4 +1,5 @@
 using Arcanic.Mediator.Command.Abstractions.Handler;
+using CleanArchitecture.Domain.Products;
 
 namespace CleanArchitecture.Application.Product.Commands.Add.PreHandlers;
 
@@ -6,7 +7,7 @@ namespace CleanArchitecture.Application.Product.Commands.Add.PreHandlers;
 /// Pre-handler for validating AddProductCommand before the main handler executes.
 /// This demonstrates cross-cutting concerns like validation that should run before the main business logic.
 /// </summary>
-public class AddProductCommandValidationPreHandler : ICommandPreHandler<AddProductCommand>
+public class AddProductCommandValidationPreHandler(IProductRepository productRepository) : ICommandPreHandler<AddProductCommand>
 {
     public async Task HandleAsync(AddProductCommand command, CancellationToken cancellationToken = default)
     {
@@ -21,9 +22,13 @@ public class AddProductCommandValidationPreHandler : ICommandPreHandler<AddProdu
             throw new ArgumentException("Product price must be greater than zero", nameof(command.Price));
         }
 
-        // Simulate async validation (e.g., checking if product name already exists)
-        await Task.Delay(10, cancellationToken);
+        // Check for duplicate names during add operation
+        var existingProduct = await productRepository.GetByNameAsync(command.Name);
+        if (existingProduct != null)
+        {
+            throw new InvalidOperationException($"Product with name '{command.Name}' already exists. Cannot add duplicate product names.");
+        }
         
-        Console.WriteLine($"[PRE-HANDLER] Validation passed for product: {command.Name}");
+        Console.WriteLine($"[PRE-HANDLER] Validation passed for new product: {command.Name}");
     }
 }

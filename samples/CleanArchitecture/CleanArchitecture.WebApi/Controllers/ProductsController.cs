@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Request.Abstractions;
 using CleanArchitecture.Application.Product.Commands.Add;
-using CleanArchitecture.Application.Product.Commands.UpdatePrice;
+using CleanArchitecture.Application.Product.Commands.Update;
 using CleanArchitecture.Application.Product.Queries.Get;
 using CleanArchitecture.WebApi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -34,27 +34,20 @@ namespace CleanArchitecture.WebApi.Controllers
         }
 
         [HttpPost()]
-        public async Task<int?> Add()
+        public async Task<int> Add([FromBody] AddProductCommand command)
         {
-            var response = await mediator.SendAsync(new AddProductCommand
-            {
-                Name = "Sample Product",
-                Price = 9.99m
-            });
-
-            return null;
+            var response = await mediator.SendAsync(command);
+            return response;
         }
 
-        [HttpPut("{id}/price")]
-        public async Task<int?> UpdatePrice(int id, [FromBody] UpdateProductPriceCommand command)
+        [HttpPut("{id}")]
+        public async Task<int> Update(int id, [FromBody] UpdateProductCommand command)
         {
-            await mediator.SendAsync(new UpdateProductPriceCommand
-            {
-                Id = id,
-                Price = command.Price
-            });
+            // Ensure the ID from route matches the command
+            command.Id = id;
 
-            return null;
+            var response = await mediator.SendAsync(command);
+            return response;
         }
     }
 }

@@ -16,4 +16,9 @@
     <ProjectReference Include="..\CleanArchitecture.Domain\CleanArchitecture.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Product\Commands\Save\PostHandlers\" />
+    <Folder Include="Product\Commands\Save\PreHandlers\" />
+  </ItemGroup>
+
 </Project>
