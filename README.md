@@ -74,7 +74,7 @@ public class CreateProductCommandHandler : ICommandHandler<AddProductCommand, in
     public async Task<int> HandleAsync(AddProductCommand request, CancellationToken cancellationToken = default)
     {
         // Save product and get ID
-        var productId = await SaveProductAsync(request.Name, request.Price);
+        var productId = await CreateProductAsync(request.Name, request.Price);
 
         // Publish domain event
         await _publisher.PublishAsync(new ProductCreatedEvent
@@ -87,7 +87,7 @@ public class CreateProductCommandHandler : ICommandHandler<AddProductCommand, in
         return productId;
     }
 
-    private async Task<int> SaveProductAsync(string name, decimal price)
+    private async Task<int> CreateProductAsync(string name, decimal price)
     {
         // Implementation here
         await Task.Delay(100); // Simulate async work
@@ -187,14 +187,8 @@ public class ProductController : ControllerBase
        return await _mediator.SendAsync(new GetProductQuery { Id = id });
     }
 
-    [HttpPost]
-    public async Task<int> CreateProduct(AddProductCommand command)
-    {
-        return await _mediator.SendAsync(command);
-    }
-
-    [HttpPost("simple")]
-    public async Task CreateProductSimple(CreateProductCommand command)
+    [HttpPost()]
+    public async Task CreateProduct(CreateProductCommand command)
     {
         await _mediator.SendAsync(command);
     }
