@@ -10,11 +10,8 @@ A high-performance, modular mediator pattern implementation for .NET that provid
 - 📦 **Dependency Injection Ready** - First-class support for Microsoft.Extensions.DependencyInjection
 - 🔍 **Auto-Discovery** - Automatically register handlers from assemblies
 - ⚡ **Async/Await Support** - Full async support with CancellationToken propagation
-- 🎯 **Type Safe** - Strongly typed messages and handlers with compile-time safety
-- 📋 **Multiple Event Handlers** - Support for multiple handlers per event with parallel execution
 - 🔀 **Pipeline Processing** - Pre/post handler support for cross-cutting concerns
 - 🎨 **Clean Abstractions** - Separate abstraction packages for better dependency management
-- 🌐 **Multi-targeting** - Supports .NET 8, .NET 9, and .NET 10
 
 ## Installation
 
@@ -48,12 +45,14 @@ builder.Services.AddArcanicMediator()
 var app = builder.Build();
 ```
 
-### 2. Define Messages
+### 2. Define Messages and Handlers
 
 #### Commands
 
 ```csharp
 using Arcanic.Mediator.Command.Abstractions;
+using Arcanic.Mediator.Command.Abstractions.Handler;
+using Arcanic.Mediator.Event.Abstractions;
 
 // Command without return value
 public class CreateProductCommand : ICommand
@@ -62,74 +61,12 @@ public class CreateProductCommand : ICommand
     public decimal Price { get; set; }
 }
 
-// Command with return value
-public class AddProductCommand : ICommand<int>
-{
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-}
-```
-
-> **Note**: Commands implement `ICommand` or `ICommand<TResult>`, which inherit from `IRequest` for unified mediator processing.
-
-#### Queries
-
-```csharp
-using Arcanic.Mediator.Query.Abstractions;
-
-public class GetProductQuery : IQuery<ProductDto>
-{
-    public int Id { get; set; }
-}
-
-public record ProductDto(int Id, string Name, decimal Price);
-```
-
-> **Note**: Queries implement `IQuery<TResult>`, which inherits from `IRequest` for unified mediator processing.
-
-#### Events
-
-```csharp
-using Arcanic.Mediator.Event.Abstractions;
-
-public class ProductCreatedEvent : IEvent
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-}
-```
-
-### 3. Create Handlers
-
-#### Command Handlers
-
-```csharp
-using Arcanic.Mediator.Command.Abstractions.Handler;
-using Arcanic.Mediator.Event.Abstractions;
-
-// Main command handler
-public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand>
-{
-    public async Task HandleAsync(CreateProductCommand request, CancellationToken cancellationToken = default)
-    {
-        // Handle the command
-        await SaveProductAsync(request.Name, request.Price);
-    }
-    
-    private async Task SaveProductAsync(string name, decimal price)
-    {
-        // Implementation here
-        await Task.CompletedTask;
-    }
-}
-
 // Command handler with return value
-public class AddProductCommandHandler : ICommandHandler<AddProductCommand, int>
+public class CreateProductCommandHandler : ICommandHandler<AddProductCommand, int>
 {
     private readonly IPublisher _publisher;
 
-    public AddProductCommandHandler(IPublisher publisher)
+    public CreateProductCommandHandler(IPublisher publisher)
     {
         _publisher = publisher;
     }
@@ -159,46 +96,20 @@ public class AddProductCommandHandler : ICommandHandler<AddProductCommand, int>
 }
 ```
 
-#### Pre/Post Handlers
+> **Note**: Commands implement `ICommand` or `ICommand<TResult>`, which inherit from `IRequest` for unified mediator processing.
+
+#### Queries
 
 ```csharp
-// Pre-handler for validation
-public class AddProductCommandValidationPreHandler : ICommandPreHandler<AddProductCommand>
-{
-    public async Task HandleAsync(AddProductCommand request, CancellationToken cancellationToken = default)
-    {
-        if (string.IsNullOrWhiteSpace(request.Name))
-            throw new ArgumentException("Product name cannot be empty");
-        
-        if (request.Price <= 0)
-            throw new ArgumentException("Product price must be greater than zero");
-            
-        await Task.CompletedTask;
-    }
-}
-
-// Post-handler for notifications
-public class AddProductCommandNotificationPostHandler : ICommandPostHandler<AddProductCommand>
-{
-    public async Task HandleAsync(AddProductCommand request, CancellationToken cancellationToken = default)
-    {
-        // Send notifications after product creation
-        Console.WriteLine($"Product '{request.Name}' has been created");
-        await Task.CompletedTask;
-    }
-    
-    private async Task SendNotificationAsync(string message)
-    {
-        // Implementation here
-        await Task.CompletedTask;
-    }
-}
-```
-
-#### Query Handlers
-
-```csharp
+using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Handler;
+
+public record ProductDto(int Id, string Name, decimal Price);
+
+public class GetProductQuery : IQuery<ProductDto>
+{
+    public int Id { get; set; }
+}
 
 public class GetProductQueryHandler : IQueryHandler<GetProductQuery, ProductDto>
 {
@@ -210,10 +121,20 @@ public class GetProductQueryHandler : IQueryHandler<GetProductQuery, ProductDto>
 }
 ```
 
-#### Event Handlers
+> **Note**: Queries implement `IQuery<TResult>`, which inherits from `IRequest` for unified mediator processing.
+
+#### Events
 
 ```csharp
+using Arcanic.Mediator.Event.Abstractions;
 using Arcanic.Mediator.Event.Abstractions.Handler;
+
+public class ProductCreatedEvent : IEvent
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+}
 
 // Multiple event handlers can exist for the same event
 public class ProductCreatedEmailHandler : IEventHandler<ProductCreatedEvent>
@@ -243,7 +164,7 @@ public class ProductCreatedLoggingHandler : IEventHandler<ProductCreatedEvent>
 }
 ```
 
-### 4. Use in Controllers
+### 3. Use in Controllers
 
 ```csharp
 using Microsoft.AspNetCore.Mvc;
@@ -302,69 +223,13 @@ Arcanic Mediator provides a powerful pipeline system that allows you to implemen
 - **Query Pipeline**: Use for read-specific optimizations (caching, query performance monitoring, read authorization)
 - **Event Pipeline**: Use for event-specific concerns (audit trails, event sourcing, notification reliability)
 
-### Generic Pipeline (Universal)
+### Generic Pipeline exemple
 
 The most universal pipeline that works with all message types - Commands, Queries, and Events:
 
 ```csharp
 using Arcanic.Mediator.Abstractions.Pipeline;
 
-public class GlobalMetricsPipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
-    where TMessage : notnull
-{
-    private readonly IMetricsCollector _metricsCollector;
-    private readonly ILogger<GlobalMetricsPipelineBehavior<TMessage, TResponse>> _logger;
-
-    public GlobalMetricsPipelineBehavior(
-        IMetricsCollector metricsCollector,
-        ILogger<GlobalMetricsPipelineBehavior<TMessage, TResponse>> logger)
-    {
-        _metricsCollector = metricsCollector;
-        _logger = logger;
-    }
-
-    public async Task<TResponse> HandleAsync(TMessage message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        var messageName = typeof(TMessage).Name;
-        var correlationId = Guid.NewGuid();
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        // Start metrics collection
-        using var activity = _metricsCollector.StartActivity(messageName);
-        
-        _logger.LogDebug("[GLOBAL] Processing {MessageName} with correlation ID {CorrelationId}", 
-            messageName, correlationId);
-
-        try
-        {
-            var result = await next(cancellationToken);
-            
-            stopwatch.Stop();
-            
-            // Record successful execution metrics
-            _metricsCollector.RecordExecution(messageName, stopwatch.Elapsed, success: true);
-            
-            _logger.LogDebug("[GLOBAL] Completed {MessageName} in {ElapsedMs}ms with correlation ID {CorrelationId}", 
-                messageName, stopwatch.ElapsedMilliseconds, correlationId);
-            
-            return result;
-        }
-        catch (Exception ex)
-        {
-            stopwatch.Stop();
-            
-            // Record failed execution metrics
-            _metricsCollector.RecordExecution(messageName, stopwatch.Elapsed, success: false);
-            
-            _logger.LogError(ex, "[GLOBAL] Failed {MessageName} after {ElapsedMs}ms with correlation ID {CorrelationId}", 
-                messageName, stopwatch.ElapsedMilliseconds, correlationId);
-            
-            throw;
-        }
-    }
-}
-
-// Global error handling pipeline
 public class GlobalExceptionPipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
     where TMessage : notnull
 {
@@ -394,321 +259,6 @@ public class GlobalExceptionPipelineBehavior<TMessage, TResponse> : IPipelineBeh
             
             throw; // Re-throw to maintain the original exception flow
         }
-    }
-}
-```
-
-### Request Pipeline (Generic)
-
-The most flexible pipeline that handles both commands and queries:
-
-```csharp
-using Arcanic.Mediator.Abstractions.Pipeline;
-using Arcanic.Mediator.Request.Abstractions;
-using Arcanic.Mediator.Request.Abstractions.Pipeline;
-
-public class LoggingRequestPipelineBehavior<TRequest, TResponse> : IRequestPipelineBehavior<TRequest, TResponse>
-    where TRequest : IRequest
-{
-    private readonly ILogger<LoggingRequestPipelineBehavior<TRequest, TResponse>> _logger;
-
-    public LoggingRequestPipelineBehavior(ILogger<LoggingRequestPipelineBehavior<TRequest, TResponse>> logger)
-    {
-        _logger = logger;
-    }
-
-    public async Task<TResponse> HandleAsync(TRequest request, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        var requestName = typeof(TRequest).Name;
-        var correlationId = Guid.NewGuid();
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        _logger.LogInformation("[REQUEST] Starting {RequestName} with correlation ID {CorrelationId}", 
-            requestName, correlationId);
-
-        try
-        {
-            var result = await next(cancellationToken);
-            
-            stopwatch.Stop();
-            _logger.LogInformation("[REQUEST] Completed {RequestName} in {ElapsedMs}ms with correlation ID {CorrelationId}", 
-                requestName, stopwatch.ElapsedMilliseconds, correlationId);
-            
-            return result;
-        }
-        catch (Exception ex)
-        {
-            stopwatch.Stop();
-            _logger.LogError(ex, "[REQUEST] Failed {RequestName} after {ElapsedMs}ms with correlation ID {CorrelationId}", 
-                requestName, stopwatch.ElapsedMilliseconds, correlationId);
-            throw;
-        }
-    }
-}
-```
-
-### Command Pipeline
-
-Specialized pipeline for command processing with transaction support:
-
-```csharp
-using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Command.Abstractions.Pipeline;
-
-public class TransactionCommandPipelineBehavior<TCommand, TResponse> : ICommandPipelineBehavior<TCommand, TResponse>
-    where TCommand : ICommand
-{
-    private readonly IDbContextTransaction _transaction;
-    private readonly ILogger<TransactionCommandPipelineBehavior<TCommand, TResponse>> _logger;
-
-    public TransactionCommandPipelineBehavior(
-        IDbContextTransaction transaction,
-        ILogger<TransactionCommandPipelineBehavior<TCommand, TResponse>> logger)
-    {
-        _transaction = transaction;
-        _logger = logger;
-    }
-
-    public async Task<TResponse> HandleAsync(TCommand command, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        var commandName = typeof(TCommand).Name;
-        
-        _logger.LogInformation("[COMMAND] Starting transaction for {CommandName}", commandName);
-
-        try
-        {
-            var result = await next(cancellationToken);
-            
-            await _transaction.CommitAsync(cancellationToken);
-            _logger.LogInformation("[COMMAND] Transaction committed for {CommandName}", commandName);
-            
-            return result;
-        }
-        catch (Exception ex)
-        {
-            await _transaction.RollbackAsync(cancellationToken);
-            _logger.LogError(ex, "[COMMAND] Transaction rolled back for {CommandName}", commandName);
-            throw;
-        }
-    }
-}
-
-// Authorization pipeline for commands
-public class AuthorizationCommandPipelineBehavior<TCommand, TResponse> : ICommandPipelineBehavior<TCommand, TResponse>
-    where TCommand : ICommand
-{
-    private readonly ICurrentUser _currentUser;
-    private readonly IAuthorizationService _authorizationService;
-
-    public AuthorizationCommandPipelineBehavior(ICurrentUser currentUser, IAuthorizationService authorizationService)
-    {
-        _currentUser = currentUser;
-        _authorizationService = authorizationService;
-    }
-
-    public async Task<TResponse> HandleAsync(TCommand command, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        var authorizationResult = await _authorizationService.AuthorizeAsync(
-            _currentUser.User, command, typeof(TCommand).Name);
-
-        if (!authorizationResult.Succeeded)
-        {
-            throw new UnauthorizedAccessException($"User not authorized to execute {typeof(TCommand).Name}");
-        }
-
-        return await next(cancellationToken);
-    }
-}
-```
-
-### Query Pipeline
-
-Optimized pipeline for query processing with caching support:
-
-```csharp
-using Arcanic.Mediator.Query.Abstractions;
-using Arcanic.Mediator.Query.Abstractions.Pipeline;
-
-public class CachingQueryPipelineBehavior<TQuery, TResponse> : IQueryPipelineBehavior<TQuery, TResponse>
-    where TQuery : IQuery<TResponse>
-{
-    private readonly IMemoryCache _cache;
-    private readonly ILogger<CachingQueryPipelineBehavior<TQuery, TResponse>> _logger;
-
-    public CachingQueryPipelineBehavior(IMemoryCache cache, ILogger<CachingQueryPipelineBehavior<TQuery, TResponse>> logger)
-    {
-        _cache = cache;
-        _logger = logger;
-    }
-
-    public async Task<TResponse> HandleAsync(TQuery query, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        var cacheKey = $"{typeof(TQuery).Name}_{query.GetHashCode()}";
-        
-        // Try to get from cache first
-        if (_cache.TryGetValue(cacheKey, out TResponse cachedResult))
-        {
-            _logger.LogInformation("[QUERY] Cache hit for {QueryName}", typeof(TQuery).Name);
-            return cachedResult;
-        }
-
-        _logger.LogInformation("[QUERY] Cache miss for {QueryName}, executing query", typeof(TQuery).Name);
-
-        // Execute query and cache result
-        var result = await next(cancellationToken);
-        
-        var cacheOptions = new MemoryCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
-            SlidingExpiration = TimeSpan.FromMinutes(1)
-        };
-
-        _cache.Set(cacheKey, result, cacheOptions);
-        
-        return result;
-    }
-}
-
-// Performance monitoring pipeline for queries
-public class PerformanceQueryPipelineBehavior<TQuery, TResponse> : IQueryPipelineBehavior<TQuery, TResponse>
-    where TQuery : IQuery<TResponse>
-{
-    private readonly ILogger<PerformanceQueryPipelineBehavior<TQuery, TResponse>> _logger;
-
-    public PerformanceQueryPipelineBehavior(ILogger<PerformanceQueryPipelineBehavior<TQuery, TResponse>> logger)
-    {
-        _logger = logger;
-    }
-
-    public async Task<TResponse> HandleAsync(TQuery query, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var queryName = typeof(TQuery).Name;
-
-        try
-        {
-            var result = await next(cancellationToken);
-            
-            stopwatch.Stop();
-            
-            if (stopwatch.ElapsedMilliseconds > 1000) // Log slow queries
-            {
-                _logger.LogWarning("[QUERY] Slow query detected: {QueryName} took {ElapsedMs}ms", 
-                    queryName, stopwatch.ElapsedMilliseconds);
-            }
-            else
-            {
-                _logger.LogInformation("[QUERY] {QueryName} completed in {ElapsedMs}ms", 
-                    queryName, stopwatch.ElapsedMilliseconds);
-            }
-
-            return result;
-        }
-        catch (Exception ex)
-        {
-            stopwatch.Stop();
-            _logger.LogError(ex, "[QUERY] {QueryName} failed after {ElapsedMs}ms", 
-                queryName, stopwatch.ElapsedMilliseconds);
-            throw;
-        }
-    }
-}
-```
-
-### Event Pipeline
-
-Specialized pipeline for event processing with audit and reliability features:
-
-```csharp
-using Arcanic.Mediator.Event.Abstractions;
-using Arcanic.Mediator.Event.Abstractions.Pipeline;
-
-public class AuditEventPipelineBehavior<TEvent, TResponse> : IEventPipelineBehavior<TEvent, TResponse>
-    where TEvent : IEvent
-{
-    private readonly IAuditService _auditService;
-    private readonly ILogger<AuditEventPipelineBehavior<TEvent, TResponse>> _logger;
-
-    public AuditEventPipelineBehavior(IAuditService auditService, ILogger<AuditEventPipelineBehavior<TEvent, TResponse>> logger)
-    {
-        _auditService = auditService;
-        _logger = logger;
-    }
-
-    public async Task<TResponse> HandleAsync(TEvent @event, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        var eventName = typeof(TEvent).Name;
-        var correlationId = Guid.NewGuid();
-
-        // Create audit entry before processing
-        await _auditService.LogEventStartAsync(eventName, @event, correlationId, cancellationToken);
-        
-        _logger.LogInformation("[EVENT] Processing {EventName} with correlation ID {CorrelationId}", 
-            eventName, correlationId);
-
-        try
-        {
-            var result = await next(cancellationToken);
-            
-            // Log successful processing
-            await _auditService.LogEventCompletionAsync(eventName, correlationId, success: true, cancellationToken);
-            
-            return result;
-        }
-        catch (Exception ex)
-        {
-            // Log failed processing
-            await _auditService.LogEventCompletionAsync(eventName, correlationId, success: false, cancellationToken);
-            _logger.LogError(ex, "[EVENT] Failed to process {EventName} with correlation ID {CorrelationId}", 
-                eventName, correlationId);
-            throw;
-        }
-    }
-}
-
-// Reliability pipeline for events (retry logic)
-public class ReliabilityEventPipelineBehavior<TEvent, TResponse> : IEventPipelineBehavior<TEvent, TResponse>
-    where TEvent : IEvent
-{
-    private readonly ILogger<ReliabilityEventPipelineBehavior<TEvent, TResponse>> _logger;
-
-    public ReliabilityEventPipelineBehavior(ILogger<ReliabilityEventPipelineBehavior<TEvent, TResponse>> logger)
-    {
-        _logger = logger;
-    }
-
-    public async Task<TResponse> HandleAsync(TEvent @event, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
-    {
-        const int maxRetries = 3;
-        var eventName = typeof(TEvent).Name;
-
-        for (int attempt = 1; attempt <= maxRetries; attempt++)
-        {
-            try
-            {
-                return await next(cancellationToken);
-            }
-            catch (Exception ex) when (attempt < maxRetries && IsRetriableException(ex))
-            {
-                var delay = TimeSpan.FromSeconds(Math.Pow(2, attempt)); // Exponential backoff
-                
-                _logger.LogWarning(ex, "[EVENT] Attempt {Attempt}/{MaxRetries} failed for {EventName}, retrying in {DelaySeconds}s", 
-                    attempt, maxRetries, eventName, delay.TotalSeconds);
-                
-                await Task.Delay(delay, cancellationToken);
-            }
-        }
-
-        // Final attempt without catching exception
-        return await next(cancellationToken);
-    }
-
-    private static bool IsRetriableException(Exception ex)
-    {
-        // Define which exceptions are retriable (network issues, temporary failures, etc.)
-        return ex is HttpRequestException || 
-               ex is TaskCanceledException || 
-               ex is SocketException;
     }
 }
 ```
