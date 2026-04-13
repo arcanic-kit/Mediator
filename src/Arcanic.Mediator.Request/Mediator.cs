@@ -12,12 +12,12 @@ public class Mediator : IMediator
     /// <summary>
     /// The service provider used for dependency injection and handler resolution.
     /// </summary>
-    public IServiceProvider ServiceProvider { get; set; }
+    public IServiceProvider ServiceProvider { get; }
 
     /// <summary>
-    /// Gets or sets a thread-safe dictionary of request dispatchers keyed by their associated request types.
+    /// Gets a thread-safe dictionary of request dispatchers keyed by their associated request types.
     /// </summary>
-    public ConcurrentDictionary<Type, RequestDispatcherBase> RequestDispatchers { get; set; } = new();
+    public ConcurrentDictionary<Type, RequestDispatcherBase> RequestDispatchers { get; } = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Mediator"/> class with the specified service provider.
