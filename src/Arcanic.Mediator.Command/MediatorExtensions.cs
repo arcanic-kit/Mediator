@@ -1,6 +1,5 @@
 ﻿using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Dispatcher;
-using Arcanic.Mediator.Request.Abstractions;
 
 namespace Arcanic.Mediator.Request.Abstractions;
 
