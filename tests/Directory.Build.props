@@ -2,10 +2,11 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
-  <!-- Disable packaging for benchmark projects -->
+  <!-- Disable packaging for sample projects -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsTestProject>true</IsTestProject>
+    <EnableDefaultItems>true</EnableDefaultItems>
   </PropertyGroup>
 
 </Project>
