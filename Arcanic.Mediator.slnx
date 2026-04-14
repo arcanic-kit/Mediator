@@ -12,14 +12,18 @@
   </Folder>
   <Folder Name="/.solution-items/">
     <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/benchmarks/">
+    <File Path="benchmarks/Directory.Build.props" />
     <Project Path="benchmarks/Arcanic.Mediator.Command.Benchmarks/Arcanic.Mediator.Command.Benchmarks.csproj" />
     <Project Path="benchmarks/Arcanic.Mediator.Event.Benchmarks/Arcanic.Mediator.Event.Benchmarks.csproj" />
     <Project Path="benchmarks/Arcanic.Mediator.Query.Benchmarks/Arcanic.Mediator.Query.Benchmarks.csproj" />
   </Folder>
-  <Folder Name="/samples/" />
+  <Folder Name="/samples/">
+    <File Path="samples/Directory.Build.props" />
+  </Folder>
   <Folder Name="/samples/CleanArchitecture/">
     <Project Path="samples/CleanArchitecture/CleanArchitecture.Application/CleanArchitecture.Application.csproj" />
     <Project Path="samples/CleanArchitecture/CleanArchitecture.Domain/CleanArchitecture.Domain.csproj" />
@@ -50,6 +54,8 @@
     <Project Path="src/Arcanic.Mediator.Query/Arcanic.Mediator.Query.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <File Path="tests/Directory.Build.props" />
+    <File Path="tests/Directory.Packages.props" />
     <Project Path="tests/Arcanic.Mediator.Command.Tests/Arcanic.Mediator.Command.Tests.csproj" Id="41805b25-3fdb-4d30-973a-7d16030f7f55" />
     <Project Path="tests/Arcanic.Mediator.Event.Tests/Arcanic.Mediator.Event.Tests.csproj" Id="3007eebf-5877-45b1-a520-7503163e73e9" />
     <Project Path="tests/Arcanic.Mediator.Query.Tests/Arcanic.Mediator.Query.Tests.csproj" Id="07072170-c10d-4a37-bed5-df92df7a885c" />
