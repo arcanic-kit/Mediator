@@ -10,6 +10,14 @@ namespace Arcanic.Mediator.Request;
 public class Mediator : IMediator
 {
     /// <summary>
+    /// A process-wide, thread-safe cache mapping request types to their corresponding dispatcher instances.
+    /// Shared across all <see cref="Mediator"/> instances so that dispatcher creation via reflection
+    /// occurs only once per request type for the lifetime of the application, regardless of the
+    /// configured DI lifetime (transient, scoped, or singleton).
+    /// </summary>
+    private static readonly ConcurrentDictionary<Type, RequestDispatcherBase> _requestDispatchers = new();
+    
+    /// <summary>
     /// The service provider used for dependency injection and handler resolution.
     /// </summary>
     public IServiceProvider ServiceProvider { get; }
@@ -17,7 +25,7 @@ public class Mediator : IMediator
     /// <summary>
     /// Gets a thread-safe dictionary of request dispatchers keyed by their associated request types.
     /// </summary>
-    public ConcurrentDictionary<Type, RequestDispatcherBase> RequestDispatchers { get; } = new();
+    public ConcurrentDictionary<Type, RequestDispatcherBase> RequestDispatchers { get; } = _requestDispatchers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Mediator"/> class with the specified service provider.
