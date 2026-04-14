@@ -2,17 +2,6 @@
 
 A high-performance, modular mediator pattern implementation for .NET that provides clean separation of concerns through Command Query Responsibility Segregation (CQRS) and event-driven architecture.
 
-## Features
-
-- 🏗️ **Modular Architecture** - Register only the modules you need (Commands, Queries, Events)
-- 🔧 **Clean CQRS Implementation** - Separate commands, queries, and events with dedicated mediators
-- 🚀 **High Performance** - Minimal overhead with efficient message routing and cached dispatchers
-- 📦 **Dependency Injection Ready** - First-class support for Microsoft.Extensions.DependencyInjection
-- 🔍 **Auto-Discovery** - Automatically register handlers from assemblies
-- ⚡ **Async/Await Support** - Full async support with CancellationToken propagation
-- 🔀 **Pipeline Processing** - Pre/post handler support for cross-cutting concerns
-- 🎨 **Clean Abstractions** - Separate abstraction packages for better dependency management
-
 ## Installation
 
 Install the packages you need:
@@ -309,11 +298,10 @@ Example execution flow for a command:
 Generic Pipeline (Metrics) 
   → Generic Pipeline (Exception Handling)
     → Request Pipeline (Logging) 
-      → Command Pipeline (Authorization)
         → Command Pipeline (Transaction)
-          → Pre-handler (Validation)
-            → Main Handler (Business Logic)
-          → Post-handler (Notifications)
+            → Pre-handler (Validation)
+                → Main Handler (Business Logic)
+            → Post-handler (Notifications)
 ```
 
 Example execution flow for an event:
@@ -389,12 +377,6 @@ The library follows a modular architecture with clear separation:
 - **Minimal Allocations** - Optimized for low garbage collection pressure
 - **Parallel Events** - Multiple event handlers execute concurrently
 
-Run benchmarks:
-```bash
-cd benchmarks/Arcanic.Mediator.Command.Benchmarks
-dotnet run -c Release
-```
-
 ## Samples
 
 Check out the [samples/CleanArchitecture](./samples/CleanArchitecture) for a complete working example demonstrating:
@@ -409,40 +391,6 @@ Run the sample:
 cd samples/CleanArchitecture/CleanArchitecture.WebApi
 dotnet run
 ```
-
-## Migration from MediatR
-
-Arcanic Mediator provides a similar API with enhanced modularity:
-
-```csharp
-// MediatR
-services.AddMediatR(Assembly.GetExecutingAssembly());
-
-// Arcanic Mediator
-services.AddArcanicMediator()
-    .AddCommands(Assembly.GetExecutingAssembly())
-    .AddQueries(Assembly.GetExecutingAssembly())
-    .AddEvents(Assembly.GetExecutingAssembly());
-```
-
-### Key Differences
-
-| Feature | MediatR | Arcanic Mediator |
-|---------|---------|------------------|
-| **Modularity** | Single package | Separate packages per feature |
-| **Interface Names** | `IRequest<T>` | `ICommand<T>`, `IQuery<T>`, `IEvent` |
-| **Mediator Interfaces** | `IMediator` | `IMediator` |
-| **Event Publishing** | `IMediator.Publish()` | Dedicated `IPublisher` interface |
-| **Pre/Post Handlers** | Manual | Built-in support |
-| **Performance** | Good | Optimized with cached dispatchers |
-| **Architecture** | Monolithic | Modular with clear separation of concerns |
-
-## Contributing
-
-1. Clone the repository
-2. Run `dotnet restore`
-3. Run `dotnet build`
-4. Run `dotnet test`
 
 ## License
 
