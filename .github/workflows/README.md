@@ -32,15 +32,22 @@ This directory contains GitHub Actions workflows for the Arcanic.Mediator projec
 
 ## Setup Instructions
 
-### 1. Configure NuGet API Key
+### 1. Configure NuGet trusted publishing
 
-1. Go to [NuGet.org](https://www.nuget.org/) and sign in
-2. Go to your account settings ? API Keys
-3. Create a new API key with "Push" permissions for your packages
-4. In your GitHub repository, go to Settings ? Secrets and Variables ? Actions
-5. Add a new repository secret named `NUGET_API_KEY` with your API key value
+The release workflow publishes to NuGet.org with [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing): the `NuGet/login` action exchanges the job's GitHub OIDC token for a NuGet API key that is valid for one hour. No long-lived NuGet API key is stored in the repository.
 
-Note: The workflow also publishes to GitHub Packages using the `GITHUB_TOKEN` (automatically available).
+1. Sign in to [NuGet.org](https://www.nuget.org/) with the account (or organization) that owns the `Arcanic.Mediator.*` packages.
+2. Click your username → **Trusted Publishing** → add a new policy:
+   - **Repository Owner:** `arcanic-kit`
+   - **Repository:** `mediator`
+   - **Workflow File:** `release.yml` (file name only, without `.github/workflows/`)
+   - **Environment:** leave empty (the workflow does not use a GitHub environment)
+3. In the GitHub repository, go to **Settings → Secrets and variables → Actions** and add a repository secret named `NUGET_USER` containing your NuGet.org **username (profile name), not your email address**.
+
+Notes:
+- A new policy can stay in a pending state for up to 7 days (common for private repositories); the first successful publish makes it permanent.
+- The workflow also publishes to GitHub Packages using the automatically provided `GITHUB_TOKEN`.
+- Once a release has succeeded with trusted publishing, delete the old `NUGET_API_KEY` repository secret and revoke that key on NuGet.org.
 
 ### 2. Release Process
 
@@ -87,7 +94,7 @@ Note: Sample projects, test projects, and benchmarks are excluded from packaging
 - **Build failures:** Check the CI workflow first to ensure your changes build correctly
 - **Package conflicts:** The workflow uses `--skip-duplicate` to avoid conflicts with existing packages
 - **Version conflicts:** Ensure you're using a new version number that hasn't been published before
-- **API key issues:** Verify your NuGet API key has the correct permissions and hasn't expired
+- **NuGet login fails:** Check that the trusted publishing policy matches the repository owner, repository and workflow file name (`release.yml`), that the policy is active, and that the `NUGET_USER` secret is your NuGet.org username rather than your email
 
 ## Best Practices
 
@@ -101,6 +108,6 @@ Note: Sample projects, test projects, and benchmarks are excluded from packaging
 
 - Never commit API keys or secrets to the repository
 - Use GitHub repository secrets for sensitive information
-- Regularly rotate your NuGet API keys
+- NuGet.org publishing uses trusted publishing (OIDC), so there is no long-lived NuGet API key to rotate; the job only needs the `id-token: write` permission
 - Review workflow permissions and scope as needed
 - GitHub Packages publishing uses the automatically provided `GITHUB_TOKEN`
