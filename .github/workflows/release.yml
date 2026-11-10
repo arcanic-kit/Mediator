@@ -20,6 +20,11 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    # The "release" environment holds the NUGET_USER secret, can enforce protection
+    # rules (required reviewers, allowed branches/tags), and is the environment the
+    # NuGet.org trusted publishing policy is restricted to.
+    environment: release
+
     permissions:
       contents: write   # create the GitHub release
       packages: write   # push to GitHub Packages
@@ -146,8 +151,9 @@ jobs:
 
     # Trusted publishing: exchange this job's GitHub OIDC token for a NuGet API key
     # that is valid for 1 hour, so no long-lived key is stored in the repository.
-    # Requires a Trusted Publishing policy on nuget.org for this repository and
-    # the workflow file "release.yml", and the NUGET_USER secret (nuget.org profile name).
+    # Requires a Trusted Publishing policy on nuget.org for this repository, the
+    # workflow file "release.yml" and the environment "release", plus the NUGET_USER
+    # secret (nuget.org profile name) in the "release" environment.
     - name: NuGet login (OIDC → temporary API key)
       uses: NuGet/login@v1
       id: nuget-login

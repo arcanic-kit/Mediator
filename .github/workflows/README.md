@@ -36,13 +36,15 @@ This directory contains GitHub Actions workflows for the Arcanic.Mediator projec
 
 The release workflow publishes to NuGet.org with [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing): the `NuGet/login` action exchanges the job's GitHub OIDC token for a NuGet API key that is valid for one hour. No long-lived NuGet API key is stored in the repository.
 
-1. Sign in to [NuGet.org](https://www.nuget.org/) with the account (or organization) that owns the `Arcanic.Mediator.*` packages.
-2. Click your username → **Trusted Publishing** → add a new policy:
+1. In the GitHub repository, go to **Settings → Environments** and create an environment named `release`.
+   - Optional but recommended: add **required reviewers** and restrict **deployment branches and tags** (for example to `v*` tags) so only approved releases can publish.
+2. In that `release` environment, add an **environment secret** named `NUGET_USER` containing your NuGet.org **username (profile name), not your email address**.
+3. Sign in to [NuGet.org](https://www.nuget.org/) with the account (or organization) that owns the `Arcanic.Mediator.*` packages.
+4. Click your username → **Trusted Publishing** → add a new policy:
    - **Repository Owner:** `arcanic-kit`
    - **Repository:** `mediator`
    - **Workflow File:** `release.yml` (file name only, without `.github/workflows/`)
-   - **Environment:** leave empty (the workflow does not use a GitHub environment)
-3. In the GitHub repository, go to **Settings → Secrets and variables → Actions** and add a repository secret named `NUGET_USER` containing your NuGet.org **username (profile name), not your email address**.
+   - **Environment:** `release`
 
 Notes:
 - A new policy can stay in a pending state for up to 7 days (common for private repositories); the first successful publish makes it permanent.
@@ -94,7 +96,7 @@ Note: Sample projects, test projects, and benchmarks are excluded from packaging
 - **Build failures:** Check the CI workflow first to ensure your changes build correctly
 - **Package conflicts:** The workflow uses `--skip-duplicate` to avoid conflicts with existing packages
 - **Version conflicts:** Ensure you're using a new version number that hasn't been published before
-- **NuGet login fails:** Check that the trusted publishing policy matches the repository owner, repository and workflow file name (`release.yml`), that the policy is active, and that the `NUGET_USER` secret is your NuGet.org username rather than your email
+- **NuGet login fails:** Check that the trusted publishing policy matches the repository owner, repository and workflow file name (`release.yml`) and environment (`release`), that the policy is active, and that the `NUGET_USER` secret exists in the `release` environment and is your NuGet.org username rather than your email
 
 ## Best Practices
 
