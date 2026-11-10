@@ -24,7 +24,7 @@ public static class ServiceRegistrarExtensions
         ArgumentNullException.ThrowIfNull(serviceRegistrar);
 
         if (!serviceRegistrar.IsRegistered(typeof(IMediator)))
-            serviceRegistrar.Register(typeof(IMediator), typeof(Mediator));
+            serviceRegistrar.TryRegister(typeof(IMediator), typeof(Mediator));
 
         return serviceRegistrar;
     }
@@ -52,7 +52,7 @@ public static class ServiceRegistrarExtensions
         ArgumentNullException.ThrowIfNull(requestPipelineBehaviorType);
         ValidateRequestPipelineBehaviorType(requestPipelineBehaviorType);
 
-        serviceRegistrar.Register(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType);
+        serviceRegistrar.TryRegister(typeof(IRequestPipelineBehavior<,>), requestPipelineBehaviorType);
 
         return serviceRegistrar;
     }

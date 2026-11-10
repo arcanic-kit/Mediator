@@ -21,8 +21,8 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterCommandRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
-            .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
+            .TryRegister(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
 
         return serviceRegistrar;
     }
@@ -68,7 +68,7 @@ public static class ServiceRegistrarExtensions
 
         foreach (var registration in commandHandlerRegistrations)
         {
-            serviceRegistrar.Register(registration.commandHandlerInterface, registration.handlerType);
+            serviceRegistrar.TryRegister(registration.commandHandlerInterface, registration.handlerType);
         }
 
         return serviceRegistrar;
@@ -96,7 +96,7 @@ public static class ServiceRegistrarExtensions
     {
         ValidateCommandPipelineBehaviorType(commandPipelineBehaviorType);
 
-        serviceRegistrar.Register(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
+        serviceRegistrar.TryRegister(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
 
         return serviceRegistrar;
     }

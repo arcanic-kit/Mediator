@@ -22,9 +22,9 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterEventRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(IPublisher), typeof(Publisher))
-            .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
-            .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
+            .TryRegister(typeof(IPublisher), typeof(Publisher))
+            .TryRegister(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
 
         return serviceRegistrar;
     }
@@ -78,7 +78,7 @@ public static class ServiceRegistrarExtensions
 
         foreach (var registration in eventHandlerRegistrations)
         {
-            serviceRegistrar.Register(registration.eventHandlerInterface, registration.handlerType);
+            serviceRegistrar.TryRegister(registration.eventHandlerInterface, registration.handlerType);
         }
 
         return serviceRegistrar;
@@ -108,7 +108,7 @@ public static class ServiceRegistrarExtensions
 
         ValidateEventPipelineBehaviorType(eventPipelineBehaviorType);
 
-        serviceRegistrar.Register(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType);
+        serviceRegistrar.TryRegister(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType);
 
         return serviceRegistrar;
     }

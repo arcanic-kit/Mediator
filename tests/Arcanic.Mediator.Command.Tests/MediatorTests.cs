@@ -322,4 +322,27 @@ public class MediatorTests
         executedTypeTracker.ExecutedTypes[4].Should().Be<SimpleCommandHandler>();
         executedTypeTracker.ExecutedTypes[5].Should().Be<SimpleCommandPostHandler>();
     }
+
+    [Fact]
+    public async Task SendAsync_WhenCommandsRegisteredMultipleTimes_RunsEachHandlerOnce()
+    {
+        // Arrange - simulate scanning several assemblies, including the same one twice
+        var service = new ServiceCollection();
+        service.AddArcanicMediator()
+            .AddCommands(Assembly.GetExecutingAssembly())
+            .AddCommands(typeof(Arcanic.Mediator.Abstractions.Unit).Assembly)
+            .AddCommands(Assembly.GetExecutingAssembly());
+        service.AddSingleton<ExecutedTypeTracker>();
+        var serviceProvider = service.BuildServiceProvider();
+
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
+
+        // Act
+        await mediator.SendAsync(new SimpleCommand { Value = 1 });
+
+        // Assert
+        executedTypeTracker.ExecutedTypes.Should().Equal(
+            typeof(SimpleCommandPreHandler), typeof(SimpleCommandHandler), typeof(SimpleCommandPostHandler));
+    }
 }

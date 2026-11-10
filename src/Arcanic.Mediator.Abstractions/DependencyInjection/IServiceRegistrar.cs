@@ -19,6 +19,19 @@ public interface IServiceRegistrar
     IServiceRegistrar Register(Type serviceType, Type implementationType);
 
     /// <summary>
+    /// Registers a service type with its implementation type using the configured instance lifetime,
+    /// unless that exact service/implementation pair is already registered.
+    /// Use this for registrations that must stay idempotent when configuration methods are called more than once.
+    /// </summary>
+    /// <param name="serviceType">The type of service to register.</param>
+    /// <param name="implementationType">The implementation type that provides the service.</param>
+    /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="serviceType"/> or <paramref name="implementationType"/> is <c>null</c>.
+    /// </exception>
+    IServiceRegistrar TryRegister(Type serviceType, Type implementationType);
+
+    /// <summary>
     /// Validates whether a service type is registered in the service collection.
     /// </summary>
     /// <param name="serviceType">The type of service to check for registration.</param>

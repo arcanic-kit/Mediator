@@ -21,8 +21,8 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterQueryRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>))
-            .Register(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
+            .TryRegister(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
 
         return serviceRegistrar;
     }
@@ -70,7 +70,7 @@ public static class ServiceRegistrarExtensions
 
         foreach (var registration in queryHandlerRegistrations)
         {
-            serviceRegistrar.Register(registration.queryHandlerInterface, registration.handlerType);
+            serviceRegistrar.TryRegister(registration.queryHandlerInterface, registration.handlerType);
         }
 
         return serviceRegistrar;
@@ -98,7 +98,7 @@ public static class ServiceRegistrarExtensions
     {
         ValidateQueryPipelineBehaviorType(queryPipelineBehaviorType);
 
-        serviceRegistrar.Register(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType);
+        serviceRegistrar.TryRegister(typeof(IQueryPipelineBehavior<,>), queryPipelineBehaviorType);
 
         return serviceRegistrar;
     }

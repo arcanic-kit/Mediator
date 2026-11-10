@@ -40,7 +40,7 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
         
         ValidatePipelineBehaviorType(pipelineBehaviorType);
 
-        ServiceRegistrar.Register(typeof(IPipelineBehavior<,>), pipelineBehaviorType);
+        ServiceRegistrar.TryRegister(typeof(IPipelineBehavior<,>), pipelineBehaviorType);
 
         return this;
     }

@@ -211,6 +211,29 @@ namespace Arcanic.Mediator.Event.Tests
             executedTypeTracker.ExecutedTypes.Count(t => t == typeof(SimpleEventPreHandler)).Should().Be(1);
             executedTypeTracker.ExecutedTypes.Count(t => t == typeof(SimpleEventPostHandler)).Should().Be(1);
         }
+
+        [Fact]
+        public async Task PublishAsync_WhenEventsRegisteredMultipleTimes_RunsEachHandlerOnce()
+        {
+            // Arrange - simulate scanning several assemblies, including the same one twice
+            var service = new ServiceCollection();
+            service.AddArcanicMediator()
+                .AddEvents(Assembly.GetExecutingAssembly())
+                .AddEvents(typeof(Arcanic.Mediator.Abstractions.Unit).Assembly)
+                .AddEvents(Assembly.GetExecutingAssembly());
+            service.AddSingleton<ExecutedTypeTracker>();
+            var serviceProvider = service.BuildServiceProvider();
+
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
+            var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
+
+            // Act
+            await publisher.PublishAsync(new SimpleEvent { Value = 1, Message = "Test" });
+
+            // Assert
+            executedTypeTracker.ExecutedTypes.Should().Equal(
+                typeof(SimpleEventPreHandler), typeof(SimpleEventHandler), typeof(SimpleEventPostHandler));
+        }
     }
 
     // Additional event for testing unhandled scenarios

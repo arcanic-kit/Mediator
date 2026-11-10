@@ -54,6 +54,19 @@ public class ServiceRegistrar : IServiceRegistrar
         return this;
     }
 
+    /// <inheritdoc />
+    public IServiceRegistrar TryRegister(Type serviceType, Type implementationType)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+        ArgumentNullException.ThrowIfNull(implementationType);
+
+        var alreadyRegistered = _services.Any(descriptor =>
+            descriptor.ServiceType == serviceType &&
+            descriptor.ImplementationType == implementationType);
+
+        return alreadyRegistered ? this : Register(serviceType, implementationType);
+    }
+
     /// <summary>
     /// Validates whether a service type is registered in the service collection.
     /// </summary>
