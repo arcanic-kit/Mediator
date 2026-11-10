@@ -127,7 +127,26 @@ public class RegistrationTests
             .Which.ImplementationType.Should().Be<CustomMediator>();
     }
 
+    [Fact]
+    public void AddCommands_WithOpenGenericHandlerClassInAssembly_SkipsIt()
+    {
+        var services = new ServiceCollection();
+
+        services.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
+        services.AddSingleton<ExecutedTypeTracker>();
+
+        services.Should().NotContain(d => d.ImplementationType == typeof(OpenGenericPreHandler<>));
+        services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true }).Should().NotBeNull();
+    }
+
     private class NotABehavior;
+
+    // Discovered by assembly scanning; must be ignored rather than registered as an unusable service.
+    private class OpenGenericPreHandler<TCommand> : Abstractions.Handler.ICommandPreHandler<TCommand>
+        where TCommand : ICommand
+    {
+        public Task HandleAsync(TCommand message, CancellationToken cancellationToken = default) => Task.CompletedTask;
+    }
 
     private abstract class AbstractGenericBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
         where TMessage : IMessage

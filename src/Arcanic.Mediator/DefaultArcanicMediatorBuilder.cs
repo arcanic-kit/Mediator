@@ -36,49 +36,10 @@ public class DefaultArcanicMediatorBuilder: IArcanicMediatorBuilder
     /// <exception cref="ArgumentException">Thrown when pipelineBehaviorType does not implement IPipelineBehavior interface.</exception>
     public IArcanicMediatorBuilder AddPipelineBehavior(Type pipelineBehaviorType)
     {
-        ArgumentNullException.ThrowIfNull(pipelineBehaviorType);
-        
-        ValidatePipelineBehaviorType(pipelineBehaviorType);
+        PipelineBehaviorValidator.Validate(pipelineBehaviorType, typeof(IPipelineBehavior<,>), nameof(pipelineBehaviorType));
 
         ServiceRegistrar.TryRegister(typeof(IPipelineBehavior<,>), pipelineBehaviorType);
 
         return this;
-    }
-    
-    /// <summary>
-    /// Validates that the specified type implements the IPipelineBehavior interface.
-    /// </summary>
-    /// <param name="pipelineBehaviorType">The type to validate.</param>
-    /// <exception cref="ArgumentException">Thrown when the type does not implement IPipelineBehavior interface.</exception>
-    private static void ValidatePipelineBehaviorType(Type pipelineBehaviorType)
-    {
-        // Check if the type implements any generic version of IPipelineBehavior<,>
-        var implementsIPipelineBehavior = pipelineBehaviorType
-            .GetInterfaces()
-            .Any(interfaceType => 
-                interfaceType.IsGenericType && 
-                interfaceType.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>));
-
-        if (!implementsIPipelineBehavior)
-        {
-            throw new ArgumentException(
-                $"Type '{pipelineBehaviorType.FullName}' must implement '{typeof(IPipelineBehavior<,>).FullName}' interface.",
-                nameof(pipelineBehaviorType));
-        }
-        
-        // Ensure the type is not abstract and has a public constructor
-        if (pipelineBehaviorType.IsAbstract)
-        {
-            throw new ArgumentException(
-                $"Type '{pipelineBehaviorType.FullName}' cannot be abstract.",
-                nameof(pipelineBehaviorType));
-        }
-        
-        if (pipelineBehaviorType.IsInterface)
-        {
-            throw new ArgumentException(
-                $"Type '{pipelineBehaviorType.FullName}' cannot be an interface.",
-                nameof(pipelineBehaviorType));
-        }
     }
 }

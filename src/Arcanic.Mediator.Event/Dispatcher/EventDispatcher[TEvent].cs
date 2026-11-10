@@ -2,6 +2,7 @@ using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Event.Abstractions;
 using Arcanic.Mediator.Event.Abstractions.Handler;
+using Arcanic.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcanic.Mediator.Event.Dispatcher;
@@ -55,8 +56,6 @@ public class EventDispatcher<TEvent> : EventDispatcherBase
             return Unit.Value;
         }
 
-        return await GetAllPipelineBehaviors<TEvent, Unit>(serviceProvider)
-            .Aggregate((PipelineDelegate<Unit>) Handler,
-                (next, pipeline) => (t) => pipeline.HandleAsync((TEvent) @event, next, t == default ? cancellationToken : t))();
+        return await PipelineRunner.RunAsync((TEvent) @event, GetAllPipelineBehaviors<TEvent, Unit>(serviceProvider), Handler, cancellationToken).ConfigureAwait(false);
     }
 }

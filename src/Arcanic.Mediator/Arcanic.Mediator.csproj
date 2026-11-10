@@ -17,5 +17,13 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Arcanic.Mediator.Abstractions\Arcanic.Mediator.Abstractions.csproj" />
 	</ItemGroup>
+
+	<!-- Shared registration and pipeline helpers stay internal to the Arcanic.Mediator package family. -->
+	<ItemGroup>
+		<InternalsVisibleTo Include="Arcanic.Mediator.Request" />
+		<InternalsVisibleTo Include="Arcanic.Mediator.Command" />
+		<InternalsVisibleTo Include="Arcanic.Mediator.Query" />
+		<InternalsVisibleTo Include="Arcanic.Mediator.Event" />
+	</ItemGroup>
 	
 </Project>
