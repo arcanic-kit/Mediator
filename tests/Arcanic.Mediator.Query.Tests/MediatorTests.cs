@@ -5,7 +5,7 @@ using Arcanic.Mediator.Query.Tests.Data.Queries.Error;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Cancellable;
 using Arcanic.Mediator.Query.Tests.Data.Queries.UnhandledQuery;
 using Arcanic.Mediator.Query.Tests.Utils;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Arcanic.Mediator.Request.Abstractions;
 

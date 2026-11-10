@@ -6,7 +6,7 @@ using Arcanic.Mediator.Command.Tests.Data.Commands.VoidCommand;
 using Arcanic.Mediator.Command.Tests.Data.Pipelines;
 using Arcanic.Mediator.Command.Tests.Utils;
 using Arcanic.Mediator.Request.Abstractions;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
