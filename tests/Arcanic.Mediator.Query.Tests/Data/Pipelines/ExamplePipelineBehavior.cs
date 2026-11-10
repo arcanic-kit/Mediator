@@ -1,6 +1,6 @@
 using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Pipeline;
-using Arcanic.Mediator.Query.Tests.Utils;
+using Arcanic.Mediator.Tests.Shared;
 
 namespace Arcanic.Mediator.Query.Tests.Data.Pipelines;
 

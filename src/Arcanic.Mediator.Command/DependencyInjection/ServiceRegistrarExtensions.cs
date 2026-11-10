@@ -3,6 +3,9 @@ using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Handler;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Pipeline;
+using Arcanic.Mediator.Command.Dispatcher;
+using Arcanic.Mediator.DependencyInjection;
+using Arcanic.Mediator.Request.Dispatcher;
 using System.Reflection;
 
 namespace Arcanic.Mediator.Command.DependencyInjection;
@@ -21,8 +24,9 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterCommandRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
-            .Register(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
+            .TryRegister(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(IRequestDispatcherFactory), typeof(CommandDispatcherFactory));
 
         return serviceRegistrar;
     }
@@ -37,42 +41,8 @@ public static class ServiceRegistrarExtensions
     /// <returns>The current <see cref="IServiceRegistrar"/> instance to enable method chaining.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="assembly"/> is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown when a handler type cannot be properly analyzed.</exception>
-    public static IServiceRegistrar RegisterCommandsFromAssembly(this IServiceRegistrar serviceRegistrar, Assembly assembly)
-    {
-        ArgumentNullException.ThrowIfNull(assembly);
-
-        var commandHandlerRegistrations = assembly.GetTypes()
-            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true })
-            .SelectMany(handlerType => handlerType.GetInterfaces()
-                .Where(IsCommandHandlerInterface)
-                .Select(commandHandlerInterface => new { handlerType, commandHandlerInterface }))
-            .Where(registration =>
-            {
-                var commandType = registration.commandHandlerInterface.GetGenericArguments().FirstOrDefault();
-
-                if (commandType == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Unable to determine command type for handler '{registration.handlerType.FullName}'. " +
-                        $"The handler interface '{registration.commandHandlerInterface.FullName}' does not have generic arguments.");
-                }
-
-                if (!commandType.GetInterfaces().Any(IsCommandInterface))
-                {
-                    throw new InvalidOperationException(
-                        $"Command type '{commandType.FullName}' handled by '{registration.handlerType.FullName}' must implement ICommand<T> interface.");
-                }
-
-                return true;
-            });
-
-        foreach (var registration in commandHandlerRegistrations)
-        {
-            serviceRegistrar.Register(registration.commandHandlerInterface, registration.handlerType);
-        }
-
-        return serviceRegistrar;
-    }
+    public static IServiceRegistrar RegisterCommandsFromAssembly(this IServiceRegistrar serviceRegistrar, Assembly assembly) =>
+        HandlerAssemblyScanner.RegisterHandlers(serviceRegistrar, assembly, IsCommandHandlerInterface, IsCommandInterface, "ICommand");
 
     /// <summary>
     /// Registers a command pipeline behavior with the dependency injection container.
@@ -94,13 +64,10 @@ public static class ServiceRegistrarExtensions
     /// </exception>
     public static IServiceRegistrar RegisterCommandPipelineBehavior(this IServiceRegistrar serviceRegistrar, Type commandPipelineBehaviorType)
     {
-        ValidateCommandPipelineBehaviorType(commandPipelineBehaviorType);
+        PipelineBehaviorValidator.Validate(commandPipelineBehaviorType, typeof(ICommandPipelineBehavior<,>), nameof(commandPipelineBehaviorType));
 
-        serviceRegistrar.Register(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
-
-        return serviceRegistrar;
+        return serviceRegistrar.TryRegister(typeof(ICommandPipelineBehavior<,>), commandPipelineBehaviorType);
     }
-
 
     /// <summary>
     /// Determines whether the specified type represents a command interface.
@@ -138,42 +105,5 @@ public static class ServiceRegistrarExtensions
                genericTypeDefinition == typeof(ICommandHandler<,>) ||
                genericTypeDefinition == typeof(ICommandPreHandler<>) ||
                genericTypeDefinition == typeof(ICommandPostHandler<>);
-    }
-
-    /// <summary>
-    /// Validates that the specified type implements the ICommandPipelineBehavior interface.
-    /// </summary>
-    /// <param name="commandPipelineBehaviorType">The type to validate.</param>
-    /// <exception cref="ArgumentException">Thrown when the type does not implement ICommandPipelineBehavior interface.</exception>
-    private static void ValidateCommandPipelineBehaviorType(Type commandPipelineBehaviorType)
-    {
-        // Check if the type implements any generic version of ICommandPipelineBehavior<,>
-        var implementsICommandPipelineBehavior = commandPipelineBehaviorType
-            .GetInterfaces()
-            .Any(interfaceType =>
-                interfaceType.IsGenericType &&
-                interfaceType.GetGenericTypeDefinition() == typeof(ICommandPipelineBehavior<,>));
-
-        if (!implementsICommandPipelineBehavior)
-        {
-            throw new ArgumentException(
-                $"Type '{commandPipelineBehaviorType.FullName}' must implement '{typeof(ICommandPipelineBehavior<,>).FullName}' interface.",
-                nameof(commandPipelineBehaviorType));
-        }
-
-        // Ensure the type is not abstract and has a public constructor
-        if (commandPipelineBehaviorType.IsAbstract)
-        {
-            throw new ArgumentException(
-                $"Type '{commandPipelineBehaviorType.FullName}' cannot be abstract.",
-                nameof(commandPipelineBehaviorType));
-        }
-
-        if (commandPipelineBehaviorType.IsInterface)
-        {
-            throw new ArgumentException(
-                $"Type '{commandPipelineBehaviorType.FullName}' cannot be an interface.",
-                nameof(commandPipelineBehaviorType));
-        }
     }
 }

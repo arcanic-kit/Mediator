@@ -1,5 +1,5 @@
 ﻿using Arcanic.Mediator.Abstractions.Pipeline;
-using Arcanic.Mediator.Query.Tests.Utils;
+using Arcanic.Mediator.Tests.Shared;
 using Arcanic.Mediator.Request.Abstractions;
 using Arcanic.Mediator.Request.Abstractions.Pipeline;
 

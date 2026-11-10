@@ -4,8 +4,8 @@ using Arcanic.Mediator.Query.Tests.Data.Queries.Simple;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Error;
 using Arcanic.Mediator.Query.Tests.Data.Queries.Cancellable;
 using Arcanic.Mediator.Query.Tests.Data.Queries.UnhandledQuery;
-using Arcanic.Mediator.Query.Tests.Utils;
-using FluentAssertions;
+using Arcanic.Mediator.Tests.Shared;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Arcanic.Mediator.Request.Abstractions;
 
@@ -223,5 +223,28 @@ public class MediatorTests
 
         // Should have executed both handlers
         executedTypeTracker.ExecutedTypes.Should().Contain(typeof(SimpleQueryHandler));
+    }
+
+    [Fact]
+    public async Task SendAsync_WhenQueriesRegisteredMultipleTimes_RunsEachHandlerOnce()
+    {
+        // Arrange - simulate scanning several assemblies, including the same one twice
+        var service = new ServiceCollection();
+        service.AddArcanicMediator()
+            .AddQueries(Assembly.GetExecutingAssembly())
+            .AddQueries(typeof(Arcanic.Mediator.Abstractions.Unit).Assembly)
+            .AddQueries(Assembly.GetExecutingAssembly());
+        service.AddSingleton<ExecutedTypeTracker>();
+        var serviceProvider = service.BuildServiceProvider();
+
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
+        var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
+
+        // Act
+        await mediator.SendAsync(new SimpleQuery { Value = 1 });
+
+        // Assert
+        executedTypeTracker.ExecutedTypes.Should().Equal(
+            typeof(SimpleQueryPreHandler), typeof(SimpleQueryHandler), typeof(SimpleQueryPostHandler));
     }
 }

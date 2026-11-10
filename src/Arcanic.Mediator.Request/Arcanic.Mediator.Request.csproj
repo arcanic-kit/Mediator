@@ -3,9 +3,8 @@
     <PropertyGroup>
         <!-- Package Information -->
         <PackageId>Arcanic.Mediator.Request</PackageId>
-        <Description>Request handling implementation for Arcanic.Mediator providing CQRS query processing capabilities with dependency injection support.</Description>
-        <PackageTags>mediator;cqrs;query;implementation;dependency-injection;dotnet</PackageTags>
-        <PackageReleaseNotes>Initial release of Arcanic.Mediator query handling.</PackageReleaseNotes>
+        <Description>Request handling implementation for Arcanic.Mediator: the default IMediator and request pipeline behavior registration shared by commands and queries.</Description>
+        <PackageTags>mediator;cqrs;request;implementation;dependency-injection;dotnet</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

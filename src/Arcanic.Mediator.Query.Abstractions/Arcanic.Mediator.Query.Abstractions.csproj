@@ -5,7 +5,6 @@
     <PackageId>Arcanic.Mediator.Query.Abstractions</PackageId>
     <Description>Query abstractions for Arcanic.Mediator providing interfaces for query handling patterns in CQRS architecture.</Description>
     <PackageTags>mediator;cqrs;query;abstractions;interfaces;dotnet</PackageTags>
-    <PackageReleaseNotes>Initial release of Arcanic.Mediator query abstractions.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

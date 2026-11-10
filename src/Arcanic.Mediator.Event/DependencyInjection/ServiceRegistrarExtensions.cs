@@ -3,6 +3,7 @@ using Arcanic.Mediator.Event.Abstractions;
 using Arcanic.Mediator.Event.Abstractions.Handler;
 using Arcanic.Mediator.Event.Abstractions.Pipeline;
 using Arcanic.Mediator.Event.Pipeline;
+using Arcanic.Mediator.DependencyInjection;
 using System.Reflection;
 
 namespace Arcanic.Mediator.Event.DependencyInjection;
@@ -22,9 +23,9 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterEventRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .Register(typeof(IPublisher), typeof(Publisher))
-            .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
-            .Register(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
+            .TryRegister(typeof(IPublisher), typeof(Publisher), serviceRegistrar.Configuration.MediatorLifetime)
+            .TryRegister(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
 
         return serviceRegistrar;
     }
@@ -47,42 +48,8 @@ public static class ServiceRegistrarExtensions
     /// <item><description>An event type does not implement the required <see cref="IEvent"/> interface</description></item>
     /// </list>
     /// </exception>
-    public static IServiceRegistrar RegisterEventsFromAssembly(this IServiceRegistrar serviceRegistrar, Assembly assembly)
-    {
-        ArgumentNullException.ThrowIfNull(assembly);
-
-        var eventHandlerRegistrations = assembly.GetTypes()
-            .Where(type => type is { IsAbstract: false, IsInterface: false, IsClass: true })
-            .SelectMany(handlerType => handlerType.GetInterfaces()
-                .Where(IsEventHandlerInterface)
-                .Select(eventHandlerInterface => new { handlerType, eventHandlerInterface }))
-            .Where(registration =>
-            {
-                var eventType = registration.eventHandlerInterface.GetGenericArguments().FirstOrDefault();
-
-                if (eventType == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Unable to determine Event type for handler '{registration.handlerType.FullName}'. " +
-                        $"The handler interface '{registration.eventHandlerInterface.FullName}' does not have generic arguments.");
-                }
-
-                if (!eventType.GetInterfaces().Any(IsEventInterface))
-                {
-                    throw new InvalidOperationException(
-                        $"Event type '{eventType.FullName}' handled by '{registration.handlerType.FullName}' must implement Event interface.");
-                }
-
-                return true;
-            });
-
-        foreach (var registration in eventHandlerRegistrations)
-        {
-            serviceRegistrar.Register(registration.eventHandlerInterface, registration.handlerType);
-        }
-
-        return serviceRegistrar;
-    }
+    public static IServiceRegistrar RegisterEventsFromAssembly(this IServiceRegistrar serviceRegistrar, Assembly assembly) =>
+        HandlerAssemblyScanner.RegisterHandlers(serviceRegistrar, assembly, IsEventHandlerInterface, IsEventInterface, "IEvent");
 
     /// <summary>
     /// Registers a custom event pipeline behavior with the dependency injection container.
@@ -104,31 +71,19 @@ public static class ServiceRegistrarExtensions
     /// </exception>
     public static IServiceRegistrar RegisterEventPipelineBehavior(this IServiceRegistrar serviceRegistrar, Type eventPipelineBehaviorType)
     {
-        ArgumentNullException.ThrowIfNull(eventPipelineBehaviorType);
+        PipelineBehaviorValidator.Validate(eventPipelineBehaviorType, typeof(IEventPipelineBehavior<,>), nameof(eventPipelineBehaviorType));
 
-        ValidateEventPipelineBehaviorType(eventPipelineBehaviorType);
-
-        serviceRegistrar.Register(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType);
+        serviceRegistrar.TryRegister(typeof(IEventPipelineBehavior<,>), eventPipelineBehaviorType);
 
         return serviceRegistrar;
     }
 
     /// <summary>
     /// Determines whether the specified type represents the <see cref="IEvent"/> interface.
-    /// This method handles both generic and non-generic forms of the IEvent interface.
     /// </summary>
     /// <param name="type">The type to examine for event interface compatibility.</param>
-    /// <returns>True if the type is <see cref="IEvent"/> or a generic form of IEvent; otherwise, false.</returns>
-    private static bool IsEventInterface(Type type)
-    {
-        if (type.IsGenericType)
-        {
-            var genericTypeDefinition = type.GetGenericTypeDefinition();
-            return genericTypeDefinition == typeof(IEvent);
-        }
-
-        return type == typeof(IEvent);
-    }
+    /// <returns>True if the type is <see cref="IEvent"/>; otherwise, false.</returns>
+    private static bool IsEventInterface(Type type) => type == typeof(IEvent);
 
     /// <summary>
     /// Determines whether the specified type represents an event handler interface (main, pre, or post).
@@ -147,48 +102,5 @@ public static class ServiceRegistrarExtensions
         return genericTypeDefinition == typeof(IEventHandler<>) ||
                genericTypeDefinition == typeof(IEventPreHandler<>) ||
                genericTypeDefinition == typeof(IEventPostHandler<>);
-    }
-
-    /// <summary>
-    /// Validates that the provided type is suitable for use as an event pipeline behavior.
-    /// This method ensures the type implements the required interface, is not abstract, and is not an interface.
-    /// </summary>
-    /// <param name="eventPipelineBehaviorType">The type to validate for event pipeline behavior compatibility.</param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when the type does not meet the requirements:
-    /// - Must implement <see cref="IEventPipelineBehavior{TEvent, TEventResult}"/>
-    /// - Cannot be abstract
-    /// - Cannot be an interface
-    /// </exception>
-    private static void ValidateEventPipelineBehaviorType(Type eventPipelineBehaviorType)
-    {
-        // Check if the type implements any generic version of IEventPipelineBehavior<,>
-        var implementsIEventPipelineBehavior = eventPipelineBehaviorType
-            .GetInterfaces()
-            .Any(interfaceType =>
-                interfaceType.IsGenericType &&
-                interfaceType.GetGenericTypeDefinition() == typeof(IEventPipelineBehavior<,>));
-
-        if (!implementsIEventPipelineBehavior)
-        {
-            throw new ArgumentException(
-                $"Type '{eventPipelineBehaviorType.FullName}' must implement '{typeof(IEventPipelineBehavior<,>).FullName}' interface.",
-                nameof(eventPipelineBehaviorType));
-        }
-
-        // Ensure the type is not abstract and has a public constructor
-        if (eventPipelineBehaviorType.IsAbstract)
-        {
-            throw new ArgumentException(
-                $"Type '{eventPipelineBehaviorType.FullName}' cannot be abstract.",
-                nameof(eventPipelineBehaviorType));
-        }
-
-        if (eventPipelineBehaviorType.IsInterface)
-        {
-            throw new ArgumentException(
-                $"Type '{eventPipelineBehaviorType.FullName}' cannot be an interface.",
-                nameof(eventPipelineBehaviorType));
-        }
     }
 }

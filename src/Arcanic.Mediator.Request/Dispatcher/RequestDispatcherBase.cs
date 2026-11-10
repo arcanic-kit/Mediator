@@ -1,4 +1,4 @@
-﻿namespace Arcanic.Mediator.Request.Abstractions.Dispatcher;
+﻿namespace Arcanic.Mediator.Request.Dispatcher;
 
 /// <summary>
 /// Provides the abstract base class for request dispatchers in the mediator pattern.

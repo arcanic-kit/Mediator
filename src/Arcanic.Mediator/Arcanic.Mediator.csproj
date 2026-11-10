@@ -5,15 +5,25 @@
 		<PackageId>Arcanic.Mediator</PackageId>
 		<Description>Dependency injection extensions for Arcanic.Mediator, providing seamless integration with Microsoft.Extensions.DependencyInjection for command, query and event handling patterns.</Description>
 		<PackageTags>mediator;cqrs;dependency-injection;commands;queries;events;dotnet</PackageTags>
-		<PackageReleaseNotes>Initial release of Arcanic.Mediator dependency injection extensions.</PackageReleaseNotes>
 	</PropertyGroup>
 
+	<!-- Only the DI abstractions are needed; the consuming application chooses the container. -->
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.15" Condition="'$(TargetFramework)' == 'net10.0'" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.23" Condition="'$(TargetFramework)' == 'net9.0'" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" Condition="'$(TargetFramework)' == 'net8.0'" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Arcanic.Mediator.Abstractions\Arcanic.Mediator.Abstractions.csproj" />
+	</ItemGroup>
+
+	<!-- Shared registration and pipeline helpers stay internal to the Arcanic.Mediator package family. -->
+	<ItemGroup>
+		<InternalsVisibleTo Include="Arcanic.Mediator.Request" />
+		<InternalsVisibleTo Include="Arcanic.Mediator.Command" />
+		<InternalsVisibleTo Include="Arcanic.Mediator.Query" />
+		<InternalsVisibleTo Include="Arcanic.Mediator.Event" />
 	</ItemGroup>
 	
 </Project>

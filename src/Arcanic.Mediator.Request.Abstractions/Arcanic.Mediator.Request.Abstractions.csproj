@@ -3,9 +3,8 @@
     <PropertyGroup>
         <!-- Package Information -->
         <PackageId>Arcanic.Mediator.Request.Abstractions</PackageId>
-        <Description>Request abstractions handling implementation for Arcanic.Mediator providing CQRS query processing capabilities with dependency injection support.</Description>
-        <PackageTags>mediator;cqrs;query;implementation;dependency-injection;dotnet</PackageTags>
-        <PackageReleaseNotes>Initial release of Arcanic.Mediator query handling.</PackageReleaseNotes>
+        <Description>Request abstractions for Arcanic.Mediator: the IMediator contract, the IRequest marker and request pipeline behaviors shared by commands and queries.</Description>
+        <PackageTags>mediator;cqrs;request;abstractions;interfaces;dotnet</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.DependencyInjection;
 /// <summary>
 /// Provides service registration functionality for the Arcanic Mediator dependency injection container.
 /// This class facilitates the registration of service types with their corresponding implementation types
-/// using the configured instance lifetime from the mediator configuration.
+/// using the lifetimes from the mediator configuration.
 /// </summary>
 public class ServiceRegistrar : IServiceRegistrar
 {
@@ -29,14 +29,22 @@ public class ServiceRegistrar : IServiceRegistrar
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="services"/> or <paramref name="configuration"/> is <c>null</c>.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the configured lifetimes are incompatible (see <see cref="ArcanicMediatorConfiguration.Validate"/>).
+    /// </exception>
     public ServiceRegistrar(ArcanicMediatorConfiguration configuration, IServiceCollection services)
     {
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _services = services ?? throw new ArgumentNullException(nameof(services));
+
+        _configuration.Validate();
     }
-    
+
+    /// <inheritdoc />
+    public ArcanicMediatorConfiguration Configuration => _configuration;
+
     /// <summary>
-    /// Registers a service type with its implementation type using the configured instance lifetime.
+    /// Registers a service type with its implementation type using the configured handler lifetime.
     /// </summary>
     /// <param name="serviceType">The type of service to register.</param>
     /// <param name="implementationType">The implementation type that provides the service.</param>
@@ -49,7 +57,29 @@ public class ServiceRegistrar : IServiceRegistrar
         ArgumentNullException.ThrowIfNull(serviceType);
         ArgumentNullException.ThrowIfNull(implementationType);
 
-        _services.Add(new ServiceDescriptor(serviceType, implementationType, ConvertToServiceLifetime(_configuration.InstanceLifetime)));
+        return Add(serviceType, implementationType, _configuration.HandlerLifetime);
+    }
+
+    /// <inheritdoc />
+    public IServiceRegistrar TryRegister(Type serviceType, Type implementationType) =>
+        TryRegister(serviceType, implementationType, _configuration.HandlerLifetime);
+
+    /// <inheritdoc />
+    public IServiceRegistrar TryRegister(Type serviceType, Type implementationType, InstanceLifetime lifetime)
+    {
+        ArgumentNullException.ThrowIfNull(serviceType);
+        ArgumentNullException.ThrowIfNull(implementationType);
+
+        var alreadyRegistered = _services.Any(descriptor =>
+            descriptor.ServiceType == serviceType &&
+            descriptor.ImplementationType == implementationType);
+
+        return alreadyRegistered ? this : Add(serviceType, implementationType, lifetime);
+    }
+
+    private ServiceRegistrar Add(Type serviceType, Type implementationType, InstanceLifetime lifetime)
+    {
+        _services.Add(new ServiceDescriptor(serviceType, implementationType, ConvertToServiceLifetime(lifetime)));
 
         return this;
     }

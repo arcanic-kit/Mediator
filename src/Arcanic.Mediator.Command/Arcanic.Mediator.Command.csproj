@@ -5,7 +5,6 @@
     <PackageId>Arcanic.Mediator.Command</PackageId>
     <Description>Command handling implementation for Arcanic.Mediator providing CQRS command processing capabilities with dependency injection support.</Description>
     <PackageTags>mediator;cqrs;command;implementation;dependency-injection;dotnet</PackageTags>
-    <PackageReleaseNotes>Initial release of Arcanic.Mediator command handling.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
