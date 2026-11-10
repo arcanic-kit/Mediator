@@ -4,7 +4,7 @@ using Arcanic.Mediator.Command.Tests.Data.Commands.Simple;
 using Arcanic.Mediator.Command.Tests.Data.Commands.UnhandledCommand;
 using Arcanic.Mediator.Command.Tests.Data.Commands.VoidCommand;
 using Arcanic.Mediator.Command.Tests.Data.Pipelines;
-using Arcanic.Mediator.Command.Tests.Utils;
+using Arcanic.Mediator.Tests.Shared;
 using Arcanic.Mediator.Request.Abstractions;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;

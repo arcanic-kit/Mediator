@@ -1,5 +1,5 @@
 using Arcanic.Mediator.Event.Abstractions.Handler;
-using Arcanic.Mediator.Event.Tests.Utils;
+using Arcanic.Mediator.Tests.Shared;
 
 namespace Arcanic.Mediator.Event.Tests.Data.Events.Simple;
 

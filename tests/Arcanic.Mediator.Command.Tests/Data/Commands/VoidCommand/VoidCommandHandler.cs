@@ -1,5 +1,5 @@
 using Arcanic.Mediator.Command.Abstractions.Handler;
-using Arcanic.Mediator.Command.Tests.Utils;
+using Arcanic.Mediator.Tests.Shared;
 
 namespace Arcanic.Mediator.Command.Tests.Data.Commands.VoidCommand;
 

@@ -1,5 +1,5 @@
 ﻿using Arcanic.Mediator.Query.Abstractions.Handler;
-using Arcanic.Mediator.Query.Tests.Utils;
+using Arcanic.Mediator.Tests.Shared;
 
 namespace Arcanic.Mediator.Query.Tests.Data.Queries.Simple;
 

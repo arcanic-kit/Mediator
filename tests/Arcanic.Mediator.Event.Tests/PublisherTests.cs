@@ -3,7 +3,7 @@ using Arcanic.Mediator.Event.Tests.Data.Events.Cancellable;
 using Arcanic.Mediator.Event.Tests.Data.Events.Error;
 using Arcanic.Mediator.Event.Tests.Data.Events.MultiHandler;
 using Arcanic.Mediator.Event.Tests.Data.Events.Simple;
-using Arcanic.Mediator.Event.Tests.Utils;
+using Arcanic.Mediator.Tests.Shared;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
