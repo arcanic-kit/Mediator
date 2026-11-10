@@ -9,6 +9,13 @@
     <EnableDefaultItems>true</EnableDefaultItems>
   </PropertyGroup>
 
+  <!-- DI container used to exercise the library; versions track the src abstractions -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.12" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" Condition="'$(TargetFramework)' == 'net8.0'" />
+  </ItemGroup>
+
   <!-- Test utilities shared by every test project -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Shared\**\*.cs" Link="Shared\%(RecursiveDir)%(Filename)%(Extension)" />
