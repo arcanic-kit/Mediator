@@ -19,12 +19,23 @@ env:
 jobs:
   release:
     runs-on: ubuntu-latest
-    
+
+    permissions:
+      contents: write   # create the GitHub release
+      packages: write   # push to GitHub Packages
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Fetch full history for GitVersion
+        fetch-depth: 0  # Full history so the main-branch check below can run
+
+    - name: Verify commit is on main
+      run: |
+        if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+          echo "::error::Releases must be cut from a commit on main ($GITHUB_SHA is not on origin/main)."
+          exit 1
+        fi
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
@@ -161,30 +172,30 @@ jobs:
         done
 
     - name: Create GitHub Release
-      uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.version.outputs.VERSION }}
-        release_name: Release ${{ steps.version.outputs.VERSION }}
-        body: |
-          ## Changes in ${{ steps.version.outputs.VERSION }}
-          
-          ### NuGet Packages Published:
-          - Arcanic.Mediator v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Abstractions v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Command v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Command.Abstractions v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Event v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Event.Abstractions v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Query v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Query.Abstractions v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Request v${{ steps.version.outputs.VERSION }}
-          - Arcanic.Mediator.Request.Abstractions v${{ steps.version.outputs.VERSION }}
-          
-          See the [packages on NuGet.org](https://www.nuget.org/packages?q=Arcanic.Mediator)
-        draft: false
-        prerelease: false
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VERSION: ${{ steps.version.outputs.VERSION }}
+      run: |
+        TAG="v$VERSION"
+        NOTES_FILE=".github/release-notes/$TAG.md"
+
+        # Package list is generated from what was actually packed, so it never drifts.
+        {
+          if [ -f "$NOTES_FILE" ]; then cat "$NOTES_FILE"; echo; fi
+          echo "### NuGet packages"
+          for pkg in ./packages/*.nupkg; do
+            name=$(basename "$pkg" ".$VERSION.nupkg")
+            echo "- [$name $VERSION](https://www.nuget.org/packages/$name/$VERSION)"
+          done
+        } > release-body.md
+
+        NOTES_ARGS=(--notes-file release-body.md)
+        if [ ! -f "$NOTES_FILE" ]; then NOTES_ARGS+=(--generate-notes); fi
+
+        gh release create "$TAG" ./packages/*.nupkg ./packages/*.snupkg \
+          --title "Release $VERSION" \
+          --target "$GITHUB_SHA" \
+          "${NOTES_ARGS[@]}"
 
     - name: Upload packages as artifacts
       uses: actions/upload-artifact@v4
