@@ -55,6 +55,6 @@ public class Publisher : IPublisher
         });
 
         // Delegate the dispatching of the event to the resolved dispatcher.
-        await dispatcher.DispatchAsync(@event, _serviceProvider, cancellationToken);
+        await dispatcher.DispatchAsync(@event, _serviceProvider, cancellationToken).ConfigureAwait(false);
     }
 }

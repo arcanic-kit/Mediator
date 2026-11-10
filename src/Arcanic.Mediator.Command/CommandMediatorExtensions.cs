@@ -6,7 +6,7 @@ namespace Arcanic.Mediator.Request.Abstractions;
 /// <summary>
 /// Provides extension methods for <see cref="IMediator"/> to support query processing functionality.
 /// </summary>
-public static class MediatorExtensions
+public static class CommandMediatorExtensions
 {
     /// <summary>
     /// Sends a command asynchronously for processing without expecting a result.
@@ -33,7 +33,7 @@ public static class MediatorExtensions
         });
 
         // Delegate the dispatching of the command to the resolved dispatcher.
-        await dispatcher.DispatchAsync(command, mediator.ServiceProvider, cancellationToken);
+        await dispatcher.DispatchAsync(command, mediator.ServiceProvider, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -62,7 +62,7 @@ public static class MediatorExtensions
         });
 
         // Delegate the dispatching of the command to the resolved dispatcher.
-        var result = await dispatcher.DispatchAsync(command, mediator.ServiceProvider, cancellationToken);
+        var result = await dispatcher.DispatchAsync(command, mediator.ServiceProvider, cancellationToken).ConfigureAwait(false);
         return (TCommandResponse)result!;
     }
 }

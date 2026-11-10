@@ -7,7 +7,7 @@ namespace Arcanic.Mediator.Request.Abstractions;
 /// <summary>
 /// Provides extension methods for <see cref="IMediator"/> to support query processing functionality.
 /// </summary>
-public static class MediatorExtensions
+public static class QueryMediatorExtensions
 {
     /// <summary>
     /// Sends a query asynchronously through the mediator and returns the query response.
@@ -35,7 +35,7 @@ public static class MediatorExtensions
         });
 
         // Execute query through dispatcher and return typed result
-        var result = await dispatcher.DispatchAsync(query, mediator.ServiceProvider, cancellationToken);
+        var result = await dispatcher.DispatchAsync(query, mediator.ServiceProvider, cancellationToken).ConfigureAwait(false);
         return (TQueryResponse)result!;
     }
 }
