@@ -3,7 +3,9 @@ using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Handler;
 using Arcanic.Mediator.Query.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Pipeline;
+using Arcanic.Mediator.Query.Dispatcher;
 using Arcanic.Mediator.DependencyInjection;
+using Arcanic.Mediator.Request.Dispatcher;
 using System.Reflection;
 
 namespace Arcanic.Mediator.Query.DependencyInjection;
@@ -23,7 +25,8 @@ public static class ServiceRegistrarExtensions
     {
         serviceRegistrar
             .TryRegister(typeof(IQueryPipelineBehavior<,>), typeof(QueryPostHandlerPipelineBehavior<,>))
-            .TryRegister(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>));
+            .TryRegister(typeof(IQueryPipelineBehavior<,>), typeof(QueryPreHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(IRequestDispatcherFactory), typeof(QueryDispatcherFactory));
 
         return serviceRegistrar;
     }

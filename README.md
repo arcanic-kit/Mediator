@@ -347,6 +347,21 @@ builder.Services.AddArcanicMediator(config =>
 - `MediatorLifetime = Singleton` with `HandlerLifetime = Scoped` is rejected at startup with an `InvalidOperationException`.
 - Handlers that depend on scoped services (for example a `DbContext`) should be `Scoped` or `Transient`; a `Singleton` handler would capture them.
 
+## Testing with a fake mediator
+
+`IMediator` has a single member, `DispatchAsync`; the typed `SendAsync` methods are extension methods built on it.
+To fake the mediator in a unit test, implement `DispatchAsync` and return the response the handler would produce:
+
+```csharp
+public class FakeMediator(object? response) : IMediator
+{
+    public Task<object?> DispatchAsync(IRequest request, CancellationToken cancellationToken = default)
+        => Task.FromResult(response);
+}
+
+var controller = new ProductController(new FakeMediator(new GetProductQueryResponse { /* ... */ }));
+```
+
 ## Architecture
 
 The library follows a modular architecture with clear separation:

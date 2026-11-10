@@ -3,7 +3,9 @@ using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Handler;
 using Arcanic.Mediator.Command.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Pipeline;
+using Arcanic.Mediator.Command.Dispatcher;
 using Arcanic.Mediator.DependencyInjection;
+using Arcanic.Mediator.Request.Dispatcher;
 using System.Reflection;
 
 namespace Arcanic.Mediator.Command.DependencyInjection;
@@ -23,7 +25,8 @@ public static class ServiceRegistrarExtensions
     {
         serviceRegistrar
             .TryRegister(typeof(ICommandPipelineBehavior<,>), typeof(CommandPostHandlerPipelineBehavior<,>))
-            .TryRegister(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>));
+            .TryRegister(typeof(ICommandPipelineBehavior<,>), typeof(CommandPreHandlerPipelineBehavior<,>))
+            .TryRegister(typeof(IRequestDispatcherFactory), typeof(CommandDispatcherFactory));
 
         return serviceRegistrar;
     }
