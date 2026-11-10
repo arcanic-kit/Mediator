@@ -5,7 +5,6 @@
     <PackageId>Arcanic.Mediator.Event.Abstractions</PackageId>
     <Description>Event abstractions for Arcanic.Mediator providing interfaces for event handling patterns and event-driven architecture.</Description>
     <PackageTags>mediator;event;abstractions;interfaces;event-driven;dotnet</PackageTags>
-    <PackageReleaseNotes>Initial release of Arcanic.Mediator event abstractions.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

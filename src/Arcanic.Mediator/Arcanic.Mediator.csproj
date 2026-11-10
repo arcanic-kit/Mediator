@@ -5,7 +5,6 @@
 		<PackageId>Arcanic.Mediator</PackageId>
 		<Description>Dependency injection extensions for Arcanic.Mediator, providing seamless integration with Microsoft.Extensions.DependencyInjection for command, query and event handling patterns.</Description>
 		<PackageTags>mediator;cqrs;dependency-injection;commands;queries;events;dotnet</PackageTags>
-		<PackageReleaseNotes>Initial release of Arcanic.Mediator dependency injection extensions.</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

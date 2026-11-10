@@ -125,7 +125,7 @@ public class ProductCreatedEvent : IEvent
     public decimal Price { get; set; }
 }
 
-// Multiple event handlers can exist for the same event
+// Multiple event handlers can exist for the same event; all of them run, in registration order
 public class ProductCreatedEmailHandler : IEventHandler<ProductCreatedEvent>
 {
     public async Task HandleAsync(ProductCreatedEvent request, CancellationToken cancellationToken = default)
@@ -310,7 +310,7 @@ Generic Pipeline (Metrics)
   → Generic Pipeline (Exception Handling)
     → Event Pipeline (Audit)
       → Event Pipeline (Reliability/Retry)
-        → Event Handlers (Multiple, in parallel)
+        → Event Handlers (all registered handlers, sequentially in registration order)
 ```
 
 ## Configuration
@@ -375,7 +375,7 @@ The library follows a modular architecture with clear separation:
 - **Cached Dispatchers** - Avoid reflection overhead with cached dispatcher instances
 - **Efficient Routing** - Direct handler resolution without runtime type discovery
 - **Minimal Allocations** - Optimized for low garbage collection pressure
-- **Parallel Events** - Multiple event handlers execute concurrently
+- **Fan-out Events** - Every registered handler for an event runs, sequentially and in registration order; publishing an event with no handlers is a no-op
 
 ## Samples
 

@@ -5,7 +5,6 @@
     <PackageId>Arcanic.Mediator.Event</PackageId>
     <Description>Event handling implementation for Arcanic.Mediator providing event-driven architecture capabilities with support for multiple event handlers and dependency injection.</Description>
     <PackageTags>mediator;event;implementation;event-driven;dependency-injection;dotnet</PackageTags>
-    <PackageReleaseNotes>Initial release of Arcanic.Mediator event handling.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

@@ -14,6 +14,7 @@
     <RepositoryBranch>main</RepositoryBranch>
     <PackageProjectUrl>https://github.com/arcanic-kit/mediator</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>https://github.com/arcanic-kit/mediator/releases</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>logo.png</PackageIcon>
     
