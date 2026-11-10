@@ -1,6 +1,7 @@
 ﻿using Arcanic.Mediator.Event.Abstractions;
 using Arcanic.Mediator.Event.Tests.Data.Events.Cancellable;
 using Arcanic.Mediator.Event.Tests.Data.Events.Error;
+using Arcanic.Mediator.Event.Tests.Data.Events.MultiHandler;
 using Arcanic.Mediator.Event.Tests.Data.Events.Simple;
 using Arcanic.Mediator.Event.Tests.Utils;
 using FluentAssertions;
@@ -78,20 +79,19 @@ namespace Arcanic.Mediator.Event.Tests
         }
 
         [Fact]
-        public async Task PublishAsync_WithEventWithoutHandler_ThrowsInvalidOperationException()
+        public async Task PublishAsync_WithEventWithoutHandler_CompletesWithoutError()
         {
             // Arrange
             var service = new ServiceCollection();
             service.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
             var serviceProvider = service.BuildServiceProvider();
             var publisher = serviceProvider.GetRequiredService<IPublisher>();
-            
+
             // Create an event that has no registered handler
             var unhandledEvent = new UnhandledEvent { Message = "Test" };
 
-            // Act & Assert - Should throw because events require handlers
-            await Assert.ThrowsAsync<InvalidOperationException>(() => 
-                publisher.PublishAsync(unhandledEvent));
+            // Act & Assert - Publishing an event nobody subscribes to is a no-op
+            await publisher.Invoking(p => p.PublishAsync(unhandledEvent)).Should().NotThrowAsync();
         }
 
         [Fact]
@@ -182,15 +182,34 @@ namespace Arcanic.Mediator.Event.Tests
             
             var publisher = serviceProvider.GetRequiredService<IPublisher>();
             var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
-            var simpleEvent = new SimpleEvent { Value = 42, Message = "Test" };
 
             // Act
-            await publisher.PublishAsync(simpleEvent);
+            await publisher.PublishAsync(new MultiHandlerEvent());
 
             // Assert
-            executedTypeTracker.ExecutedTypes.Should().Contain(typeof(SimpleEventHandler));
-            // Note: This test demonstrates the pattern for event handling
-            // Events can have multiple handlers that execute independently
+            executedTypeTracker.ExecutedTypes.Should().HaveCount(2);
+            executedTypeTracker.ExecutedTypes.Should().Contain(typeof(MultiHandlerEventFirstHandler));
+            executedTypeTracker.ExecutedTypes.Should().Contain(typeof(MultiHandlerEventSecondHandler));
+        }
+
+        [Fact]
+        public async Task PublishAsync_WithMultipleHandlersForSameEvent_RunsPreAndPostHandlersOnce()
+        {
+            // Arrange
+            var service = new ServiceCollection();
+            service.AddArcanicMediator().AddEvents(Assembly.GetExecutingAssembly());
+            service.AddSingleton<ExecutedTypeTracker>();
+            var serviceProvider = service.BuildServiceProvider();
+
+            var publisher = serviceProvider.GetRequiredService<IPublisher>();
+            var executedTypeTracker = serviceProvider.GetRequiredService<ExecutedTypeTracker>();
+
+            // Act
+            await publisher.PublishAsync(new SimpleEvent { Value = 1, Message = "Test" });
+
+            // Assert
+            executedTypeTracker.ExecutedTypes.Count(t => t == typeof(SimpleEventPreHandler)).Should().Be(1);
+            executedTypeTracker.ExecutedTypes.Count(t => t == typeof(SimpleEventPostHandler)).Should().Be(1);
         }
     }
 

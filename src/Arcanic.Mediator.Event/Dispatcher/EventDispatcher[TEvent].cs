@@ -30,7 +30,8 @@ public class EventDispatcher<TEvent> : EventDispatcherBase
 
     /// <summary>
     /// Dispatches the specified event using the provided service provider and cancellation token.
-    /// Resolves the event handler and applies all registered pipeline behaviors in reverse order.
+    /// Resolves all registered event handlers and applies all registered pipeline behaviors in reverse order.
+    /// Handlers are invoked sequentially in registration order; publishing an event with no handlers is a no-op.
     /// </summary>
     /// <param name="event">The event to dispatch.</param>
     /// <param name="serviceProvider">The service provider for resolving dependencies.</param>
@@ -41,11 +42,15 @@ public class EventDispatcher<TEvent> : EventDispatcherBase
     private async Task<Unit> DispatchAsync(IEvent @event, IServiceProvider serviceProvider,
         CancellationToken cancellationToken)
     {
-        // Defines the core handler delegate that invokes the event handler.
+        // Defines the core handler delegate that invokes every registered event handler.
         async Task<Unit> Handler(CancellationToken t = default)
         {
-            await serviceProvider.GetRequiredService<IEventHandler<TEvent>>()
-                .HandleAsync((TEvent) @event, t == default ? cancellationToken : t);
+            var token = t == default ? cancellationToken : t;
+
+            foreach (var handler in serviceProvider.GetServices<IEventHandler<TEvent>>())
+            {
+                await handler.HandleAsync((TEvent) @event, token).ConfigureAwait(false);
+            }
 
             return Unit.Value;
         }
