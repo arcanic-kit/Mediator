@@ -6,6 +6,8 @@ using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Handler;
+using Arcanic.Mediator.Command.Abstractions.Pipeline;
+using Arcanic.Mediator.Request.Abstractions.Pipeline;
 using Arcanic.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -55,6 +57,9 @@ public class CommandDispatcher<TCommand> : CommandDispatcherBase
             return Unit.Value;
         }
         
-        return PipelineRunner.RunAsync((TCommand) command, GetAllPipelineBehaviors<TCommand, Unit>(serviceProvider), Handler, cancellationToken);
+        return PipelineRunner.RunAsync((TCommand) command, Handler, cancellationToken,
+            serviceProvider.GetServices<ICommandPipelineBehavior<TCommand, Unit>>(),
+            serviceProvider.GetServices<IRequestPipelineBehavior<TCommand, Unit>>(),
+            serviceProvider.GetServices<IPipelineBehavior<TCommand, Unit>>());
     }
 }

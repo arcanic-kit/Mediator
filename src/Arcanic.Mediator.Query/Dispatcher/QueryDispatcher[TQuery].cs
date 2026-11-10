@@ -1,6 +1,8 @@
 ﻿using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Query.Abstractions;
 using Arcanic.Mediator.Query.Abstractions.Handler;
+using Arcanic.Mediator.Query.Abstractions.Pipeline;
+using Arcanic.Mediator.Request.Abstractions.Pipeline;
 using Arcanic.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,7 +48,10 @@ public class QueryDispatcher<TQuery, TResponse> : QueryDispatcherBase
         Task<TResponse> Handler(CancellationToken t = default) => serviceProvider.GetRequiredService<IQueryHandler<TQuery, TResponse>>()
             .HandleAsync((TQuery) query, t == default ? cancellationToken : t);
 
-        return PipelineRunner.RunAsync((TQuery) query, GetAllPipelineBehaviors<TQuery, TResponse>(serviceProvider), Handler, cancellationToken);
+        return PipelineRunner.RunAsync((TQuery) query, Handler, cancellationToken,
+            serviceProvider.GetServices<IQueryPipelineBehavior<TQuery, TResponse>>(),
+            serviceProvider.GetServices<IRequestPipelineBehavior<TQuery, TResponse>>(),
+            serviceProvider.GetServices<IPipelineBehavior<TQuery, TResponse>>());
     }
 
 }

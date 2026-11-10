@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Arcanic.Mediator.Abstractions.Pipeline;
 using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Abstractions.Handler;
+using Arcanic.Mediator.Command.Abstractions.Pipeline;
+using Arcanic.Mediator.Request.Abstractions.Pipeline;
 using Arcanic.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -50,6 +52,9 @@ public class CommandDispatcher<TCommand, TResponse> : CommandDispatcherBase
         Task<TResponse> Handler(CancellationToken t = default) => serviceProvider.GetRequiredService<ICommandHandler<TCommand, TResponse>>()
             .HandleAsync((TCommand) command, t == default ? cancellationToken : t);
 
-        return PipelineRunner.RunAsync((TCommand) command, GetAllPipelineBehaviors<TCommand, TResponse>(serviceProvider), Handler, cancellationToken);
+        return PipelineRunner.RunAsync((TCommand) command, Handler, cancellationToken,
+            serviceProvider.GetServices<ICommandPipelineBehavior<TCommand, TResponse>>(),
+            serviceProvider.GetServices<IRequestPipelineBehavior<TCommand, TResponse>>(),
+            serviceProvider.GetServices<IPipelineBehavior<TCommand, TResponse>>());
     }
 }
