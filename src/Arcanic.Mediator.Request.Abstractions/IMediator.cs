@@ -1,24 +1,34 @@
 ﻿namespace Arcanic.Mediator.Request.Abstractions;
 
 /// <summary>
-/// Defines the contract for a mediator that routes requests (commands and queries) through their pipeline to a handler.
+/// Sends requests (commands and queries) through their pipeline to a handler.
 /// </summary>
 /// <remarks>
-/// Application code normally calls the typed <c>SendAsync</c> extension methods supplied by the command and query
-/// packages, which are built on <see cref="DispatchAsync"/>. To fake the mediator in a test, implement
-/// <see cref="DispatchAsync"/> and return the response the handler would produce.
+/// Both methods are interface members, so <see cref="IMediator"/> can be mocked directly with libraries such as
+/// Moq or NSubstitute, or replaced by a hand-written fake.
 /// </remarks>
 public interface IMediator
 {
     /// <summary>
-    /// Dispatches a request through its pipeline behaviors, pre-handlers, handler and post-handlers.
+    /// Sends a request that produces a response (a command with a result, or a query) through its
+    /// pipeline behaviors, pre-handlers, handler and post-handlers.
     /// </summary>
-    /// <param name="request">The request to dispatch.</param>
+    /// <typeparam name="TResponse">The type of response, inferred from the request.</typeparam>
+    /// <param name="request">The request to send.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>
-    /// The handler's response, or <see cref="Arcanic.Mediator.Abstractions.Unit.Value"/> for requests without a response.
-    /// </returns>
+    /// <returns>A task whose result is the handler's response.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <c>null</c>.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when no registered module can dispatch the request type.</exception>
-    Task<object?> DispatchAsync(IRequest request, CancellationToken cancellationToken = default);
+    /// <exception cref="InvalidOperationException">Thrown when no registered module can handle the request type.</exception>
+    Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends a request that produces no response (a command without a result) through its
+    /// pipeline behaviors, pre-handlers, handler and post-handlers.
+    /// </summary>
+    /// <param name="request">The request to send.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that completes when the request has been handled.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="request"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when no registered module can handle the request type.</exception>
+    Task SendAsync(IRequest request, CancellationToken cancellationToken = default);
 }

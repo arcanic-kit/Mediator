@@ -1,10 +1,34 @@
-﻿# Arcanic Mediator
+﻿<p align="center">
+  <img src="https://raw.githubusercontent.com/arcanic-kit/mediator/main/assets/images/logo.png" alt="Arcanic Mediator logo" width="140" />
+</p>
 
-A high-performance, modular mediator pattern implementation for .NET that provides clean separation of concerns through Command Query Responsibility Segregation (CQRS) and event-driven architecture.
+<h1 align="center">Arcanic Mediator</h1>
 
-## Installation
+<p align="center">
+  ✨ A fast, modular mediator for .NET — commands, queries and events with pipeline behaviors,<br />
+  built on <code>Microsoft.Extensions.DependencyInjection</code>.
+</p>
 
-Install the packages you need:
+<p align="center">
+  <a href="https://www.nuget.org/packages/Arcanic.Mediator"><img src="https://img.shields.io/nuget/v/Arcanic.Mediator?style=for-the-badge&logo=nuget&logoColor=white&label=NuGet&color=8258E0" alt="NuGet version" /></a>
+  <a href="https://www.nuget.org/packages/Arcanic.Mediator"><img src="https://img.shields.io/nuget/dt/Arcanic.Mediator?style=for-the-badge&logo=nuget&logoColor=white&label=Downloads&color=9B45D6" alt="NuGet downloads" /></a>
+  <a href="https://dotnet.microsoft.com"><img src="https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 8 | 9 | 10" /></a>
+  <a href="https://github.com/arcanic-kit/mediator/blob/main/LICENSE"><img src="https://img.shields.io/github/license/arcanic-kit/mediator?style=for-the-badge&color=B026B5" alt="MIT license" /></a>
+  <a href="https://github.com/arcanic-kit/mediator"><img src="https://img.shields.io/github/stars/arcanic-kit/mediator?style=for-the-badge&logo=github&logoColor=white&label=Stars&color=8258E0" alt="GitHub stars" /></a>
+</p>
+
+## 🌟 Features
+
+- 🧭 **CQRS out of the box** — commands, queries and events, each in its own package
+- 🔗 **Pipeline behaviors** — for all messages, or just commands, queries or events
+- 🪝 **Pre & post handlers** — validation, logging, caching around any handler
+- 📣 **Fan-out events** — every handler runs, in registration order
+- ⚡ **Fast** — dispatchers are cached per message type
+- 🧪 **Easy to test** — mock `SendAsync` and `PublishAsync` directly
+
+## 📦 Installation
+
+Install only what you need:
 
 ```bash
 dotnet add package Arcanic.Mediator.Command
@@ -12,414 +36,230 @@ dotnet add package Arcanic.Mediator.Query
 dotnet add package Arcanic.Mediator.Event
 ```
 
-## Quick Start
+## 🚀 Quick start
 
-### 1. Configure Services
+### 1️⃣ Register
 
 ```csharp
-using Arcanic.Mediator;
-using Arcanic.Mediator.Command;
-using Arcanic.Mediator.Query;
-using Arcanic.Mediator.Event;
-using System.Reflection;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Add Arcanic Mediator with modules
 builder.Services.AddArcanicMediator()
     .AddCommands(Assembly.GetExecutingAssembly())
     .AddQueries(Assembly.GetExecutingAssembly())
     .AddEvents(Assembly.GetExecutingAssembly());
-
-var app = builder.Build();
 ```
 
-### 2. Define Messages and Handlers
+Handlers are discovered automatically in the assemblies you pass.
 
-#### Commands
+### 2️⃣ Write a command ✍️
 
 ```csharp
-using Arcanic.Mediator.Command.Abstractions;
-using Arcanic.Mediator.Command.Abstractions.Handler;
-using Arcanic.Mediator.Event.Abstractions;
+public record CreateProductCommand(string Name, decimal Price) : ICommand<int>;
 
-// Command without return value
-public class CreateProductCommand : ICommand
+public class CreateProductCommandHandler(IPublisher publisher) : ICommandHandler<CreateProductCommand, int>
 {
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-}
-
-// Command handler with return value
-public class CreateProductCommandHandler : ICommandHandler<AddProductCommand, int>
-{
-    private readonly IPublisher _publisher;
-
-    public CreateProductCommandHandler(IPublisher publisher)
+    public async Task<int> HandleAsync(CreateProductCommand command, CancellationToken cancellationToken = default)
     {
-        _publisher = publisher;
-    }
+        var id = 42; // save the product...
 
-    public async Task<int> HandleAsync(AddProductCommand request, CancellationToken cancellationToken = default)
-    {
-        // Save product and get ID
-        var productId = await CreateProductAsync(request.Name, request.Price);
-
-        // Publish domain event
-        await _publisher.PublishAsync(new ProductCreatedEvent
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Price = request.Price
-        }, cancellationToken);
-
-        return productId;
-    }
-
-    private async Task<int> CreateProductAsync(string name, decimal price)
-    {
-        // Implementation here
-        await Task.Delay(100); // Simulate async work
-        return 1;
+        await publisher.PublishAsync(new ProductCreatedEvent(id, command.Name), cancellationToken);
+        return id;
     }
 }
 ```
 
-> **Note**: Commands implement `ICommand` or `ICommand<TResult>`, which inherit from `IRequest` for unified mediator processing.
+> 💡 Use `ICommand` and `ICommandHandler<TCommand>` for commands that return nothing.
 
-#### Queries
+### 3️⃣ Write a query 🔍
 
 ```csharp
-using Arcanic.Mediator.Query.Abstractions;
-using Arcanic.Mediator.Query.Abstractions.Handler;
-
-public record ProductDto(int Id, string Name, decimal Price);
-
-public class GetProductQuery : IQuery<ProductDto>
-{
-    public int Id { get; set; }
-}
+public record GetProductQuery(int Id) : IQuery<ProductDto>;
 
 public class GetProductQueryHandler : IQueryHandler<GetProductQuery, ProductDto>
 {
-    public async Task<ProductDto> HandleAsync(GetProductQuery request, CancellationToken cancellationToken = default)
+    public Task<ProductDto> HandleAsync(GetProductQuery query, CancellationToken cancellationToken = default)
+        => Task.FromResult(new ProductDto(query.Id, "Sample product", 19.99m));
+}
+```
+
+### 4️⃣ Handle an event 📣
+
+```csharp
+public record ProductCreatedEvent(int Id, string Name) : IEvent;
+
+public class SendWelcomeEmail : IEventHandler<ProductCreatedEvent>
+{
+    public Task HandleAsync(ProductCreatedEvent @event, CancellationToken cancellationToken = default)
     {
-        // Implementation here
-        return await Task.FromResult(new ProductDto(request.Id, "Sample Product", 19.99m));
+        Console.WriteLine($"📧 New product: {@event.Name}");
+        return Task.CompletedTask;
     }
 }
 ```
 
-> **Note**: Queries implement `IQuery<TResult>`, which inherits from `IRequest` for unified mediator processing.
+An event can have any number of handlers — they all run, one after another, in registration order. Publishing an event with no handlers does nothing.
 
-#### Events
-
-```csharp
-using Arcanic.Mediator.Event.Abstractions;
-using Arcanic.Mediator.Event.Abstractions.Handler;
-
-public class ProductCreatedEvent : IEvent
-{
-    public Guid Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public decimal Price { get; set; }
-}
-
-// Multiple event handlers can exist for the same event; all of them run, in registration order
-public class ProductCreatedEmailHandler : IEventHandler<ProductCreatedEvent>
-{
-    public async Task HandleAsync(ProductCreatedEvent request, CancellationToken cancellationToken = default)
-    {
-        // Send notification email
-        Console.WriteLine($"Sending email for product: {request.Name}");
-        await Task.CompletedTask;
-    }
-    
-    private async Task SendEmailAsync(Guid productId, string productName)
-    {
-        // Implementation here
-        await Task.CompletedTask;
-    }
-}
-
-public class ProductCreatedLoggingHandler : IEventHandler<ProductCreatedEvent>
-{
-    public async Task HandleAsync(ProductCreatedEvent request, CancellationToken cancellationToken = default)
-    {
-        // Log the event
-        Console.WriteLine($"Product created: {request.Id} - {request.Name}");
-        await Task.CompletedTask;
-    }
-}
-```
-
-### 3. Use in Controllers
+### 5️⃣ Send it 📬
 
 ```csharp
-using Microsoft.AspNetCore.Mvc;
-using Arcanic.Mediator.Request.Abstractions;
-
 [ApiController]
-[Route("[controller]")]
-public class ProductController : ControllerBase
+[Route("products")]
+public class ProductsController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public ProductController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet("{id}")]
-    public async Task<ProductDto> GetProduct(int id)
-    {
-       return await _mediator.SendAsync(new GetProductQuery { Id = id });
-    }
+    public Task<ProductDto> Get(int id) => mediator.SendAsync(new GetProductQuery(id));
 
-    [HttpPost()]
-    public async Task CreateProduct(CreateProductCommand command)
+    [HttpPost]
+    public Task<int> Create(CreateProductCommand command) => mediator.SendAsync(command);
+}
+```
+
+## 🪝 Pre & post handlers
+
+Run extra logic before or after a specific handler — no registration needed beyond `AddCommands` / `AddQueries` / `AddEvents`:
+
+```csharp
+public class ValidateCreateProduct : ICommandPreHandler<CreateProductCommand>
+{
+    public Task HandleAsync(CreateProductCommand command, CancellationToken cancellationToken = default)
     {
-        await _mediator.SendAsync(command);
+        if (command.Price <= 0) throw new ArgumentException("Price must be positive.");
+        return Task.CompletedTask;
     }
 }
 ```
 
-## Pipeline Behaviors
+Also available: `ICommandPostHandler<T>`, `IQueryPreHandler<T>`, `IQueryPostHandler<T>`, `IEventPreHandler<T>`, `IEventPostHandler<T>`.
 
-Arcanic Mediator provides a powerful pipeline system that allows you to implement cross-cutting concerns through different types of pipeline behaviors. Each message type (Commands, Queries, Events, and generic Requests) has its own dedicated pipeline interface, enabling type-safe and context-aware processing.
+## 🔗 Pipeline behaviors
 
-### Pipeline Types and Their Differences
+Wrap messages with cross-cutting logic. Pick the scope you need:
 
-| Pipeline Type | Interface | Purpose | Key Characteristics |
-|---------------|-----------|---------|-------------------|
-| **Generic Pipeline** | `IPipelineBehavior<TMessage, TResponse>` | Universal message processing | Works with all message types (Commands, Queries, Events), most flexible |
-| **Request Pipeline** | `IRequestPipelineBehavior<TRequest, TResponse>` | Commands and queries processing | Works with `ICommand` and `IQuery` messages, shared concerns |
-| **Command Pipeline** | `ICommandPipelineBehavior<TCommand, TResponse>` | Write operations processing | Optimized for state changes, transaction support |
-| **Query Pipeline** | `IQueryPipelineBehavior<TQuery, TResponse>` | Read operations processing | Caching-aware, performance monitoring focused |
-| **Event Pipeline** | `IEventPipelineBehavior<TEvent, TResponse>` | Domain event processing | Audit logging, event sourcing support |
-
-### When to Use Each Pipeline Type
-
-- **Generic Pipeline**: Use for cross-cutting concerns that apply to ALL message types including events (correlation tracking, global error handling, metrics collection)
-- **Request Pipeline**: Use for cross-cutting concerns that apply to both commands and queries only (request validation, authorization)
-- **Command Pipeline**: Use for write-specific concerns (transactions, authorization for modifications, business rule validation)
-- **Query Pipeline**: Use for read-specific optimizations (caching, query performance monitoring, read authorization)
-- **Event Pipeline**: Use for event-specific concerns (audit trails, event sourcing, notification reliability)
-
-### Generic Pipeline exemple
-
-The most universal pipeline that works with all message types - Commands, Queries, and Events:
+| Interface | Runs for | Register with |
+|-----------|----------|---------------|
+| `IPipelineBehavior<,>` | 🌍 everything | `AddPipelineBehavior` |
+| `IRequestPipelineBehavior<,>` | commands + queries | `AddRequestPipelineBehavior` |
+| `ICommandPipelineBehavior<,>` | ✍️ commands | `AddCommandPipelineBehavior` |
+| `IQueryPipelineBehavior<,>` | 🔍 queries | `AddQueryPipelineBehavior` |
+| `IEventPipelineBehavior<,>` | 📣 events | `AddEventPipelineBehavior` |
 
 ```csharp
-using Arcanic.Mediator.Abstractions.Pipeline;
-
-public class GlobalExceptionPipelineBehavior<TMessage, TResponse> : IPipelineBehavior<TMessage, TResponse>
-    where TMessage : notnull
+public class LoggingBehavior<TMessage, TResponse>(ILogger<LoggingBehavior<TMessage, TResponse>> logger)
+    : IPipelineBehavior<TMessage, TResponse>
+    where TMessage : IMessage
 {
-    private readonly ILogger<GlobalExceptionPipelineBehavior<TMessage, TResponse>> _logger;
-
-    public GlobalExceptionPipelineBehavior(ILogger<GlobalExceptionPipelineBehavior<TMessage, TResponse>> logger)
-    {
-        _logger = logger;
-    }
-
     public async Task<TResponse> HandleAsync(TMessage message, PipelineDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            return await next(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            var messageName = typeof(TMessage).Name;
-            
-            // Log with structured data for monitoring systems
-            _logger.LogError(ex, 
-                "[GLOBAL ERROR] Unhandled exception in {MessageName}. Message: {@Message}",
-                messageName, message);
-
-            // You could implement circuit breaker, dead letter queue, etc. here
-            
-            throw; // Re-throw to maintain the original exception flow
-        }
+        logger.LogInformation("▶️ {Message}", typeof(TMessage).Name);
+        var response = await next(cancellationToken);
+        logger.LogInformation("✅ {Message}", typeof(TMessage).Name);
+        return response;
     }
 }
-```
 
-### Pipeline Registration and Configuration
-
-Register different pipeline behaviors based on your needs:
-
-```csharp
-var builder = WebApplication.CreateBuilder(args);
-
-// Add Arcanic Mediator with all pipeline types
 builder.Services.AddArcanicMediator()
-    // Generic pipelines (apply to ALL message types - Commands, Queries, Events)
-    .AddPipelineBehavior(typeof(GlobalMetricsPipelineBehavior<,>))
-    .AddPipelineBehavior(typeof(GlobalExceptionPipelineBehavior<,>))
-
-    // Request pipelines (apply to commands and queries)
-    .AddRequestPipelineBehavior(typeof(LoggingRequestPipelineBehavior<,>))
-
-    // Command-specific pipelines
-    .AddCommandPipelineBehavior(typeof(AuthorizationCommandPipelineBehavior<,>))
-    .AddCommandPipelineBehavior(typeof(TransactionCommandPipelineBehavior<,>))
-
-    // Query-specific pipelines
-    .AddQueryPipelineBehavior(typeof(CachingQueryPipelineBehavior<,>))
-    .AddQueryPipelineBehavior(typeof(PerformanceQueryPipelineBehavior<,>))
-
-    // Event-specific pipelines
-    .AddEventPipelineBehavior(typeof(AuditEventPipelineBehavior<,>))
-    .AddEventPipelineBehavior(typeof(ReliabilityEventPipelineBehavior<,>))
-
-    // Register modules
-    .AddCommands(Assembly.GetExecutingAssembly())
-    .AddQueries(Assembly.GetExecutingAssembly())
-    .AddEvents(Assembly.GetExecutingAssembly());
-
-var app = builder.Build();
+    .AddPipelineBehavior(typeof(LoggingBehavior<,>))
+    .AddCommands(Assembly.GetExecutingAssembly());
 ```
 
-### Pipeline Execution Order
+**Execution order** — behaviors run in registration order, from the broadest scope to the narrowest:
 
-Pipelines execute in the order they are registered:
-
-1. **Generic Pipelines** (outermost) - Execute for all message types (Commands, Queries, Events)
-2. **Request Pipelines** - Execute for commands and queries
-3. **Type-specific Pipelines** (Command/Query/Event) - Execute based on message type
-4. **Pre-handlers** - Execute before main handler
-5. **Main handler** - Executes the core business logic
-6. **Post-handlers** - Execute after main handler
-
-Example execution flow for a command:
 ```
-Generic Pipeline (Metrics) 
-  → Generic Pipeline (Exception Handling)
-    → Request Pipeline (Logging) 
-        → Command Pipeline (Transaction)
-            → Pre-handler (Validation)
-                → Main Handler (Business Logic)
-            → Post-handler (Notifications)
+🌍 Generic behaviors
+  → Request behaviors
+    → Command / Query / Event behaviors
+      → 🪝 Pre-handlers
+        → 🎯 Handler
+      → 🪝 Post-handlers
 ```
 
-Example execution flow for an event:
-```
-Generic Pipeline (Metrics) 
-  → Generic Pipeline (Exception Handling)
-    → Event Pipeline (Audit)
-      → Event Pipeline (Reliability/Retry)
-        → Event Handlers (all registered handlers, sequentially in registration order)
-```
+## ⚙️ Configuration
 
-## Configuration
-
-Configure mediator services with custom settings:
+Lifetimes default to `Transient`:
 
 ```csharp
-// Configure service lifetimes (both default to Transient)
 builder.Services.AddArcanicMediator(config =>
 {
-    config.MediatorLifetime = InstanceLifetime.Scoped;   // IMediator and IPublisher
-    config.HandlerLifetime = InstanceLifetime.Scoped;    // handlers, pre/post handlers and pipeline behaviors
-})
-.AddCommands(Assembly.GetExecutingAssembly())
-.AddQueries(Assembly.GetExecutingAssembly())
-.AddEvents(Assembly.GetExecutingAssembly());
+    config.MediatorLifetime = InstanceLifetime.Scoped; // IMediator, IPublisher
+    config.HandlerLifetime = InstanceLifetime.Scoped;  // handlers, pre/post handlers, behaviors
+});
 ```
 
-### ArcanicMediatorConfiguration Options
+> ⚠️ Handlers that use scoped services (like a `DbContext`) should be `Scoped` or `Transient`. A `Singleton` mediator with `Scoped` handlers is rejected at startup.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `MediatorLifetime` | `InstanceLifetime` | `Transient` | Lifetime of the mediator entry points (`IMediator`, `IPublisher`) |
-| `HandlerLifetime` | `InstanceLifetime` | `Transient` | Lifetime of handlers, pre/post handlers and pipeline behaviors |
-| `InstanceLifetime` | `InstanceLifetime` | `Transient` | **Obsolete.** Sets both properties above to the same value |
+## 🧪 Testing
 
-**Instance Lifetime Options:**
-- **Transient** - New instance created each time (default)
-- **Scoped** - One instance per request/scope
-- **Singleton** - Single instance for the application lifetime
+`SendAsync` and `PublishAsync` are regular interface members of `IMediator` and `IPublisher`, so you can mock them directly with your favorite library.
 
-**Choosing lifetimes:**
-- The mediator resolves handlers from the service provider it was itself resolved from, so a `Singleton` mediator resolves handlers from the root provider.
-- `MediatorLifetime = Singleton` with `HandlerLifetime = Scoped` is rejected at startup with an `InvalidOperationException`.
-- Handlers that depend on scoped services (for example a `DbContext`) should be `Scoped` or `Transient`; a `Singleton` handler would capture them.
-
-## Testing with a fake mediator
-
-`IMediator` has a single member, `DispatchAsync`; the typed `SendAsync` methods are extension methods built on it.
-To fake the mediator in a unit test, implement `DispatchAsync` and return the response the handler would produce:
+### 🎭 Mock `IMediator` with Moq
 
 ```csharp
-public class FakeMediator(object? response) : IMediator
-{
-    public Task<object?> DispatchAsync(IRequest request, CancellationToken cancellationToken = default)
-        => Task.FromResult(response);
-}
+var mediator = new Mock<IMediator>();
+mediator
+    .Setup(m => m.SendAsync(It.IsAny<GetProductQuery>(), It.IsAny<CancellationToken>()))
+    .ReturnsAsync(new ProductDto(1, "Test", 9.99m));
 
-var controller = new ProductController(new FakeMediator(new GetProductQueryResponse { /* ... */ }));
+var controller = new ProductsController(mediator.Object);
+var product = await controller.Get(1); // ✅ returns the mocked ProductDto
+
+await controller.Create(new CreateProductCommand("Lamp", 10m));
+mediator.Verify(m => m.SendAsync(
+    It.Is<CreateProductCommand>(c => c.Name == "Lamp"),
+    It.IsAny<CancellationToken>()), Times.Once);
 ```
 
-## Architecture
+### 🎭 Or with NSubstitute
 
-The library follows a modular architecture with clear separation:
+```csharp
+var mediator = Substitute.For<IMediator>();
+mediator.SendAsync(Arg.Any<GetProductQuery>(), Arg.Any<CancellationToken>())
+    .Returns(new ProductDto(1, "Test", 9.99m));
 
-### Core Packages
+var controller = new ProductsController(mediator);
 
-- **Arcanic.Mediator** - Core dependency injection extensions and configuration
-- **Arcanic.Mediator.Abstractions** - Common abstractions and pipeline interfaces
-- **Arcanic.Mediator.Request** / **Request.Abstractions** - Unified request processing and mediation
+await controller.Create(new CreateProductCommand("Lamp", 10m));
+await mediator.Received(1).SendAsync(
+    Arg.Is<CreateProductCommand>(c => c.Name == "Lamp"),
+    Arg.Any<CancellationToken>());
+```
 
-### Feature Packages
+### 📣 Mock `IPublisher`
 
-- **Arcanic.Mediator.Command** / **Command.Abstractions** - Command handling (write operations)
-- **Arcanic.Mediator.Query** / **Query.Abstractions** - Query handling (read operations)  
-- **Arcanic.Mediator.Event** / **Event.Abstractions** - Event publishing (notifications)
+Check that a handler publishes the right event:
 
-### Key Concepts
+```csharp
+var publisher = new Mock<IPublisher>();
+var handler = new CreateProductCommandHandler(publisher.Object);
 
-- **Commands** - Actions that change state (write operations)
-- **Queries** - Requests for data (read operations)  
-- **Events** - Things that have happened (notifications)
-- **Pre/Post Handlers** - Cross-cutting concerns that execute before/after main handlers
-- **Pipeline Behaviors** - Reusable behaviors that wrap message execution
+await handler.HandleAsync(new CreateProductCommand("Lamp", 10m));
 
-## Pipeline Execution Order
+publisher.Verify(p => p.PublishAsync(
+    It.Is<ProductCreatedEvent>(e => e.Name == "Lamp"),
+    It.IsAny<CancellationToken>()), Times.Once);
+```
 
-1. **Pipeline Behaviors** - Execute in registration order (outermost first)
-2. **Pre-handlers** - Execute before main handler for validation, authentication, etc.
-3. **Main handler** - Executes the core business logic
-4. **Post-handlers** - Execute after main handler for notifications, cleanup, etc.
+## 🧩 Packages
 
-## Performance
+| Package | What it's for |
+|---------|---------------|
+| `Arcanic.Mediator.Command` | ✍️ Commands (writes) |
+| `Arcanic.Mediator.Query` | 🔍 Queries (reads) |
+| `Arcanic.Mediator.Event` | 📣 Events (notifications) |
+| `Arcanic.Mediator` | ⚙️ Core registration — pulled in automatically |
+| `*.Abstractions` | 🪶 Interfaces only — reference these from your domain/application layers |
 
-- **Cached Dispatchers** - Avoid reflection overhead with cached dispatcher instances
-- **Efficient Routing** - Direct handler resolution without runtime type discovery
-- **Minimal Allocations** - Optimized for low garbage collection pressure
-- **Fan-out Events** - Every registered handler for an event runs, sequentially and in registration order; publishing an event with no handlers is a no-op
+## 📂 Sample
 
-## Samples
+See [samples/CleanArchitecture](https://github.com/arcanic-kit/mediator/tree/main/samples/CleanArchitecture) for a complete Clean Architecture app:
 
-Check out the [samples/CleanArchitecture](./samples/CleanArchitecture) for a complete working example demonstrating:
-- Clean Architecture implementation
-- Command and query handlers
-- Event publishing and handling
-- Pre/post handlers
-- Pipeline behaviors
-
-Run the sample:
 ```bash
 cd samples/CleanArchitecture/CleanArchitecture.WebApi
 dotnet run
 ```
 
-## License
+## 💬 Support
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- 🐛 [Report an issue](https://github.com/arcanic-kit/mediator/issues)
+- 📝 [Release notes](https://github.com/arcanic-kit/mediator/releases)
 
-## Support
+## 📄 License
 
-- 📋 [Issues](https://github.com/arcanic-kit/mediator/issues)
-- 📖 [Documentation](https://github.com/arcanic-kit/mediator)
+MIT — see [LICENSE](https://github.com/arcanic-kit/mediator/blob/main/LICENSE).

@@ -1,4 +1,3 @@
-using Arcanic.Mediator.Abstractions;
 using Arcanic.Mediator.Command.Abstractions;
 using Arcanic.Mediator.Command.Tests.Data.Commands.Simple;
 using Arcanic.Mediator.Command.Tests.Data.Commands.VoidCommand;
@@ -13,48 +12,61 @@ namespace Arcanic.Mediator.Command.Tests;
 public class MediatorDispatchTests
 {
     [Fact]
-    public async Task DispatchAsync_WithRequestNoModuleHandles_ThrowsWithGuidance()
+    public async Task SendAsync_WithRequestNoModuleHandles_ThrowsWithGuidance()
     {
         var mediator = BuildMediator();
 
-        var act = () => mediator.DispatchAsync(new PlainRequest());
+        var act = () => mediator.SendAsync(new PlainRequest());
 
         await act.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage($"*{typeof(PlainRequest).FullName}*AddCommands*");
     }
 
     [Fact]
-    public async Task DispatchAsync_WithCommandHavingTwoResultTypes_ThrowsInvalidOperationException()
+    public async Task SendAsync_WithCommandHavingTwoResultTypes_ThrowsInvalidOperationException()
     {
         var mediator = BuildMediator();
 
-        var act = () => mediator.DispatchAsync(new AmbiguousCommand());
+        var act = () => mediator.SendAsync((IRequest) new AmbiguousCommand());
 
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*ICommand<T> more than once*");
     }
 
     [Fact]
-    public async Task DispatchAsync_WithCommand_ReturnsTypedResponseAsObject()
+    public async Task SendAsync_WithCommandWithResult_InfersResponseType()
     {
         var mediator = BuildMediator();
 
-        var result = await mediator.DispatchAsync(new SimpleCommand { Value = 3 });
+        SimpleCommandResponse response = await mediator.SendAsync(new SimpleCommand { Value = 3 });
 
-        result.Should().BeOfType<SimpleCommandResponse>().Which.Result.Should().Be(3);
+        response.Result.Should().Be(3);
     }
 
     [Fact]
-    public async Task DispatchAsync_WithVoidCommand_ReturnsUnit()
+    public async Task SendAsync_WithVoidCommand_RunsHandler()
+    {
+        var services = new ServiceCollection();
+        services.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
+        services.AddSingleton<ExecutedTypeTracker>();
+        var provider = services.BuildServiceProvider();
+
+        await provider.GetRequiredService<IMediator>().SendAsync(new VoidCommand());
+
+        provider.GetRequiredService<ExecutedTypeTracker>().ExecutedTypes.Should().Contain(typeof(VoidCommandHandler));
+    }
+
+    [Fact]
+    public async Task SendAsync_WithNullRequest_ThrowsArgumentNullException()
     {
         var mediator = BuildMediator();
 
-        var result = await mediator.DispatchAsync(new VoidCommand());
+        var act = () => mediator.SendAsync((IRequest) null!);
 
-        result.Should().Be(Unit.Value);
+        await act.Should().ThrowAsync<ArgumentNullException>();
     }
 
     [Fact]
-    public async Task SendAsync_OnFakeMediator_UsesDispatchAsync()
+    public async Task SendAsync_OnFakeMediator_ReturnsFakeResponse()
     {
         IMediator mediator = new FakeMediator(new SimpleCommandResponse { Result = 99, Message = "fake" });
 
@@ -77,7 +89,9 @@ public class MediatorDispatchTests
 
     private class FakeMediator(object? response) : IMediator
     {
-        public Task<object?> DispatchAsync(IRequest request, CancellationToken cancellationToken = default) =>
-            Task.FromResult(response);
+        public Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default) =>
+            Task.FromResult((TResponse) response!);
+
+        public Task SendAsync(IRequest request, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

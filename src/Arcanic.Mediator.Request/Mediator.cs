@@ -30,7 +30,21 @@ public class Mediator : IMediator
     }
 
     /// <inheritdoc />
-    public Task<object?> DispatchAsync(IRequest request, CancellationToken cancellationToken = default)
+    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+    {
+        var result = await DispatchAsync(request, cancellationToken).ConfigureAwait(false);
+
+        return (TResponse)result!;
+    }
+
+    /// <inheritdoc />
+    public Task SendAsync(IRequest request, CancellationToken cancellationToken = default) =>
+        DispatchAsync(request, cancellationToken);
+
+    /// <summary>
+    /// Runs the request through the dispatcher for its concrete type.
+    /// </summary>
+    private Task<object?> DispatchAsync(IRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
 
