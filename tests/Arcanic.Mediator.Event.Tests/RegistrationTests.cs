@@ -35,14 +35,35 @@ public class RegistrationTests
         services.Count(d => d.ServiceType == typeof(IPublisher)).Should().Be(1);
     }
 
-    [Theory]
-    [InlineData(InstanceLifetime.Transient)]
-    [InlineData(InstanceLifetime.Scoped)]
-    [InlineData(InstanceLifetime.Singleton)]
-    public async Task PublishAsync_WithEachLifetime_RunsAllHandlersInsideScope(InstanceLifetime lifetime)
+    [Fact]
+    public void AddEvents_RegistersPublisherWithMediatorLifetime()
     {
         var services = new ServiceCollection();
-        services.AddArcanicMediator(config => config.InstanceLifetime = lifetime)
+        services.AddArcanicMediator(config =>
+            {
+                config.MediatorLifetime = InstanceLifetime.Scoped;
+                config.HandlerLifetime = InstanceLifetime.Transient;
+            })
+            .AddEvents(Assembly.GetExecutingAssembly());
+
+        services.Single(d => d.ServiceType == typeof(IPublisher)).Lifetime.Should().Be(ServiceLifetime.Scoped);
+        services.Where(d => d.ServiceType.Name.StartsWith("IEventHandler")).Should().OnlyContain(d => d.Lifetime == ServiceLifetime.Transient);
+    }
+
+    [Theory]
+    [InlineData(InstanceLifetime.Transient, InstanceLifetime.Transient)]
+    [InlineData(InstanceLifetime.Scoped, InstanceLifetime.Scoped)]
+    [InlineData(InstanceLifetime.Transient, InstanceLifetime.Scoped)]
+    [InlineData(InstanceLifetime.Scoped, InstanceLifetime.Singleton)]
+    [InlineData(InstanceLifetime.Singleton, InstanceLifetime.Singleton)]
+    public async Task PublishAsync_WithLifetimeCombination_RunsAllHandlersInsideScope(InstanceLifetime mediatorLifetime, InstanceLifetime handlerLifetime)
+    {
+        var services = new ServiceCollection();
+        services.AddArcanicMediator(config =>
+            {
+                config.MediatorLifetime = mediatorLifetime;
+                config.HandlerLifetime = handlerLifetime;
+            })
             .AddEvents(Assembly.GetExecutingAssembly());
         services.AddSingleton<ExecutedTypeTracker>();
         var root = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });

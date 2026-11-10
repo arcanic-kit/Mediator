@@ -81,29 +81,86 @@ public class RegistrationTests
             .Should().Be(1);
     }
 
-    [Theory]
-    [InlineData(InstanceLifetime.Transient, ServiceLifetime.Transient)]
-    [InlineData(InstanceLifetime.Scoped, ServiceLifetime.Scoped)]
-    [InlineData(InstanceLifetime.Singleton, ServiceLifetime.Singleton)]
-    public void AddCommands_RegistersServicesWithConfiguredLifetime(InstanceLifetime configured, ServiceLifetime expected)
+    /// <summary>Every mediator/handler lifetime combination except the rejected Singleton mediator + Scoped handlers.</summary>
+    public static TheoryData<InstanceLifetime, InstanceLifetime> ValidLifetimeCombinations()
+    {
+        var data = new TheoryData<InstanceLifetime, InstanceLifetime>();
+        foreach (var mediator in Enum.GetValues<InstanceLifetime>())
+        foreach (var handler in Enum.GetValues<InstanceLifetime>())
+        {
+            if (mediator == InstanceLifetime.Singleton && handler == InstanceLifetime.Scoped)
+                continue;
+            data.Add(mediator, handler);
+        }
+        return data;
+    }
+
+    [Fact]
+    public void AddArcanicMediator_ByDefault_RegistersEverythingTransient()
     {
         var services = new ServiceCollection();
-        services.AddArcanicMediator(config => config.InstanceLifetime = configured)
+        services.AddArcanicMediator().AddCommands(Assembly.GetExecutingAssembly());
+
+        services.Where(d => d.ServiceType.Namespace?.StartsWith("Arcanic.Mediator") == true)
+            .Should().OnlyContain(d => d.Lifetime == ServiceLifetime.Transient);
+    }
+
+    [Theory]
+    [MemberData(nameof(ValidLifetimeCombinations))]
+    public void AddCommands_RegistersMediatorAndHandlersWithTheirOwnLifetimes(InstanceLifetime mediatorLifetime, InstanceLifetime handlerLifetime)
+    {
+        var services = new ServiceCollection();
+        services.AddArcanicMediator(config =>
+            {
+                config.MediatorLifetime = mediatorLifetime;
+                config.HandlerLifetime = handlerLifetime;
+            })
             .AddCommands(Assembly.GetExecutingAssembly());
 
-        services.Single(d => d.ServiceType == typeof(IMediator)).Lifetime.Should().Be(expected);
-        services.Where(d => d.ServiceType.Namespace?.StartsWith("Arcanic.Mediator") == true)
-            .Should().OnlyContain(d => d.Lifetime == expected);
+        services.Single(d => d.ServiceType == typeof(IMediator)).Lifetime.Should().Be(ToServiceLifetime(mediatorLifetime));
+        services.Where(d => d.ServiceType != typeof(IMediator) && d.ServiceType.Namespace?.StartsWith("Arcanic.Mediator") == true)
+            .Should().NotBeEmpty()
+            .And.OnlyContain(d => d.Lifetime == ToServiceLifetime(handlerLifetime));
+    }
+
+    [Fact]
+    public void AddArcanicMediator_WithSingletonMediatorAndScopedHandlers_Throws()
+    {
+        var act = () => new ServiceCollection().AddArcanicMediator(config =>
+        {
+            config.MediatorLifetime = InstanceLifetime.Singleton;
+            config.HandlerLifetime = InstanceLifetime.Scoped;
+        });
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*MediatorLifetime*HandlerLifetime*");
     }
 
     [Theory]
     [InlineData(InstanceLifetime.Transient)]
     [InlineData(InstanceLifetime.Scoped)]
     [InlineData(InstanceLifetime.Singleton)]
-    public async Task SendAsync_WithEachLifetime_ResolvesAndRunsHandlerInsideScope(InstanceLifetime lifetime)
+    public void InstanceLifetime_ObsoleteSetter_SetsMediatorAndHandlerLifetimes(InstanceLifetime lifetime)
+    {
+        var configuration = new ArcanicMediatorConfiguration();
+
+#pragma warning disable CS0618 // Verifying the obsolete compatibility shim
+        configuration.InstanceLifetime = lifetime;
+#pragma warning restore CS0618
+
+        configuration.MediatorLifetime.Should().Be(lifetime);
+        configuration.HandlerLifetime.Should().Be(lifetime);
+    }
+
+    [Theory]
+    [MemberData(nameof(ValidLifetimeCombinations))]
+    public async Task SendAsync_WithEachLifetimeCombination_ResolvesAndRunsHandlerInsideScope(InstanceLifetime mediatorLifetime, InstanceLifetime handlerLifetime)
     {
         var services = new ServiceCollection();
-        services.AddArcanicMediator(config => config.InstanceLifetime = lifetime)
+        services.AddArcanicMediator(config =>
+            {
+                config.MediatorLifetime = mediatorLifetime;
+                config.HandlerLifetime = handlerLifetime;
+            })
             .AddCommands(Assembly.GetExecutingAssembly());
         services.AddSingleton<ExecutedTypeTracker>();
         var root = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
@@ -138,6 +195,13 @@ public class RegistrationTests
         services.Should().NotContain(d => d.ImplementationType == typeof(OpenGenericPreHandler<>));
         services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true }).Should().NotBeNull();
     }
+
+    private static ServiceLifetime ToServiceLifetime(InstanceLifetime lifetime) => lifetime switch
+    {
+        InstanceLifetime.Singleton => ServiceLifetime.Singleton,
+        InstanceLifetime.Scoped => ServiceLifetime.Scoped,
+        _ => ServiceLifetime.Transient
+    };
 
     private class NotABehavior;
 

@@ -23,7 +23,7 @@ public static class ServiceRegistrarExtensions
     public static IServiceRegistrar RegisterEventRequiredServices(this IServiceRegistrar serviceRegistrar)
     {
         serviceRegistrar
-            .TryRegister(typeof(IPublisher), typeof(Publisher))
+            .TryRegister(typeof(IPublisher), typeof(Publisher), serviceRegistrar.Configuration.MediatorLifetime)
             .TryRegister(typeof(IEventPipelineBehavior<,>), typeof(EventPostHandlerPipelineBehavior<,>))
             .TryRegister(typeof(IEventPipelineBehavior<,>), typeof(EventPreHandlerPipelineBehavior<,>));
 

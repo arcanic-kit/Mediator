@@ -16,7 +16,8 @@ public static class ApplicationExtensions
     {
         builder.Services.AddArcanicMediator(config =>
         {
-            config.InstanceLifetime = InstanceLifetime.Scoped;
+            config.MediatorLifetime = InstanceLifetime.Scoped;
+            config.HandlerLifetime = InstanceLifetime.Scoped;
         })
         .AddPipelineBehavior(typeof(ExamplePipelineBehavior<,>))
         .AddRequestPipelineBehavior(typeof(ExampleRequestPipelineBehavior<,>))

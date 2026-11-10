@@ -318,10 +318,11 @@ Generic Pipeline (Metrics)
 Configure mediator services with custom settings:
 
 ```csharp
-// Configure service lifetime (default is Transient)
+// Configure service lifetimes (both default to Transient)
 builder.Services.AddArcanicMediator(config =>
 {
-    config.InstanceLifetime = InstanceLifetime.Scoped; // or Singleton, Transient
+    config.MediatorLifetime = InstanceLifetime.Scoped;   // IMediator and IPublisher
+    config.HandlerLifetime = InstanceLifetime.Scoped;    // handlers, pre/post handlers and pipeline behaviors
 })
 .AddCommands(Assembly.GetExecutingAssembly())
 .AddQueries(Assembly.GetExecutingAssembly())
@@ -332,12 +333,19 @@ builder.Services.AddArcanicMediator(config =>
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `InstanceLifetime` | `InstanceLifetime` | `Transient` | Controls how mediator service instances are created and managed by the DI container |
+| `MediatorLifetime` | `InstanceLifetime` | `Transient` | Lifetime of the mediator entry points (`IMediator`, `IPublisher`) |
+| `HandlerLifetime` | `InstanceLifetime` | `Transient` | Lifetime of handlers, pre/post handlers and pipeline behaviors |
+| `InstanceLifetime` | `InstanceLifetime` | `Transient` | **Obsolete.** Sets both properties above to the same value |
 
 **Instance Lifetime Options:**
 - **Transient** - New instance created each time (default)
 - **Scoped** - One instance per request/scope
 - **Singleton** - Single instance for the application lifetime
+
+**Choosing lifetimes:**
+- The mediator resolves handlers from the service provider it was itself resolved from, so a `Singleton` mediator resolves handlers from the root provider.
+- `MediatorLifetime = Singleton` with `HandlerLifetime = Scoped` is rejected at startup with an `InvalidOperationException`.
+- Handlers that depend on scoped services (for example a `DbContext`) should be `Scoped` or `Transient`; a `Singleton` handler would capture them.
 
 ## Architecture
 

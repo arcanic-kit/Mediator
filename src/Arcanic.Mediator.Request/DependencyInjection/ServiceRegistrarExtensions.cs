@@ -25,7 +25,7 @@ public static class ServiceRegistrarExtensions
         ArgumentNullException.ThrowIfNull(serviceRegistrar);
 
         if (!serviceRegistrar.IsRegistered(typeof(IMediator)))
-            serviceRegistrar.TryRegister(typeof(IMediator), typeof(Mediator));
+            serviceRegistrar.TryRegister(typeof(IMediator), typeof(Mediator), serviceRegistrar.Configuration.MediatorLifetime);
 
         return serviceRegistrar;
     }
