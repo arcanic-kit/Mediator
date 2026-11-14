@@ -1,9 +1,33 @@
 <Project>
 
+  <!-- Language and Framework -->
   <PropertyGroup>
     <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- Build Configuration -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>NU1701;CS0168;CS1574</WarningsNotAsErrors>
+  </PropertyGroup>
+
+  <!-- Common Assembly / Package Information -->
+  <PropertyGroup>
+    <Authors>Intello Solutions</Authors>
+    <Company>Intello Solutions</Company>
+    <Copyright>Intello Solutions 2025</Copyright>
+
+    <!-- Repository Information -->
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/arcanic-kit/mediator</RepositoryUrl>
+    <RepositoryBranch>main</RepositoryBranch>
+    <PackageProjectUrl>https://github.com/arcanic-kit/mediator</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/arcanic-kit/mediator/releases</PackageReleaseNotes>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
 </Project>

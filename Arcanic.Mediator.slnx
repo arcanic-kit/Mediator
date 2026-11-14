@@ -13,6 +13,7 @@
   <Folder Name="/.solution-items/">
     <File Path=".gitignore" />
     <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/benchmarks/">
@@ -32,7 +33,6 @@
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
-    <File Path="src/Directory.Packages.props" />
     <Project Path="src/Arcanic.Mediator.Abstractions/Arcanic.Mediator.Abstractions.csproj" />
     <Project Path="src/Arcanic.Mediator/Arcanic.Mediator.csproj" />
   </Folder>
@@ -55,7 +55,6 @@
   </Folder>
   <Folder Name="/tests/">
     <File Path="tests/Directory.Build.props" />
-    <File Path="tests/Directory.Packages.props" />
     <Project Path="tests/Arcanic.Mediator.Command.Tests/Arcanic.Mediator.Command.Tests.csproj" Id="41805b25-3fdb-4d30-973a-7d16030f7f55" />
     <Project Path="tests/Arcanic.Mediator.Event.Tests/Arcanic.Mediator.Event.Tests.csproj" Id="3007eebf-5877-45b1-a520-7503163e73e9" />
     <Project Path="tests/Arcanic.Mediator.Query.Tests/Arcanic.Mediator.Query.Tests.csproj" Id="07072170-c10d-4a37-bed5-df92df7a885c" />
