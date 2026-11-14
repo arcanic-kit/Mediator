@@ -17,7 +17,7 @@
     <NoWarn>$(NoWarn);xUnit1051</NoWarn>
   </PropertyGroup>
 
-  <!-- DI container used to exercise the library; versions track the src abstractions -->
+  <!-- DI container used to exercise the library -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
