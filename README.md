@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://www.nuget.org/packages/Arcanic.Mediator"><img src="https://img.shields.io/nuget/v/Arcanic.Mediator?style=for-the-badge&logo=nuget&logoColor=white&label=NuGet&color=8258E0" alt="NuGet version" /></a>
   <a href="https://www.nuget.org/packages/Arcanic.Mediator"><img src="https://img.shields.io/nuget/dt/Arcanic.Mediator?style=for-the-badge&logo=nuget&logoColor=white&label=Downloads&color=9B45D6" alt="NuGet downloads" /></a>
-  <a href="https://dotnet.microsoft.com"><img src="https://img.shields.io/badge/.NET-8%20%7C%209%20%7C%2010-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 8 | 9 | 10" /></a>
+  <a href="https://dotnet.microsoft.com"><img src="https://img.shields.io/badge/.NET-10%20%7C%2011-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10 | 11" /></a>
   <a href="https://github.com/arcanic-kit/mediator/blob/main/LICENSE"><img src="https://img.shields.io/github/license/arcanic-kit/mediator?style=for-the-badge&color=B026B5" alt="MIT license" /></a>
 </p>
 
@@ -34,6 +34,10 @@ dotnet add package Arcanic.Mediator.Command
 dotnet add package Arcanic.Mediator.Query
 dotnet add package Arcanic.Mediator.Event
 ```
+
+> 🎯 Targets **.NET 10** and **.NET 11**. On .NET 11 the packages depend on nothing outside Arcanic.Mediator — `Microsoft.Extensions.DependencyInjection.Abstractions` ships with the framework.
+>
+> 🔢 The major version follows .NET: **11.x** supports .NET 10 and 11. Still on .NET 8 or 9? Use **10.1.0**.
 
 ## 🚀 Quick start
 
