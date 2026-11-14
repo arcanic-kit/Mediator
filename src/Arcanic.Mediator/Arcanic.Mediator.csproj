@@ -7,11 +7,10 @@
 		<PackageTags>mediator;cqrs;dependency-injection;commands;queries;events;dotnet</PackageTags>
 	</PropertyGroup>
 
-	<!-- Only the DI abstractions are needed; the consuming application chooses the container. -->
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.15" Condition="'$(TargetFramework)' == 'net10.0'" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.23" Condition="'$(TargetFramework)' == 'net9.0'" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" Condition="'$(TargetFramework)' == 'net8.0'" />
+	<!-- Only the DI abstractions are needed; the consuming application chooses the container.
+	     From .NET 11 they ship in the shared framework, so the package is only referenced for net10.0. -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
 	</ItemGroup>
 
 	<ItemGroup>

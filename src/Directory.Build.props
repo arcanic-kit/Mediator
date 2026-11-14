@@ -2,38 +2,19 @@
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
+  <!-- Packaging settings for the published libraries (shared settings live in the root Directory.Build.props) -->
   <PropertyGroup>
-    <!-- Common Package Information -->
-    <Authors>Intello Solutions</Authors>
-    <Company>Intello Solutions</Company>
-    <Copyright>Intello Solutions 2025</Copyright>
-    
-    <!-- Repository Information -->
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/arcanic-kit/mediator</RepositoryUrl>
-    <RepositoryBranch>main</RepositoryBranch>
-    <PackageProjectUrl>https://github.com/arcanic-kit/mediator</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageReleaseNotes>https://github.com/arcanic-kit/mediator/releases</PackageReleaseNotes>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>logo.png</PackageIcon>
-    
-    <!-- Build Configuration -->
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    
-    <!-- Language and Framework -->
-    <LangVersion>latest</LangVersion>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>NU1701;CS0168;CS1574</WarningsNotAsErrors>
   </PropertyGroup>
 
   <!-- Include logo and readme in all packages -->
   <ItemGroup>
-	  <None Include="$(MSBuildThisFileDirectory)\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)\..\README.md" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)\..\assets\images\logo.png" Pack="true" PackagePath="\" Condition="Exists('$(MSBuildThisFileDirectory)\..\assets\images\logo.png')" />
   </ItemGroup>
 
